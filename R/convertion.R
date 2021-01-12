@@ -1,12 +1,11 @@
-#' Load a Matrix
+#' Methods for Linear Networks
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' The function as.geonet converts an object of class linnet to an object of
+#' class geonet
 #'
-#' @param infile Path to the input file
-#' @return A matrix of the infile
+#' @param object an object of the spatstat class linnet or an object that can
+#' be converted to an instance of this class
+#' @return an object of class geonet
 #' @export
 as.geonet <- function(object){
   if (!inherits(object, "linnet")){
@@ -16,7 +15,7 @@ as.geonet <- function(object){
     }
   }
   net <- list()
-  net$vertices <- tibble(x = object$vertices$x, y = object$vertices$y)
+  net$vertices <- dplyr::tibble(x = object$vertices$x, y = object$vertices$y)
 
   object$d <- diag(object$dpath[object$from, object$to])
   A <- object$m*1
@@ -35,7 +34,7 @@ as.geonet <- function(object){
 
     # find the two adjacent vertices to vertex with degree 2
     adj <- which(A[ind.deg.2[1], ] == 1)
-    P[[i]] <- tibble(from = c(adj[1], ind.deg.2[1]),
+    P[[i]] <- dplyr::tibble(from = c(adj[1], ind.deg.2[1]),
                      to = c(ind.deg.2[1], adj[2]),
                      m = NA,
                      length = NA)
@@ -78,9 +77,9 @@ as.geonet <- function(object){
   k <- length(P)
   for (m in setdiff(1:object$lines$n, ind.m.delete)) {
     k <- k + 1
-    curves[[k]] <- tibble(from = object$from[m], to = object$to[m], m = k, length = object$d[m])
+    curves[[k]] <- dplyr::tibble(from = object$from[m], to = object$to[m], m = k, length = object$d[m])
   }
-  net$curves <- bind_rows(curves)
+  net$curves <- dplyr::bind_rows(curves)
 
   class(net) <- "geonet"
   net

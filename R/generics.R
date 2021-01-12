@@ -1,41 +1,47 @@
-#' Load a Matrix
+#' Methods for Geometric Networks
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This is the print method for object of the class geonet.
 #'
-#' @param infile Path to the input file
-#' @return A matrix of the infile
+#' @param x an object of class geonet
+#' @param ... further arguments passed to print
 #' @export
-print.geonet <- function(object, ...){
-  stopifnot(inherits(object, "geonet"))
-  cat(paste("Geometric network in", 2, "dimensions"))
+print.geonet <- function(x, ...){
+  stopifnot(inherits(x, "geonet"))
+  cat(paste("Geometric network in", x$q, "dimensions"))
   invisible(NULL)
 }
 
-#' Load a Matrix
+#' Methods for Geometric Networks
 #'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-#' kepted.
+#' This is the \code{plot} method for an object of class \code{geonet}.
 #'
-#' @param infile Path to the input file
-#' @return A matrix of the infile
+#' Details
+#'
+#' @param x an object of class \code{geonet}
+#' @param ... further arguments passed to plot
+#' @param x.title x-axis title
+#' @param y.title y-axis title
+#' @param title plot title
+#' @return an object of class ggplot
+#' @importFrom dplyr %>%
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 element_blank
+#' @importFrom ggplot2 element_text
 #' @export
-plot.geonet <- function(object, ..., x = "x", y = "y", title = NULL){
-  dat <- object$curves %>%
-    mutate(x.from = object$vertices$x[from],
-           y.from = object$vertices$y[from],
-           x.to = object$vertices$x[to],
-           y.to = object$vertices$y[to])
-  g <- ggplot(dat) +
-    geom_segment(aes(x = x.from, y = y.from, xend = x.to, yend = y.to)) +
-    labs(x = x, y = x, title = title) +
-    theme_bw() +
-    theme(panel.grid = element_blank(),
-          plot.title = element_text(hjust = 0.5))
+plot.geonet <- function(x, ..., x.title = "x", y.title = "y", title = NULL){
+  from <- to <- NULL
+  x.from <- y.from <- x.to <- y.to <- NULL
+  dat <- dplyr::bind_rows(x$curves) %>%
+    dplyr::mutate(x.from = x$vertices$x[from],
+                  y.from = x$vertices$y[from],
+                  x.to = x$vertices$x[to],
+                  y.to = x$vertices$y[to])
+  g <- ggplot2::ggplot(dat) +
+    ggplot2::geom_segment(aes(x = x.from, y = y.from, xend = x.to, yend = y.to)) +
+    ggplot2::labs(x = x.title, y = y.title, title = title) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(panel.grid = element_blank(),
+                   plot.title = element_text(hjust = 0.5))
   print(g)
   invisible(g)
 }
