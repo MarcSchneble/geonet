@@ -1,13 +1,13 @@
 #' Methods for Linear Networks
 #'
-#' The function as.geonet converts an object of class linnet to an object of
-#' class geonet
+#' The function as.gn converts an object of class linnet to an object of
+#' class gn
 #'
 #' @param object an object of the spatstat class linnet or an object that can
 #' be converted to an instance of this class
-#' @return an object of class geonet
+#' @return an object of class gn
 #' @export
-as.geonet <- function(object){
+as.gn <- function(object){
   if (!inherits(object, "linnet")){
     object <- spatstat::as.linnet(object)
     if (!inherits(object, "linnet")){
@@ -81,6 +81,83 @@ as.geonet <- function(object){
   }
   net$curves <- dplyr::bind_rows(curves)
 
-  class(net) <- "geonet"
+  class(net) <- "gn"
   net
+}
+
+#' Methods for Geometric Networks
+#'
+#' The function as.gns converts an object of class gn to an object of
+#' class gns
+#'
+#' @param object an object of class gn or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @return an object of class gn
+#' @export
+as.gns <- function(x, delta = NULL, h = NULL, r = 1){
+  if (!inherits(x, c("gn", "linnet", "lpp"))){
+    stop(paste("Object ", x, " can not be converted to an object of class gns"))
+  }
+  if (inherits(x, c("linnet", "lpp"))) x <- as.gn(x)
+  if (is.null(delta)) delta <- min(x$d/2)
+  if (is.null(h)) h <- delta/2
+  if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
+  # line specific knot distances
+  delta <- x$d*(delta > x$d) + delta*(delta <= x$d)
+  delta <- pmin(x$d/floor(x$d/delta)*(x$d/delta - floor(x$d/delta) < 0.5) +
+                   x$d/ceiling(x$d/delta)*(x$d/delta - floor(x$d/delta) >= 0.5), x$d/2)
+  # ensure that h <= delta
+  h <- min(h, min(delta))
+  # line specific bin widths
+  h <- x$d/floor(x$d/h)*(x$d/h - floor(x$d/h) < 0.5) +
+    x$d/ceiling(x$d/h)*(x$d/h - floor(x$d/h) >= 0.5)
+  # initializing...
+  tau <- b <- z <- vector("list", x$M)
+  e_to_v <- e_from_v <- vector("list", x$W)
+  N <- J <- rep(0, x$M)
+
+  # do for every line segment
+  for (m in 1:x$M) {
+
+    # knot sequences tau
+    tau[[m]] <- seq(0, x$d[m], delta[m])
+
+    # bin boundaries b
+    b[[m]] <- seq(0, x$d[m], h[m])
+
+    # characterization of bins by midpoints z
+    z[[m]] <- (b[[m]][1:(length(b[[m]])-1)] + b[[m]][2:length(b[[m]])])/2
+
+    # total count of bins in the geometric network
+    N[m] <- length(z[[m]])
+
+    # count of linear B-splines on line segment
+    J[m] <- length(tau[[m]]) - 2
+  }
+
+  # incident lines to vertices
+  ends_edges <- ends(x)
+  for (v in 1:x$W) {
+    vv <- which(x$A_v[v, ] == 1)
+    if (length(vv) > 0){
+      for (w in vv) {
+        e_to_v[[v]] <- c(e_to_v[[v]], which(ends_edges$to == v & ends_edges$from == w))
+        e_from_v[[v]] <- c(e_from_v[[v]], which(ends_edges$from == v & ends_edges$to == w))
+      }
+      e_to_v[[v]] <- sort(unique(e_to_v[[v]]))
+      e_from_v[[v]] <- sort(unique(e_from_v[[v]]))
+    }
+  }
+  x$splines <- list(delta = delta,
+                    tau = tau,
+                    J = J)
+  x$bins <- list(h = h,
+                 b = b,
+                 z = z,
+                 N = N)
+  x$v_adj_e <- list(e_to_v = e_to_v,
+                         e_from_v = e_from_v)
+  B <- getB(x)
+  x$B <- B
+  x
 }
