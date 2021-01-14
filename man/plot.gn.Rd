@@ -2,7 +2,7 @@
 % Please edit documentation in R/generics.R
 \name{plot.gn}
 \alias{plot.gn}
-\title{Methods for Geometric Networks}
+\title{Plot Method for Geometric Networks}
 \usage{
 \method{plot}{gn}(x, ..., x.title = "x", y.title = "y", title = NULL)
 }

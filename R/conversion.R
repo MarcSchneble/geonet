@@ -90,8 +90,11 @@ as.gn <- function(object){
 #' The function as.gns converts an object of class gn to an object of
 #' class gns
 #'
-#' @param object an object of class gn or an object of class linnet (or an object that can
+#' @param x an object of class gn or an object of class linnet (or an object that can
 #' be converted to an instance of class linnet)
+#' @param delta The knot distance delta
+#' @param h The bin width h
+#' @param r The order of the penalty
 #' @return an object of class gn
 #' @export
 as.gns <- function(x, delta = NULL, h = NULL, r = 1){
@@ -158,6 +161,9 @@ as.gns <- function(x, delta = NULL, h = NULL, r = 1){
   x$v_adj_e <- list(e_to_v = e_to_v,
                          e_from_v = e_from_v)
   B <- getB(x)
+  K <- getK(x, r)
   x$B <- B
+  x$K <- K
+  class(x) <- "gns"
   x
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/generics.R
 \name{print.gn}
 \alias{print.gn}
-\title{Methods for Geometric Networks}
+\title{Print Method for Geometric Networks}
 \usage{
 \method{print}{gn}(x, ...)
 }

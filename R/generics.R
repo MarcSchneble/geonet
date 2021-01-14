@@ -1,4 +1,4 @@
-#' Methods for Geometric Networks
+#' Print Method for Geometric Networks
 #'
 #' This is the print method for object of the class gn.
 #'
@@ -11,7 +11,20 @@ print.gn <- function(x, ...){
   invisible(NULL)
 }
 
-#' Methods for Geometric Networks
+#' Print Method for Geometric Networks Splines
+#'
+#' This is the print method for object of the class gns.
+#'
+#' @param x an object of class gns
+#' @param ... further arguments passed to print
+#' @export
+print.gns <- function(x, ...){
+  stopifnot(inherits(x, "gns"))
+  cat(paste("Geometric network in", x$q, "dimensions"))
+  invisible(NULL)
+}
+
+#' Plot Method for Geometric Networks
 #'
 #' This is the \code{plot} method for an object of class \code{gn}.
 #'
@@ -23,25 +36,41 @@ print.gn <- function(x, ...){
 #' @param y.title y-axis title
 #' @param title plot title
 #' @return an object of class ggplot
-#' @importFrom dplyr %>%
-#' @importFrom ggplot2 aes
-#' @importFrom ggplot2 element_blank
-#' @importFrom ggplot2 element_text
 #' @export
 plot.gn <- function(x, ..., x.title = "x", y.title = "y", title = NULL){
-  from <- to <- NULL
-  x.from <- y.from <- x.to <- y.to <- NULL
-  dat.lins <- x$lins %>%
-    dplyr::mutate(x.from = x$vertices$x[from],
-                  y.from = x$vertices$y[from],
-                  x.to = x$vertices$x[to],
-                  y.to = x$vertices$y[to])
-  g <- ggplot2::ggplot(dat.lins) +
-    ggplot2::geom_segment(aes(x = x.from, y = y.from, xend = x.to, yend = y.to)) +
+  v1_x <- v1_y <- v2_x <- v2_y <- NULL
+  g <- ggplot2::ggplot(x$lins) +
+    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y)) +
     ggplot2::labs(x = x.title, y = y.title, title = title) +
     ggplot2::theme_bw() +
-    ggplot2::theme(panel.grid = element_blank(),
-                   plot.title = element_text(hjust = 0.5))
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                   plot.title = ggplot2::element_text(hjust = 0.5))
+  print(g)
+  invisible(g)
+}
+
+#' Plot Method for Data on Geometric Networks
+#'
+#' This is the \code{plot} method for an object of class \code{gns}.
+#'
+#' Details
+#'
+#' @param x A geometric network with data (an object of class \code{gns}).
+#' @param ... further arguments passed to plot
+#' @param title plot title
+#' @return an object of class ggplot
+#' @export
+
+plot.gnd <- function(x, ..., title_x = "x", title_y = "y", title = ""){
+  v1_x <- v1_y <- v2_x <- v2_y <- NULL
+  y <- NULL
+  g <- ggplot2::ggplot(x$lins) +
+    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y)) +
+    ggplot2::labs(x = title_x, y = title_y, title = title) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                   plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::geom_point(data = x$data, ggplot2::aes(x = x, y = y))
   print(g)
   invisible(g)
 }

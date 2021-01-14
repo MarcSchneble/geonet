@@ -7,12 +7,17 @@
 #' be converted to an instance of class linnet)
 #' @return an object of class gn
 ends <- function(x){
-  ends <- x$lins %>% filter(m == 0)
+  m <- NULL
+  ends <- x$lins %>% dplyr::filter(m == 0)
   for (i in 1:x$M) {
-    sub <- x$lins %>% filter(m == i)
-    ends <- bind_rows(ends, sub %>% slice(1))
+    sub <- x$lins %>% dplyr::filter(m == i)
+    ends <- dplyr::bind_rows(ends, sub %>% dplyr::slice(1))
     ends$to[i] <- sub$to[nrow(sub)]
     ends$length[i] <- sum(sub$length)
   }
   ends
+}
+
+getCoordinatesData <- function(x){
+
 }

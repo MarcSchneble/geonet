@@ -97,20 +97,21 @@ getK <- function(x, r){
       D[i, adj[i, 1]] <- 1
       D[i, adj[i, 2]] <- -1
     }
-    return(t(D)%*%D)
+    return(Matrix::t(D)%*%D)
   }
   if (r == 2){
     # find for every spline function the adjacent spline functions
-    adj_1 <- which(igraph::shortest.paths(igraph::graph_from_adjacency_matrix(A_tau)) == 1, arr.ind = T)
-    adj_2 <- which(Matrix::tril(igraph::shortest.paths(igraph::graph_from_adjacency_matrix(A_tau))) == 2, arr.ind = T)
+    S_A <- igraph::shortest.paths(igraph::graph_from_adjacency_matrix(A_tau))
+    adj_1 <- which(S_A == 1, arr.ind = T)
+    adj_2 <- which(S_A*lower.tri(S_A) == 2, arr.ind = T)
 
     # initalizing second order difference matrix
-    D <- Matrix(matrix(0, nrow(adj2), sum(x$splines$J) + W), sparse = TRUE)
+    D <- Matrix::Matrix(matrix(0, nrow(adj_2), sum(x$splines$J) + x$W), sparse = TRUE)
 
-    for (i in 1:nrow(adj2)) {
-      D[i, adj2[i, 1]] <- D[i, adj2[i, 2]] <- 1
-      D[i, intersect(adj1[which(adj1[, 1] == adj2[i, 1]), 2], adj1[which(adj1[, 1] == adj2[i, 2]), 2])] <- -2
+    for (i in 1:nrow(adj_2)) {
+      D[i, adj_2[i, 1]] <- D[i, adj_2[i, 2]] <- 1
+      D[i, intersect(adj_1[which(adj_1[, 1] == adj_2[i, 1]), 2], adj_1[which(adj_1[, 1] == adj_2[i, 2]), 2])] <- -2
     }
-    return(t(D)%*%D)
+    return(Matrix::t(D)%*%D)
   }
 }

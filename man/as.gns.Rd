@@ -7,8 +7,14 @@
 as.gns(x, delta = NULL, h = NULL, r = 1)
 }
 \arguments{
-\item{object}{an object of class gn or an object of class linnet (or an object that can
+\item{x}{an object of class gn or an object of class linnet (or an object that can
 be converted to an instance of class linnet)}
+
+\item{delta}{The knot distance delta}
+
+\item{h}{The bin width h}
+
+\item{r}{The order of the penalty}
 }
 \value{
 an object of class gn
