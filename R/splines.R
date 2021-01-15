@@ -26,14 +26,14 @@ getB <- function(x){
   # vertex specific B-splines
   for (v in 1:x$W) {
     # left line ends
-    for (m in x$v_adj_e$e_to_v[[v]]) {
+    for (m in which(x$incidence[v, ] == -1)) {
       B[((cumsum(x$bins$N) - x$bins$N)[m] + 1):
           ((cumsum(x$bins$N) - x$bins$N)[m] +
              length(which(1 - x$bins$z[[m]]/x$splines$delta[m] > 0))), sum(x$splines$J) + v] <-
         (1 - x$bins$z[[m]]/x$splines$delta[m])[which(1 - x$bins$z[[m]]/x$splines$delta[m] > 0)]
     }
     # right line ends
-    for (m in x$v_adj_e$e_from_v[[v]]) {
+    for (m in which(x$incidence[v, ] == 1)) {
       B[(cumsum(x$bins$N)[m] - length(which(1 - (x$d[m] - x$bins$z[[m]])/x$splines$delta[m] > 0)) + 1):
           cumsum(x$bins$N)[m], sum(x$splines$J) + v] <-
         (1 - (x$d[m] - x$bins$z[[m]])/x$splines$delta[m])[which(1 - (x$d[m] - x$bins$z[[m]])/x$splines$delta[m] > 0)]

@@ -7,37 +7,51 @@
 #' be converted to an instance of this class
 #' @return an object of class gn
 #' @export
-as.gn <- function(object){
-  if (!inherits(object, "linnet")){
-    object <- spatstat::as.linnet(object)
-    if (!inherits(object, "linnet")){
+as.gn <- function(L){
+  if (!inherits(L, "linnet")){
+    L <- spatstat::as.linnet(L)
+    if (!inherits(L, "linnet")){
       stop("Object must be of class 'linnet' or must be converable to an object of class 'linnet'")
     }
   }
-  net <- list()
-  net$vertices <- dplyr::tibble(x = object$vertices$x, y = object$vertices$y)
-
-  object$d <- diag(object$dpath[object$from, object$to])
-  A <- object$m*1
-  V.deg <- as.numeric(table(c(object$from, object$to)))
+  G <- list(
+    vertices = dplyr::tibble(id = 1:L$vertices$n,
+                             v = NA,
+                             x = L$vertices$x,
+                             y = L$vertices$y),
+    lins = dplyr::tibble(id = 1:L$lines$n,
+                         e = NA,
+                         v1 = L$from,
+                         v2 = L$to,
+                         v1_x = L$lines$ends$x0,
+                         v1_y = L$lines$ends$y0,
+                         v2_x = L$lines$ends$x1,
+                         v2_y = L$lines$ends$y1,
+                         length = diag(L$dpath[L$from, L$to])),
+    adjacency = NULL, incidence = NULL,
+    d = NULL, q = 2, W = NULL, M = NULL
+  )
+  # adjacency matrix of vertices in linear network representation
+  A <- L$m*1
   # vertex indices with degree 2
-  ind.deg.2 <- which(V.deg == 2)
+  deg_v <- as.numeric(table(c(L$from, L$to)))
+  ind <- which(deg_v == 2)
 
   # initialize
-  ind.m.delete <- NULL
+  ind2 <- NULL
   i <- 0
   P <- list()
 
-  # remove vertices with degree until none is left
-  while(length(ind.deg.2) > 0){
+  # remove vertices with degree 2 until none is left
+  while(length(ind) > 0){
     i <- i+1
 
     # find the two adjacent vertices to vertex with degree 2
-    adj <- which(A[ind.deg.2[1], ] == 1)
-    P[[i]] <- dplyr::tibble(from = c(adj[1], ind.deg.2[1]),
-                     to = c(ind.deg.2[1], adj[2]),
-                     m = NA,
-                     length = NA)
+    adj <- which(A[ind[1], ] == 1)
+    P[[i]] <- dplyr::tibble(from = c(adj[1], ind[1]),
+                            to = c(ind[1], adj[2]),
+                            m = NA,
+                            length = NA)
 
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
@@ -59,47 +73,57 @@ as.gn <- function(object){
 
     # save the line indices and their corresponding lengths which are removed from the network
     for (k in 1:nrow(P[[i]])) {
-      P[[i]]$m[k] <- which(object$from == P[[i]]$from[k] & object$to == P[[i]]$to[k] | object$from == P[[i]]$to[k] & object$to == P[[i]]$from[k])
-      P[[i]]$length[k] <- object$d[P[[i]]$m[k]]
+      P[[i]]$m[k] <- which(L$from == P[[i]]$from[k] & L$to == P[[i]]$to[k] | L$from == P[[i]]$to[k] & L$to == P[[i]]$from[k])
+      P[[i]]$length[k] <- L$d[P[[i]]$m[k]]
     }
 
+    A[P[[i]]$from[1], P[[i]]$to[nrow(P[[i]])]] <-
+      A[P[[i]]$to[nrow(P[[i]])], P[[i]]$from[1]] <- 1
     # add line segments to the delete vector
-    ind.m.delete <- unique(c(ind.m.delete, P[[i]]$m))
+    ind2 <- unique(c(ind2, P[[i]]$m))
 
     # remove vertices from the current vector of vertices with degree 2
-    ind.deg.2 <- setdiff(ind.deg.2, P[[i]]$to[1:(nrow(P[[i]])-1)])
-    P[[i]]$m <- i
+    ind <- setdiff(ind, P[[i]]$to[1:(nrow(P[[i]])-1)])
+    G$lins$e[P[[i]]$m] <- i
   }
+  ind <- which(deg_v == 2)
+  G$W <- L$vertices$n - length(ind)
+  G$M <-  L$lines$n - length(ind2) + length(P)
 
-  M <- object$lines$n - length(ind.m.delete) + length(P)
-  curves <- vector("list", M)
-  curves[1:length(P)] <- P
-  k <- length(P)
-  for (m in setdiff(1:object$lines$n, ind.m.delete)) {
-    k <- k + 1
-    curves[[k]] <- dplyr::tibble(from = object$from[m], to = object$to[m], m = k, length = object$d[m])
-  }
-  net$curves <- dplyr::bind_rows(curves)
+  G$vertices$v[setdiff(1:nrow(G$vertices), ind)] <- 1:G$W
+  G$lins$e[which(is.na(G$lins$e))] <- (length(P) + 1):G$M
 
-  class(net) <- "gn"
-  net
+  G$d <- G$lins %>%
+    dplyr::group_by(e) %>%
+    dplyr::summarize(length = sum(length), .groups = "drop") %>%
+    dplyr::pull(length)
+
+  # delete rows and cols in A
+  A <- A[-ind, ]
+  A <- A[, -ind]
+  G$adjacency <- upper.tri(A)*A
+  net <- network::as.network(G$adjacency)
+  G$incidence <- network::as.matrix.network(net, matrix.type = "incidence")
+
+  class(G) <- "gn"
+  G
 }
 
 #' Methods for Geometric Networks
 #'
-#' The function as.gns converts an object of class gn to an object of
-#' class gns
+#' The function as.gnds converts an object of class gnd to an object of
+#' class gnds
 #'
-#' @param x an object of class gn or an object of class linnet (or an object that can
+#' @param x an object of class gnd or an object of class linnet (or an object that can
 #' be converted to an instance of class linnet)
 #' @param delta The knot distance delta
 #' @param h The bin width h
 #' @param r The order of the penalty
-#' @return an object of class gn
+#' @return an object of class gnds
 #' @export
-as.gns <- function(x, delta = NULL, h = NULL, r = 1){
-  if (!inherits(x, c("gn", "linnet", "lpp"))){
-    stop(paste("Object ", x, " can not be converted to an object of class gns"))
+as.gnds <- function(x, delta = NULL, h = NULL, r = 1){
+  if (!inherits(x, c("gn", "gnd", "linnet", "lpp"))){
+    stop(paste("Object ", deparse(quote(x)), " can not be converted to an object of class gns"))
   }
   if (inherits(x, c("linnet", "lpp"))) x <- as.gn(x)
   if (is.null(delta)) delta <- min(x$d/2)
@@ -108,7 +132,7 @@ as.gns <- function(x, delta = NULL, h = NULL, r = 1){
   # line specific knot distances
   delta <- x$d*(delta > x$d) + delta*(delta <= x$d)
   delta <- pmin(x$d/floor(x$d/delta)*(x$d/delta - floor(x$d/delta) < 0.5) +
-                   x$d/ceiling(x$d/delta)*(x$d/delta - floor(x$d/delta) >= 0.5), x$d/2)
+                  x$d/ceiling(x$d/delta)*(x$d/delta - floor(x$d/delta) >= 0.5), x$d/2)
   # ensure that h <= delta
   h <- min(h, min(delta))
   # line specific bin widths
@@ -116,7 +140,6 @@ as.gns <- function(x, delta = NULL, h = NULL, r = 1){
     x$d/ceiling(x$d/h)*(x$d/h - floor(x$d/h) >= 0.5)
   # initializing...
   tau <- b <- z <- vector("list", x$M)
-  e_to_v <- e_from_v <- vector("list", x$W)
   N <- J <- rep(0, x$M)
 
   # do for every line segment
@@ -137,20 +160,6 @@ as.gns <- function(x, delta = NULL, h = NULL, r = 1){
     # count of linear B-splines on line segment
     J[m] <- length(tau[[m]]) - 2
   }
-
-  # incident lines to vertices
-  ends_edges <- ends(x)
-  for (v in 1:x$W) {
-    vv <- which(x$A_v[v, ] == 1)
-    if (length(vv) > 0){
-      for (w in vv) {
-        e_to_v[[v]] <- c(e_to_v[[v]], which(ends_edges$to == v & ends_edges$from == w))
-        e_from_v[[v]] <- c(e_from_v[[v]], which(ends_edges$from == v & ends_edges$to == w))
-      }
-      e_to_v[[v]] <- sort(unique(e_to_v[[v]]))
-      e_from_v[[v]] <- sort(unique(e_from_v[[v]]))
-    }
-  }
   x$splines <- list(delta = delta,
                     tau = tau,
                     J = J)
@@ -158,12 +167,8 @@ as.gns <- function(x, delta = NULL, h = NULL, r = 1){
                  b = b,
                  z = z,
                  N = N)
-  x$v_adj_e <- list(e_to_v = e_to_v,
-                         e_from_v = e_from_v)
-  B <- getB(x)
-  K <- getK(x, r)
-  x$B <- B
-  x$K <- K
-  class(x) <- "gns"
+  x$B <- getB(x)
+  x$K <- getK(x, r)
+  class(x) <- c(class(x), "gns")
   x
 }
