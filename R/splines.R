@@ -1,3 +1,67 @@
+#' Methods for Geometric Networks
+#'
+#' The function as.gnds converts an object of class gnd to an object of
+#' class gnds
+#'
+#' @param x an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param delta The knot distance delta
+#' @param h The bin width h
+#' @param r The order of the penalty
+#' @return an object of class gnds
+#' @export
+addSpline <- function(x, delta = NULL, h = NULL, r = 1){
+  if (!inherits(x, c("gn", "gnd", "linnet", "lpp"))){
+    stop(paste("Object ", deparse(quote(x)), " can not be converted to an object of class gns"))
+  }
+  if (inherits(x, c("linnet", "lpp"))) x <- as.gn(x)
+  if (is.null(delta)) delta <- min(x$d/2)
+  if (is.null(h)) h <- delta/2
+  if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
+  # line specific knot distances
+  delta <- x$d*(delta > x$d) + delta*(delta <= x$d)
+  delta <- pmin(x$d/floor(x$d/delta)*(x$d/delta - floor(x$d/delta) < 0.5) +
+                  x$d/ceiling(x$d/delta)*(x$d/delta - floor(x$d/delta) >= 0.5), x$d/2)
+  # ensure that h <= delta
+  h <- min(h, min(delta))
+  # line specific bin widths
+  h <- x$d/floor(x$d/h)*(x$d/h - floor(x$d/h) < 0.5) +
+    x$d/ceiling(x$d/h)*(x$d/h - floor(x$d/h) >= 0.5)
+  # initializing...
+  tau <- b <- z <- vector("list", x$M)
+  N <- J <- rep(0, x$M)
+
+  # do for every line segment
+  for (m in 1:x$M) {
+
+    # knot sequences tau
+    tau[[m]] <- seq(0, x$d[m], delta[m])
+
+    # bin boundaries b
+    b[[m]] <- seq(0, x$d[m], h[m])
+
+    # characterization of bins by midpoints z
+    z[[m]] <- (b[[m]][1:(length(b[[m]])-1)] + b[[m]][2:length(b[[m]])])/2
+
+    # total count of bins in the geometric network
+    N[m] <- length(z[[m]])
+
+    # count of linear B-splines on line segment
+    J[m] <- length(tau[[m]]) - 2
+  }
+  x$splines <- list(delta = delta,
+                    tau = tau,
+                    J = J)
+  x$bins <- list(h = h,
+                 b = b,
+                 z = z,
+                 N = N)
+  x$B <- getB(x)
+  x$K <- getK(x, r)
+  class(x) <- c(class(x), "gns")
+  x
+}
+
 #' B-Spline Model Matrix B
 #'
 #' The function calculates the B-spline model matrix B
@@ -73,12 +137,12 @@ getK <- function(x, r){
   # around each vertex
   for (v in 1:x$W) {
     # left line ends
-    for (m in x$v_adj_e$e_to_v[[v]]) {
+    for (m in which(x$incidence[v, ] == -1)) {
       A_tau[sum(x$splines$J) + v,
             (cumsum(x$splines$J) - x$splines$J)[m] + 1] <- 1
     }
     # right line ends
-    for (m in x$v_adj_e$e_from_v[[v]]) {
+    for (m in which(x$incidence[v, ] == 1)) {
       A_tau[sum(x$splines$J) + v, cumsum(x$splines$J)[m]] <- 1
     }
   }

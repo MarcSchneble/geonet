@@ -9,7 +9,7 @@
 #' @importFrom dplyr %>%
 
 runifgn <- function(n, G){
-  m <- id <- tp <- NULL
+  e <- id <- tp <- NULL
   cumlen <- c(0, cumsum(G$lins$length))
   dx <- G$lins$v2_x - G$lins$v1_x
   dy <- G$lins$v2_y - G$lins$v1_y
@@ -20,9 +20,9 @@ runifgn <- function(n, G){
   yy <- G$lins$v1_y[ii] + tt*dy[ii]
   dat <- dplyr::tibble(id = ii, tp = tt)
   dat <- dplyr::left_join(dat, G$lins, by = "id") %>%
-    mutate(x = xx, y = yy) %>%
-    dplyr::select(id, m, tp, x, y) %>%
-    dplyr::arrange(id, m, tp)
+    dplyr::mutate(x = xx, y = yy) %>%
+    dplyr::select(id, e, tp, x, y) %>%
+    dplyr::arrange(e, tp, id)
   G$data <- dat
   class(G) <- "gnd"
   G

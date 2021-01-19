@@ -1,10 +1,12 @@
-getDesign <- function(Gd, smooths = NULL, lins = NULL, offset = NULL, m = 10, l = 2){
+getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l = 2){
+
+  Gpp <- addSpline(Gpp, delta = NULL, h = NULL, r = 1)
 
   K <- B <- ind_smooths <- vector("list", length(smooths) + 1)
-  K[[1]] <- G
-  B[[1]] <- B.linnet(L)
+  K[[1]] <- Gpp$K
+  B[[1]] <- Gpp$B
 
-  data <- bin.data(L.lpp, L, smooths = smooths, lins = lins)
+  dat <- binData(Gpp, smooths = smooths, lins = lins)
 
   # baseline intensity of the network
   Z <- B[[1]][data$id, ]
@@ -80,27 +82,31 @@ getDesign <- function(Gd, smooths = NULL, lins = NULL, offset = NULL, m = 10, l 
   return(list(data = data, Z = Z, B = B, K = K, ind.smooths = ind.smooths, ind.lins = ind.lins, names.theta = names.theta))
 }
 
-bin.data <- function(L.lpp, L, smooths = NULL, lins = NULL){
+binData <- function(Gpp, smooths = NULL, lins = NULL){
 
   # get covariates from every point on the network (if applicable)
-  name <- intersect(names(L.lpp$data), c(smooths, lins))
-  covariates <- as.data.frame(L.lpp$data) %>% select(all_of(name))
+  name <- intersect(names(Gpp$data), c(smooths, lins))
+  covariates <- as.data.frame(Gpp$data) %>% dplyr::select(dplyr::all_of(name))
   if (ncol(covariates) == 0){
-    covariates <- covariates %>% mutate(q = 1)
+    covariates <- covariates %>% dplyr::mutate(q = 1)
   }
 
   # get all combinations of covariates and calculate the number of rows of the data matrix
-  # get all combinations of covariates and calculate the number of rows of the data matrix
-  covariates.comb <- covariates %>% distinct() %>% expand.grid() %>% distinct() %>% as_tibble()
+  covariates.comb <- covariates %>%
+    dplyr::distinct() %>%
+    expand.grid() %>%
+    dplyr::distinct() %>%
+    dplyr::as_tibble()
+
   for (a in 1:length(covariates.comb)) {
-    covariates.comb <- arrange(covariates.comb, !!sym(names(covariates.comb[a])))
+    covariates.comb <- dplyr::arrange(covariates.comb, !!dplyr::sym(names(covariates.comb[a])))
   }
 
-  N <- sum(L$N.m)*nrow(covariates.comb)
+  N <- sum(Gpp$bins$N)*nrow(covariates.comb)
 
   # initializing
-  data <- setNames(data.frame(matrix(nrow = N, ncol = length(name) + 3)), c("id", "y", "h", name)) %>% as_tibble() %>%
-    mutate(id = as.integer(id), y = as.double(y), h = as.double(h))
+  data <- stats::setNames(data.frame(matrix(nrow = N, ncol = length(name) + 3)), c("id", "count", "h", name)) %>% dplyr::as_tibble() %>%
+    dplyr::mutate(id = as.integer(id), count = as.double(count), h = as.double(h))
 
   # set factor variable if applicable
   if (length(name) > 0){
@@ -120,8 +126,8 @@ bin.data <- function(L.lpp, L, smooths = NULL, lins = NULL){
   ind <- 1
   for (j in 1:nrow(covariates.comb)) {
     ind.cov <- which(do.call(paste, covariates) == do.call(paste, covariates.comb[j, ]))
-    data.sub <- L.lpp$data[ind.cov, ]
-    for (m in 1:L$M) {
+    data.sub <- Gpp$data[ind.cov, ]
+    for (m in 1:Gpp$M) {
       # positions of data on line m
       ind.m <- which(data.sub$seg == m)
       y.m <- sort(as.numeric(data.sub[ind.m, ]$tp))*L$d[m]
@@ -148,6 +154,11 @@ bin.data <- function(L.lpp, L, smooths = NULL, lins = NULL){
   return(data)
 }
 
-fit <- function(Gd){
+fitData <- function(Gd){
   design <- getDesign()
+}
+
+intensity <- function(X, density = FALSE){
+
+  fit <- fitData()
 }

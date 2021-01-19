@@ -1,3 +1,25 @@
+#' Generic function
+#'
+#' Gasdda
+#'
+#' @param x An object that should be converted to a geometric network
+#' (object of class gn)
+
+as.gn <- function(x, ...){
+  UseMethod("as.gn")
+}
+
+#' Generic function
+#'
+#' Gasdda
+#'
+#' @param x An object that should be converted to a point pattern on a
+#' geometric network (object of class gnpp).
+
+as.gnpp <- function(x, ...){
+  UseMethod("as.gnpp")
+}
+
 #' Methods for Linear Networks
 #'
 #' The function as.gn converts an object of class linnet to an object of
@@ -7,13 +29,14 @@
 #' be converted to an instance of this class
 #' @return an object of class gn
 #' @export
-as.gn <- function(L){
-  if (!inherits(L, "linnet")){
-    L <- spatstat::as.linnet(L)
-    if (!inherits(L, "linnet")){
+as.gn.linnet <- function(x){
+  if (!inherits(x, "linnet")){
+    x <- spatstat::as.linnet(x)
+    if (!inherits(x, "linnet")){
       stop("Object must be of class 'linnet' or must be converable to an object of class 'linnet'")
     }
   }
+  L <- x
   G <- list(
     vertices = dplyr::tibble(id = 1:L$vertices$n,
                              v = NA,
@@ -92,6 +115,7 @@ as.gn <- function(L){
 
   G$vertices$v[setdiff(1:nrow(G$vertices), ind)] <- 1:G$W
   G$lins$e[which(is.na(G$lins$e))] <- (length(P) + 1):G$M
+  G$lins <- G$lins %>% dplyr::arrange(e, id)
 
   G$d <- G$lins %>%
     dplyr::group_by(e) %>%
@@ -109,66 +133,33 @@ as.gn <- function(L){
   G
 }
 
-#' Methods for Geometric Networks
+#' Methods for Point Patterns on Linear Networks
 #'
-#' The function as.gnds converts an object of class gnd to an object of
-#' class gnds
+#' The function as.gnpp.lpp converts an object of class linnet to an object of
+#' class gn
 #'
-#' @param x an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param delta The knot distance delta
-#' @param h The bin width h
-#' @param r The order of the penalty
-#' @return an object of class gnds
+#' @param object an object of the spatstat class linnet or an object that can
+#' be converted to an instance of this class
+#' @return an object of class gn
 #' @export
-as.gnds <- function(x, delta = NULL, h = NULL, r = 1){
-  if (!inherits(x, c("gn", "gnd", "linnet", "lpp"))){
-    stop(paste("Object ", deparse(quote(x)), " can not be converted to an object of class gns"))
+
+as.gnpp.lpp <- function(x, ...){
+  if (!inherits(x, "lpp")){
+    x <- spatstat::as.lpp(x)
+    if (!inherits(x, "lpp")){
+      stop("Object must be of class 'lpp' or must be converable to an object of class 'lpp'")
+    }
   }
-  if (inherits(x, c("linnet", "lpp"))) x <- as.gn(x)
-  if (is.null(delta)) delta <- min(x$d/2)
-  if (is.null(h)) h <- delta/2
-  if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
-  # line specific knot distances
-  delta <- x$d*(delta > x$d) + delta*(delta <= x$d)
-  delta <- pmin(x$d/floor(x$d/delta)*(x$d/delta - floor(x$d/delta) < 0.5) +
-                  x$d/ceiling(x$d/delta)*(x$d/delta - floor(x$d/delta) >= 0.5), x$d/2)
-  # ensure that h <= delta
-  h <- min(h, min(delta))
-  # line specific bin widths
-  h <- x$d/floor(x$d/h)*(x$d/h - floor(x$d/h) < 0.5) +
-    x$d/ceiling(x$d/h)*(x$d/h - floor(x$d/h) >= 0.5)
-  # initializing...
-  tau <- b <- z <- vector("list", x$M)
-  N <- J <- rep(0, x$M)
-
-  # do for every line segment
-  for (m in 1:x$M) {
-
-    # knot sequences tau
-    tau[[m]] <- seq(0, x$d[m], delta[m])
-
-    # bin boundaries b
-    b[[m]] <- seq(0, x$d[m], h[m])
-
-    # characterization of bins by midpoints z
-    z[[m]] <- (b[[m]][1:(length(b[[m]])-1)] + b[[m]][2:length(b[[m]])])/2
-
-    # total count of bins in the geometric network
-    N[m] <- length(z[[m]])
-
-    # count of linear B-splines on line segment
-    J[m] <- length(tau[[m]]) - 2
-  }
-  x$splines <- list(delta = delta,
-                    tau = tau,
-                    J = J)
-  x$bins <- list(h = h,
-                 b = b,
-                 z = z,
-                 N = N)
-  x$B <- getB(x)
-  x$K <- getK(x, r)
-  class(x) <- c(class(x), "gns")
-  x
+  G <- as.gn(spatstat::as.linnet(x))
+  X <- x
+  dat <- dplyr::tibble(id = X$data$seg,
+                       tp = X$data$tp,
+                       x = X$data$x,
+                       y = X$data$y)
+  G$data <- dplyr::left_join(dat, G$lins, by = "id") %>%
+    dplyr::select(id, e, tp, x, y) %>%
+    dplyr::arrange(e, id, tp)
+  class(G) <- "gnpp"
+  G
 }
+

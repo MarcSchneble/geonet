@@ -23,19 +23,19 @@ plot.gn <- function(x, ..., x.title = "x", y.title = "y", title = NULL){
   invisible(g)
 }
 
-#' Plot Method for Data on Geometric Networks
+#' Plot Method for Points Patterns on Geometric Networks
 #'
-#' This is the \code{plot} method for an object of class \code{gns}.
+#' This is the \code{plot} method for an object of class \code{gnpp}.
 #'
 #' Details
 #'
-#' @param x A geometric network with data (an object of class \code{gns}).
+#' @param x A geometric network with data (an object of class \code{gnpp}).
 #' @param ... further arguments passed to plot
 #' @param title plot title
 #' @return an object of class ggplot
 #' @export
 
-plot.gnd <- function(x, ..., title_x = "x", title_y = "y", title = ""){
+plot.gnpp <- function(x, ..., title_x = "x", title_y = "y", title = ""){
   v1_x <- v1_y <- v2_x <- v2_y <- NULL
   y <- NULL
   g <- ggplot2::ggplot(x$lins) +

@@ -2,18 +2,14 @@
 % Please edit documentation in R/as.R
 \name{as.gn}
 \alias{as.gn}
-\title{Methods for Linear Networks}
+\title{Generic function}
 \usage{
-as.gn(L)
+as.gn(x, ...)
 }
 \arguments{
-\item{object}{an object of the spatstat class linnet or an object that can
-be converted to an instance of this class}
-}
-\value{
-an object of class gn
+\item{x}{An object that should be converted to a geometric network
+(object of class gn)}
 }
 \description{
-The function as.gn converts an object of class linnet to an object of
-class gn
+Gasdda
 }
