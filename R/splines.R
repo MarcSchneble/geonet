@@ -1,6 +1,6 @@
 #' Methods for Geometric Networks
 #'
-#' The function as.gnds converts an object of class gnd to an object of
+#' The function as.gnds converts an object of class gnpp to an object of
 #' class gnds
 #'
 #' @param x an object of class gnd or an object of class linnet (or an object that can
@@ -11,7 +11,7 @@
 #' @return an object of class gnds
 #' @export
 addSpline <- function(x, delta = NULL, h = NULL, r = 1){
-  if (!inherits(x, c("gn", "gnd", "linnet", "lpp"))){
+  if (!inherits(x, c("gn", "gnpp", "linnet", "lpp"))){
     stop(paste("Object ", deparse(quote(x)), " can not be converted to an object of class gns"))
   }
   if (inherits(x, c("linnet", "lpp"))) x <- as.gn(x)
@@ -58,7 +58,7 @@ addSpline <- function(x, delta = NULL, h = NULL, r = 1){
                  N = N)
   x$B <- getB(x)
   x$K <- getK(x, r)
-  class(x) <- c(class(x), "gns")
+  class(x) <- c(class(x), "gnpp")
   x
 }
 

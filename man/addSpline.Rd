@@ -20,6 +20,6 @@ be converted to an instance of class linnet)}
 an object of class gnds
 }
 \description{
-The function as.gnds converts an object of class gnd to an object of
+The function as.gnds converts an object of class gnpp to an object of
 class gnds
 }

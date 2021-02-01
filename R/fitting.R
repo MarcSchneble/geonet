@@ -9,9 +9,9 @@ getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l
   dat <- binData(Gpp, smooths = smooths, lins = lins)
 
   # baseline intensity of the network
-  Z <- B[[1]][data$id, ]
-  ind.smooths[[1]] <- 1:ncol(Z)
-  names.theta <- paste0("L.", 1:ncol(Z))
+  Z <- B[[1]][dat$id, ]
+  ind_smooths[[1]] <- 1:ncol(Z)
+  names_theta <- paste0("G.", 1:ncol(Z))
 
   # add network covariates if needed
   if (is.element("dist2V", c(smooths, lins))){
@@ -63,7 +63,7 @@ getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l
   }
 
   # linear effects
-  ind.lins <- NULL
+  ind_lins <- NULL
   if (length(lins) > 0){
     ff <- as.formula(paste("~", paste(lins, collapse = " + ")))
     model.matrix.lin <- model.matrix(ff, data = data)
@@ -74,12 +74,12 @@ getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l
 
   # offset
   if (!is.null(offset)){
-    data$offset <- get.offset(offset, L)[data$id]
+    dat$offset <- get.offset(offset, L)[data$id]
   } else {
-    data$offset <- 1
+    dat$offset <- 1
   }
 
-  return(list(data = data, Z = Z, B = B, K = K, ind.smooths = ind.smooths, ind.lins = ind.lins, names.theta = names.theta))
+  list(data = dat, Z = Z, B = B, K = K, ind_smooths = ind_smooths, ind_lins = ind_lins, names_theta = names_theta)
 }
 
 binData <- function(Gpp, smooths = NULL, lins = NULL){
@@ -105,20 +105,20 @@ binData <- function(Gpp, smooths = NULL, lins = NULL){
   N <- sum(Gpp$bins$N)*nrow(covariates.comb)
 
   # initializing
-  data <- stats::setNames(data.frame(matrix(nrow = N, ncol = length(name) + 3)), c("id", "count", "h", name)) %>% dplyr::as_tibble() %>%
+  dat <- stats::setNames(data.frame(matrix(nrow = N, ncol = length(name) + 3)), c("id", "count", "h", name)) %>% dplyr::as_tibble() %>%
     dplyr::mutate(id = as.integer(id), count = as.double(count), h = as.double(h))
 
   # set factor variable if applicable
   if (length(name) > 0){
     for (a in 1:length(name)) {
       if (is.factor(covariates.comb %>% pull(sym(name[a])))){
-        data <- mutate(data, !!name[a] := factor(NA, levels = levels(covariates.comb %>% pull(sym(name[a])))))
+        dat <- mutate(dat, !!name[a] := factor(NA, levels = levels(covariates.comb %>% pull(sym(name[a])))))
       }
       if (is.double(covariates.comb %>% pull(sym(name[a])))){
-        data <- mutate(data, !!name[a] := as.double(NA))
+        dat <- mutate(dat, !!name[a] := as.double(NA))
       }
       if (is.integer(covariates.comb %>% pull(sym(name[a])))){
-        data <- mutate(data, !!name[a] := as.integer(NA))
+        dat <- mutate(dat, !!name[a] := as.integer(NA))
       }
     }
   }
@@ -129,36 +129,104 @@ binData <- function(Gpp, smooths = NULL, lins = NULL){
     data.sub <- Gpp$data[ind.cov, ]
     for (m in 1:Gpp$M) {
       # positions of data on line m
-      ind.m <- which(data.sub$seg == m)
-      y.m <- sort(as.numeric(data.sub[ind.m, ]$tp))*L$d[m]
+      ind.m <- which(data.sub$e == m)
+      y.m <- sort(as.numeric(data.sub[ind.m, ]$tp))*Gpp$d[m]
 
       # bin data
-      y.b <- rep(0, length(L$z[[m]]))
-      for (k in 1:length(L$z[[m]])) {
-        y.b[k] <- length(which(y.m < L$b[[m]][k+1] & y.m > L$b[[m]][k]))
+      y.b <- rep(0, length(Gpp$bins$z[[m]]))
+      for (k in 1:length(Gpp$bins$z[[m]])) {
+        y.b[k] <- length(which(y.m < Gpp$bins$b[[m]][k+1] & y.m > Gpp$bins$b[[m]][k]))
       }
 
       # stack into one vector
-      data$y[ind:(ind + length(y.b) - 1)] <- y.b
-      data$h[ind:(ind + length(y.b) - 1)] <- L$h[m]
+      dat$count[ind:(ind + length(y.b) - 1)] <- y.b
+      dat$h[ind:(ind + length(y.b) - 1)] <- Gpp$bins$h[m]
       ind <- ind + length(y.b)
     }
     # add bin id for every row
-    data$id[((j-1)*sum(L$N.m) + 1):(j*sum(L$N.m))] <- 1:sum(L$N.m)
+    dat$id[((j-1)*sum(Gpp$bins$N) + 1):(j*sum(Gpp$bins$N))] <- 1:sum(Gpp$bins$N)
 
     # add covariates
-    if (ncol(data) > 3){
-      data[((j-1)*sum(L$N.m) + 1):(j*sum(L$N.m)), 4:ncol(data)] <- covariates.comb[j, ]
+    if (ncol(dat) > 3){
+      dat[((j-1)*sum(Gpp$bins$N) + 1):(j*sum(Gpp$bins$N)), 4:ncol(dat)] <- covariates.comb[j, ]
     }
   }
-  return(data)
+  dat
 }
 
-fitData <- function(Gd){
-  design <- getDesign()
+# fit.lpp = function(L.lpp, smooths = NULL, lins = NULL, offset = NULL,
+#                    rho = 10, rho.max = 1e5, eps.rho = 0.01, maxit.rho = 100){
+fitData <- function(G, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
+                    rho_max = 1e5, eps_rho = 0.01, maxit_rho = 100){
+  design <- getDesign(G)
+
+  # determine optimal smoothing parameter rho with Fellner-Schall method
+  rho <- rep(rho, length(design$K))
+  Delta_rho <- Inf
+  it_rho <- 0
+  theta <- rep(0, ncol(design$Z))
+  while(Delta_rho > eps_rho){
+    it_rho <- it_rho + 1
+    fit <- optim(theta, fn = logL, gr = score, design = design, rho = rho,
+                 control = list(fnscale = -1, maxit = 1000, factr = 1e4),
+                 method = "L-BFGS-B")
+    theta <- fit$par
+    V <- solve(fisher(theta, design, rho))
+
+    # update rho
+    rho_new <- rep(NA, length(design$K))
+    for (a in 1:length(design$K)) {
+      rho_new[a] <- as.vector(rho[a]*(Matrix::rankMatrix(design$K[[a]], method = "qr.R")[1]/rho[a] -
+                                        sum(Matrix::diag(V[design$ind_smooths[[a]], design$ind_smooths[[a]]]%*%design$K[[a]])))/
+                                (Matrix::t(theta[design$ind_smooths[[a]]])%*%design$K[[a]]%*%theta[design$ind_smooths[[a]]]))
+    }
+
+    if (any(rho_new > rho_max)) break
+    if (any(rho_new < 0)){
+      warning("rho = 0 has occurred")
+    }
+    if (it_rho > maxit_rho){
+      warning("Stopped estimation of rho because maximum number of iterations has been reached!")
+      break
+    }
+    print(rho_new)
+    Delta_rho <- sqrt(sum((rho_new - rho)^2))/sqrt(sum((rho)^2))
+    rho <- rho_new
+  }
+
+  # effects in one table
+  effects <- list(linear = NULL, smooth = NULL)
+
+  #linear effects
+  if (length(lins) > 0) {
+    effects$linear <- tibble(name = tail(design$names.theta, length(design$ind.lins)), estimate = NA, se = NA)
+    for (i in 1:length(design$ind.lins)) {
+      effects$linear$estimate[i] <- round(theta[design$ind.lins[i]], 3)
+      effects$linear$se[i] <- round(sqrt(V[design$ind.lins[i], design$ind.lins[i]]), 3)
+      effects$linear$rr[i] <- round(exp(effects$linear$estimate[i]), 2)
+      effects$linear$rr.lower[i] <- round(exp(effects$linear$estimate[i] - 1.96*effects$linear$se[i]), 2)
+      effects$linear$rr.upper[i] <- round(exp(effects$linear$estimate[i] + 1.96*effects$linear$se[i]), 2)
+    }
+  }
+
+  # smooth effects
+  effects$smooth <- vector("list", length(smooths))
+  names(effects$smooth) <- smooths
+  if (length(smooths) > 0){
+    for (i in 1:length(smooths)) {
+      ind <- match(unique(design$data[[smooths[i]]]), design$data[[smooths[i]]])
+      confidence.band <- get.confidence.band(theta, V, design, i, ind, smooths)
+      effects$smooth[[i]] <- tibble(x = design$data[[smooths[i]]][ind],
+                                    y = as.vector(design$Z[, design$ind.smooths[[i + 1]]]%*%theta[design$ind.smooths[[i + 1]]])[ind],
+                                    lwr = confidence.band$lower,
+                                    upr = confidence.band$upper)
+    }
+  }
+
+  list(theta = theta, V = V, ind_smooths = design$ind_smooths, names_theta = design$names_theta, effects = effects)
 }
 
-intensity <- function(X, density = FALSE){
-
-  fit <- fitData()
+intensity <- function(G, density = FALSE){
+  fit <- fitData(G)
+  fit
 }

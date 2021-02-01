@@ -20,10 +20,10 @@ runifgn <- function(n, G){
   yy <- G$lins$v1_y[ii] + tt*dy[ii]
   dat <- dplyr::tibble(id = ii, tp = tt)
   dat <- dplyr::left_join(dat, G$lins, by = "id") %>%
-    dplyr::mutate(x = xx, y = yy) %>%
+    dplyr::mutate(x = xx, y = yy, tp = frac1 + tp*frac2) %>%
     dplyr::select(id, e, tp, x, y) %>%
-    dplyr::arrange(e, tp, id)
+    dplyr::arrange(e, tp)
   G$data <- dat
-  class(G) <- "gnd"
+  class(G) <- "gnpp"
   G
 }

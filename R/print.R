@@ -31,7 +31,7 @@ print.gns <- function(x, ...){
 #' @param x an object of class gns
 #' @param ... further arguments passed to print
 #' @export
-print.gnd <- function(x, ...){
+print.gnpp <- function(x, ...){
   stopifnot(inherits(x, "gnd"))
   cat(paste("Geometric network in", x$q, "dimensions"))
   invisible(NULL)

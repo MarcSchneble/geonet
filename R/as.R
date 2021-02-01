@@ -50,7 +50,9 @@ as.gn.linnet <- function(x){
                          v1_y = L$lines$ends$y0,
                          v2_x = L$lines$ends$x1,
                          v2_y = L$lines$ends$y1,
-                         length = diag(L$dpath[L$from, L$to])),
+                         length = diag(L$dpath[L$from, L$to]),
+                         frac1 = 0,
+                         frac2 = 1),
     adjacency = NULL, incidence = NULL,
     d = NULL, q = 2, W = NULL, M = NULL
   )
@@ -108,6 +110,11 @@ as.gn.linnet <- function(x){
     # remove vertices from the current vector of vertices with degree 2
     ind <- setdiff(ind, P[[i]]$to[1:(nrow(P[[i]])-1)])
     G$lins$e[P[[i]]$m] <- i
+
+    # get fraction of line segments with respect to the whole curce at the end and at the beginning
+    cs <- cumsum(P[[i]]$length)
+    G$lins$frac1[which(G$lins$e == i)] <- c(0, cs[-length(cs)]/cs[length(cs)])
+    G$lins$frac2[which(G$lins$e == i)] <- cs/cs[length(cs)]
   }
   ind <- which(deg_v == 2)
   G$W <- L$vertices$n - length(ind)

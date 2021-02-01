@@ -30,8 +30,11 @@ x$d <- x$lins %>%
   dplyr::summarize(length = sum(length), .groups = "drop") %>%
   dplyr::pull(length)
 for (m in 1:x$M) {
-  sub <- filter(x$lins, e == m)
-  x$adjacency[sub$v1[1], sub$v2[nrow(sub)]] <- 1
+  dat <- dplyr::filter(x$lins, e == m)
+  x$adjacency[dat$v1[1], dat$v2[nrow(dat)]] <- 1
+  cs <- cumsum(dplyr::filter(x$lins, e == m) %>% dplyr::pull(length))
+  x$lins$frac1[which(x$lins$e == m)] <- c(0, cs[-length(cs)]/cs[length(cs)])
+  x$lins$frac2[which(x$lins$e == m)] <- cs/cs[length(cs)]
 }
 x$incidence <- network::as.matrix.network(network::as.network(x$adjacency), matrix.type = "incidence")
 
