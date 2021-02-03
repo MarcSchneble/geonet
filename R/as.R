@@ -42,17 +42,7 @@ as.gn.linnet <- function(x){
                              v = NA,
                              x = L$vertices$x,
                              y = L$vertices$y),
-    lins = dplyr::tibble(id = 1:L$lines$n,
-                         e = NA,
-                         v1 = L$from,
-                         v2 = L$to,
-                         v1_x = L$lines$ends$x0,
-                         v1_y = L$lines$ends$y0,
-                         v2_x = L$lines$ends$x1,
-                         v2_y = L$lines$ends$y1,
-                         length = diag(L$dpath[L$from, L$to]),
-                         frac1 = 0,
-                         frac2 = 1),
+    lins = NULL,
     adjacency = NULL, incidence = NULL,
     d = NULL, q = 2, W = NULL, M = NULL
   )
@@ -73,16 +63,16 @@ as.gn.linnet <- function(x){
 
     # find the two adjacent vertices to vertex with degree 2
     adj <- which(A[ind[1], ] == 1)
-    P[[i]] <- dplyr::tibble(from = c(adj[1], ind[1]),
-                            to = c(ind[1], adj[2]),
-                            m = NA,
+    P[[i]] <- dplyr::tibble(v1 = c(adj[1], ind[1]),
+                            v2 = c(ind[1], adj[2]),
+                            id = NA,
                             length = NA)
 
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
     while(sum(A[adj[1], ]) == 2){
       adj.new <- which(A[adj[1], ] == 1)
-      l <- adj.new[which(!is.element(adj.new, P[[i]]$from))]
+      l <- adj.new[which(!is.element(adj.new, P[[i]]$v1))]
       P[[i]] <- rbind(c(l, adj[1], NA, NA), P[[i]])
       adj[1] <- l
     }
@@ -91,38 +81,61 @@ as.gn.linnet <- function(x){
     # vertices with degree 2
     while(sum(A[adj[2], ]) == 2){
       adj.new <- which(A[adj[2], ] == 1)
-      r <- adj.new[which(!is.element(adj.new, P[[i]]$to))]
+      r <- adj.new[which(!is.element(adj.new, P[[i]]$v2))]
       P[[i]] <- rbind(P[[i]], c(adj[2], r, NA, NA))
       adj[2] <- r
     }
 
     # save the line indices and their corresponding lengths which are removed from the network
     for (k in 1:nrow(P[[i]])) {
-      P[[i]]$m[k] <- which(L$from == P[[i]]$from[k] & L$to == P[[i]]$to[k] | L$from == P[[i]]$to[k] & L$to == P[[i]]$from[k])
-      P[[i]]$length[k] <- L$d[P[[i]]$m[k]]
+      P[[i]]$id[k] <- which(L$from == P[[i]]$v1[k] & L$to == P[[i]]$v2[k] | L$from == P[[i]]$v2[k] & L$to == P[[i]]$v1[k])
+      P[[i]]$length[k] <- L$d[P[[i]]$id[k]]
     }
 
-    A[P[[i]]$from[1], P[[i]]$to[nrow(P[[i]])]] <-
-      A[P[[i]]$to[nrow(P[[i]])], P[[i]]$from[1]] <- 1
+    A[P[[i]]$v1[1], P[[i]]$v2[nrow(P[[i]])]] <-
+      A[P[[i]]$v2[nrow(P[[i]])], P[[i]]$v1[1]] <- 1
     # add line segments to the delete vector
-    ind2 <- unique(c(ind2, P[[i]]$m))
+    ind2 <- unique(c(ind2, P[[i]]$id))
 
     # remove vertices from the current vector of vertices with degree 2
-    ind <- setdiff(ind, P[[i]]$to[1:(nrow(P[[i]])-1)])
-    G$lins$e[P[[i]]$m] <- i
+    ind <- setdiff(ind, P[[i]]$v2[1:(nrow(P[[i]])-1)])
+
+    #
+    P[[i]]$e <- i
+    cs <- cumsum(P[[i]]$length)
+    P[[i]]$frac1 <- c(0, cs[-length(cs)]/cs[length(cs)])
+    P[[i]]$frac2 <- P[[i]]$length/sum(P[[i]]$length)
+
+    #G$lins$e[P[[i]]$m] <- i
 
     # get fraction of line segments with respect to the whole curce at the end and at the beginning
-    cs <- cumsum(P[[i]]$length)
-    G$lins$frac1[which(G$lins$e == i)] <- c(0, cs[-length(cs)]/cs[length(cs)])
-    G$lins$frac2[which(G$lins$e == i)] <- cs/cs[length(cs)]
+
+    #G$lins$frac1[which(G$lins$e == i)] <- c(0, cs[-length(cs)]/cs[length(cs)])
+    #G$lins$frac2[which(G$lins$e == i)] <- P[[i]]$length/sum(P[[i]]$length)
   }
-  ind <- which(deg_v == 2)
-  G$W <- L$vertices$n - length(ind)
+  ind_v <- which(deg_v == 2)
+  G$W <- L$vertices$n - length(ind_v)
   G$M <-  L$lines$n - length(ind2) + length(P)
 
-  G$vertices$v[setdiff(1:nrow(G$vertices), ind)] <- 1:G$W
-  G$lins$e[which(is.na(G$lins$e))] <- (length(P) + 1):G$M
-  G$lins <- G$lins %>% dplyr::arrange(e, id)
+  lins1 <- bind_rows(P) %>% mutate(v1_x = L$vertices$x[v1],
+                                   v1_y = L$vertices$y[v1],
+                                   v2_x = L$vertices$x[v2],
+                                   v2_y = L$vertices$y[v2])
+  ind3 <- setdiff(1:L$lines$n, ind2)
+  lins2 <- tibble(id = ind3,
+                  e = (length(P) + 1):G$M,
+                  v1 = L$from[ind3],
+                  v2 = L$to[ind3],
+                  v1_x = L$vertices$x[v1],
+                  v1_y = L$vertices$y[v1],
+                  v2_x = L$vertices$x[v2],
+                  v2_y = L$vertices$y[v2],
+                  length = diag(L$dpath[L$from, L$to])[ind3],
+                  frac1 = 0, frac2 = 1)
+  G$lins <- bind_rows(lins2, lins1) %>% arrange(id, e)
+
+  G$vertices$v[setdiff(1:nrow(G$vertices), ind_v)] <- 1:G$W
+
 
   G$d <- G$lins %>%
     dplyr::group_by(e) %>%
@@ -130,11 +143,13 @@ as.gn.linnet <- function(x){
     dplyr::pull(length)
 
   # delete rows and cols in A
-  A <- A[-ind, ]
-  A <- A[, -ind]
+  A <- A[-ind_v, ]
+  A <- A[, -ind_v]
+  #G$adjacency <- A
+  G$incidence <- getIncidence(G)
   G$adjacency <- upper.tri(A)*A
-  net <- network::as.network(G$adjacency)
-  G$incidence <- network::as.matrix.network(net, matrix.type = "incidence")
+  #net <- network::as.network(G$adjacency)
+  #G$incidence <- network::as.matrix.network(net, matrix.type = "incidence")
 
   class(G) <- "gn"
   G
@@ -163,9 +178,11 @@ as.gnpp.lpp <- function(x, ...){
                        tp = X$data$tp,
                        x = X$data$x,
                        y = X$data$y)
-  G$data <- dplyr::left_join(dat, G$lins, by = "id") %>%
+  dat <- dplyr::left_join(dat, G$lins, by = "id") %>%
+    dplyr::mutate(tp = frac1 + tp*frac2) %>%
     dplyr::select(id, e, tp, x, y) %>%
-    dplyr::arrange(e, id, tp)
+    dplyr::arrange(e, tp)
+  G$data <- dat
   class(G) <- "gnpp"
   G
 }

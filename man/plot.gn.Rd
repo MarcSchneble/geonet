@@ -4,7 +4,7 @@
 \alias{plot.gn}
 \title{Plot Method for Geometric Networks}
 \usage{
-\method{plot}{gn}(x, ..., x.title = "x", y.title = "y", title = NULL)
+\method{plot}{gn}(x, ..., x.title = "x", y.title = "y", title = NULL, size = 1)
 }
 \arguments{
 \item{x}{an object of class \code{gn}}

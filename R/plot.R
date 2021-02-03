@@ -11,10 +11,11 @@
 #' @param title plot title
 #' @return an object of class ggplot
 #' @export
-plot.gn <- function(x, ..., x.title = "x", y.title = "y", title = NULL){
+plot.gn <- function(x, ..., x.title = "x", y.title = "y", title = NULL, size = 1){
   v1_x <- v1_y <- v2_x <- v2_y <- NULL
   g <- ggplot2::ggplot(x$lins) +
-    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y)) +
+    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y), size = size,
+                          lineend = "round", linejoin = "bevel") +
     ggplot2::labs(x = x.title, y = y.title, title = title) +
     ggplot2::theme_bw() +
     ggplot2::theme(panel.grid = ggplot2::element_blank(),
@@ -35,11 +36,12 @@ plot.gn <- function(x, ..., x.title = "x", y.title = "y", title = NULL){
 #' @return an object of class ggplot
 #' @export
 
-plot.gnpp <- function(x, ..., title_x = "x", title_y = "y", title = ""){
+plot.gnpp <- function(x, ..., title_x = "x", title_y = "y", title = "", size = 1){
   v1_x <- v1_y <- v2_x <- v2_y <- NULL
   y <- NULL
   g <- ggplot2::ggplot(x$lins) +
-    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y)) +
+    ggplot2::geom_segment(ggplot2::aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y),
+                          size = size, lineend = "round", linejoin = "mitre") +
     ggplot2::labs(x = title_x, y = title_y, title = title) +
     ggplot2::theme_bw() +
     ggplot2::theme(panel.grid = ggplot2::element_blank(),
@@ -47,4 +49,59 @@ plot.gnpp <- function(x, ..., title_x = "x", title_y = "y", title = ""){
     ggplot2::geom_point(data = x$data, ggplot2::aes(x = x, y = y))
   print(g)
   invisible(g)
+}
+
+#' Plot Method for Points Patterns on Geometric Networks
+#'
+#' This is the \code{plot} method for an object of class \code{gnpp}.
+#'
+#' Details
+#'
+#' @param x A geometric network with data (an object of class \code{gnppfit}).
+#' @param ... further arguments passed to plot
+#' @param title plot title
+#' @return an object of class ggplot
+#' @export
+
+plot.gnppfit <- function(x, ..., title_x = "x", title_y = "y", title = "", size = 1, sol = 100) {
+
+  stopifnot(inherits(x, "gnppfit"))
+
+  df <- dplyr::tibble(id = integer(0), e = integer(0),
+                      x = numeric(0), xend = numeric(0),
+                      y = numeric(0), yend = numeric(0),
+                      z = numeric(0))
+
+  for (m in 1:x$M) {
+    dat <- dplyr::filter(x$lins, e == m)
+    cs <- c(0, cumsum(dat$length))
+    dx <- dat$v2_x - dat$v1_x
+    dy <- dat$v2_y - dat$v1_y
+    for (i in 1:length(dat$id)) {
+      tt <- seq(0, 1, 1/sol)
+      xx <- dat$v1_x[i] + tt*dx[i]
+      yy <- dat$v1_y[i] + tt*dy[i]
+      zz <- cs[i] + (tt - 1/(2*sol))[-1]*dat$length[i]
+      df <- dplyr::bind_rows(df, dplyr::tibble(id = dat$id[i], e = m,
+                                               x = head(xx, -1), xend = xx[-1],
+                                               y = head(yy, -1), yend = yy[-1],
+                                               z = zz))
+    }
+  }
+
+  # get intensity
+  B <- getBplot(x, df)
+  df$intensity <- as.vector(exp(B%*%x$fit$theta))
+  #
+
+  g <- ggplot2::ggplot(df) +
+    ggplot2::geom_segment(ggplot2::aes(x = x, xend = xend, y = y, yend = yend, color = intensity),
+                          size = size, lineend = "round", linejoin = "mitre") +
+    ggplot2::labs(color = "Intensity", x = title_x, y = title_y, title = title) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                 plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::scale_color_gradient(low = "greenyellow", high = "forestgreen")
+  print(g)
+  invisible(df)
 }

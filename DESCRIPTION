@@ -15,11 +15,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     spatstat (>= 1.64-1),
-    dplyr (>= 1.0.2),
-    ggplot2 (>= 3.3.2),
     Matrix,
     splines,
-    igraph,
-    network
+    igraph
 Depends: 
-    R (>= 2.10)
+    R (>= 4.0.3),
+    dplyr (>= 1.0.2),
+    ggplot2 (>= 3.3.2)

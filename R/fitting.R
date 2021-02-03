@@ -1,6 +1,6 @@
-getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l = 2){
+getDesign <- function(Gpp, delta, h, r, smooths = NULL, lins = NULL, offset = NULL, m = 10, l = 2){
 
-  Gpp <- addSpline(Gpp, delta = NULL, h = NULL, r = 1)
+  Gpp <- addSpline(Gpp, delta, h, r)
 
   K <- B <- ind_smooths <- vector("list", length(smooths) + 1)
   K[[1]] <- Gpp$K
@@ -79,7 +79,7 @@ getDesign <- function(Gpp, smooths = NULL, lins = NULL, offset = NULL, m = 10, l
     dat$offset <- 1
   }
 
-  list(data = dat, Z = Z, B = B, K = K, ind_smooths = ind_smooths, ind_lins = ind_lins, names_theta = names_theta)
+  list(data = dat, Z = Z, B = B, K = K, ind_smooths = ind_smooths, ind_lins = ind_lins, names_theta = names_theta, splines = Gpp$splines)
 }
 
 binData <- function(Gpp, smooths = NULL, lins = NULL){
@@ -154,11 +154,9 @@ binData <- function(Gpp, smooths = NULL, lins = NULL){
   dat
 }
 
-# fit.lpp = function(L.lpp, smooths = NULL, lins = NULL, offset = NULL,
-#                    rho = 10, rho.max = 1e5, eps.rho = 0.01, maxit.rho = 100){
-fitData <- function(G, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
+fitData <- function(G, delta, h, r, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
                     rho_max = 1e5, eps_rho = 0.01, maxit_rho = 100){
-  design <- getDesign(G)
+  design <- getDesign(G, delta, h, r)
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
   rho <- rep(rho, length(design$K))
@@ -166,6 +164,7 @@ fitData <- function(G, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
   it_rho <- 0
   theta <- rep(0, ncol(design$Z))
   while(Delta_rho > eps_rho){
+    print(rho)
     it_rho <- it_rho + 1
     fit <- optim(theta, fn = logL, gr = score, design = design, rho = rho,
                  control = list(fnscale = -1, maxit = 1000, factr = 1e4),
@@ -189,7 +188,6 @@ fitData <- function(G, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
       warning("Stopped estimation of rho because maximum number of iterations has been reached!")
       break
     }
-    print(rho_new)
     Delta_rho <- sqrt(sum((rho_new - rho)^2))/sqrt(sum((rho)^2))
     rho <- rho_new
   }
@@ -222,11 +220,13 @@ fitData <- function(G, smooths = NULL, lins = NULL, offset = NULL, rho = 10,
                                     upr = confidence.band$upper)
     }
   }
-
-  list(theta = theta, V = V, ind_smooths = design$ind_smooths, names_theta = design$names_theta, effects = effects)
+  G$fit <- list(theta = theta, V = V, ind_smooths = design$ind_smooths, names_theta = design$names_theta, effects = effects)
+  G$splines <- design$splines
+  class(G) <- "gnppfit"
+  G
 }
 
-intensity <- function(G, density = FALSE){
-  fit <- fitData(G)
+intensity <- function(G, delta = NULL, h = NULL, r = 1, density = FALSE){
+  fit <- fitData(G, delta, h, r)
   fit
 }

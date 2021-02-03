@@ -179,3 +179,44 @@ getK <- function(x, r){
     return(Matrix::t(D)%*%D)
   }
 }
+
+getBplot <- function(x, df){
+  # returns design matrix for new data
+
+  # design matrix for line segments
+  B <- matrix(0, nrow(df), sum(x$splines$J) + x$W)
+  N <- as.numeric(table(df$e))
+  z <- vector("list", x$M)
+
+  # line specific B-splines
+  for (m in 1:x$M) {
+    z[[m]] <- dplyr::filter(df, e == m) %>% dplyr::pull(z)
+    B[((cumsum(N) - N)[m] + 1):cumsum(N)[m],
+      ((cumsum(x$splines$J) - x$splines$J)[m] + 1):cumsum(x$splines$J)[m]] <-
+      splines::splineDesign(knots = x$splines$tau[[m]],
+                   x = z[[m]], ord = 2, outer.ok = TRUE)
+  }
+
+
+  # vertex specific B-splines
+  for (v in 1:x$W) {
+    # left line ends
+    for (m in which(x$incidence[v, ] == -1)) {
+      B[((cumsum(N) - N)[m] + 1):
+          ((cumsum(N) - N)[m] +
+             length(which(1 - (z[[m]])/x$splines$delta[m] > 0))), sum(x$splines$J) + v] <-
+        (1 - z[[m]]/x$splines$delta[m])[which(1 - z[[m]]/x$splines$delta[m] > 0)]
+    }
+    # right line ends
+    for (m in which(x$incidence[v, ] == 1)) {
+      B[(cumsum(N)[m] - length(which(1 - (x$d[m] - z[[m]])/x$splines$delta[m] > 0)) + 1):
+          cumsum(N)[m], sum(x$splines$J) + v] <-
+        (1 - (x$d[m] - z[[m]])/x$splines$delta[m])[which(1 - (x$d[m] - z[[m]])/x$splines$delta[m] > 0)]
+    }
+  }
+  # check if B is a valid design matrix
+  if (!all.equal(rowSums(B), rep(1, nrow(df)))){
+    stop("Error! Rowsums of B are not equal to one!")
+  }
+  B
+}
