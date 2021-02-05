@@ -1,6 +1,9 @@
-#' A very small Geometric Network
+#' Simple example of a Geometric Network
 #'
-#' A toy example
+#' A simple, artificially created, example of a geometric network.
 #'
-#' @format A data frame with 53940 rows and 10 variables:
+#' @usage data(small_gn)
+#' @format \code{small_gn} is an object of class "\code{gn}".
+#' @source Created by Marc Schneble \email{marc.schneble@lmu.de}.
+
 "small_gn"

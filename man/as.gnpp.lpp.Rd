@@ -7,11 +7,13 @@
 \method{as.gnpp}{lpp}(x, ...)
 }
 \arguments{
-\item{object}{an object of the spatstat class linnet or an object that can
+\item{x}{an object of the spatstat class linnet or an object that can
 be converted to an instance of this class}
+
+\item{...}{asdd}
 }
 \value{
-an object of class gn
+Point pattern on a geometric network (object of class \code{gnpp})
 }
 \description{
 The function as.gnpp.lpp converts an object of class linnet to an object of

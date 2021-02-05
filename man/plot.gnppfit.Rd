@@ -11,7 +11,15 @@
 
 \item{...}{further arguments passed to plot}
 
+\item{title_x}{asd}
+
+\item{title_y}{asd}
+
 \item{title}{plot title}
+
+\item{size}{asdas}
+
+\item{sol}{asd}
 }
 \value{
 an object of class ggplot

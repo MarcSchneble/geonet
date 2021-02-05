@@ -3,14 +3,17 @@
 \docType{data}
 \name{small_gn}
 \alias{small_gn}
-\title{A very small Geometric Network}
+\title{Simple example of a Geometric Network}
 \format{
-A data frame with 53940 rows and 10 variables:
+\code{small_gn} is an object of class "\code{gn}".
+}
+\source{
+Created by Marc Schneble \email{marc.schneble@lmu.de}.
 }
 \usage{
-small_gn
+data(small_gn)
 }
 \description{
-A toy example
+A simple, artificially created, example of a geometric network.
 }
 \keyword{datasets}

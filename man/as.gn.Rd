@@ -2,13 +2,15 @@
 % Please edit documentation in R/as.R
 \name{as.gn}
 \alias{as.gn}
-\title{Generic function}
+\title{Coerce to Geometric Network}
 \usage{
 as.gn(x, ...)
 }
 \arguments{
 \item{x}{An object that should be converted to a geometric network
 (object of class gn)}
+
+\item{...}{further}
 }
 \description{
 Gasdda

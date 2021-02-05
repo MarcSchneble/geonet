@@ -7,11 +7,11 @@
 \method{as.gn}{linnet}(x)
 }
 \arguments{
-\item{object}{an object of the spatstat class linnet or an object that can
+\item{x}{an object of the spatstat class linnet or an object that can
 be converted to an instance of this class}
 }
 \value{
-an object of class gn
+A geometric network (object of class \code{gnpp})
 }
 \description{
 The function as.gn converts an object of class linnet to an object of

@@ -2,13 +2,15 @@
 % Please edit documentation in R/as.R
 \name{as.gnpp}
 \alias{as.gnpp}
-\title{Generic function}
+\title{Coerece to Point Pattern on Geometric Network}
 \usage{
 as.gnpp(x, ...)
 }
 \arguments{
 \item{x}{An object that should be converted to a point pattern on a
 geometric network (object of class gnpp).}
+
+\item{...}{further}
 }
 \description{
 Gasdda

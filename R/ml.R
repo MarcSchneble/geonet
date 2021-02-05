@@ -1,3 +1,17 @@
+#' Get the incidence matrix
+#'
+#' The function as.gnds converts an object of class gnpp to an object of
+#' class gnds
+#'
+#' @param theta an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param design an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param rho an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @return an object of class gnds
+#' @export
+
 logL <- function(theta, design, rho){
   mu <- exp(as.vector(design$Z%*%theta) + log(design$data$h) + log(design$data$offset))
   logL <- sum(design$data$count*log(mu) - mu)
@@ -5,8 +19,22 @@ logL <- function(theta, design, rho){
     logL <- logL - 0.5*rho[a]*
       as.vector(theta[design$ind_smooths[[a]]]%*%design$K[[a]]%*%theta[design$ind_smooths[[a]]])
   }
-  return(logL)
+  logL
 }
+
+#' Get the incidence matrix
+#'
+#' The function as.gnds converts an object of class gnpp to an object of
+#' class gnds
+#'
+#' @param theta an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param design an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param rho an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @return an object of class gnds
+#' @export
 
 score <- function(theta, design, rho){
   mu <- exp(as.vector(design$Z%*%theta) + log(design$data$h) + log(design$data$offset))
@@ -16,8 +44,22 @@ score <- function(theta, design, rho){
       score[design$ind_smooths[[a]]] - rho[a]*design$K[[a]]%*%theta[design$ind_smooths[[a]]]
   }
 
-  return(score)
+  score
 }
+
+#' Get the incidence matrix
+#'
+#' The function as.gnds converts an object of class gnpp to an object of
+#' class gnds
+#'
+#' @param theta an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param design an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @param rho an object of class gnd or an object of class linnet (or an object that can
+#' be converted to an instance of class linnet)
+#' @return an object of class gnds
+#' @export
 
 fisher <- function(theta, design, rho){
   mu <- exp(as.vector(design$Z%*%theta) + log(design$data$h) + log(design$data$offset))
@@ -28,5 +70,5 @@ fisher <- function(theta, design, rho){
     fisher[design$ind_smooths[[a]], design$ind_smooths[[a]]] <-
       fisher[design$ind_smooths[[a]], design$ind_smooths[[a]]] + rho[a]*design$K[[a]]
   }
-  return(fisher)
+  fisher
 }

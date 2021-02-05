@@ -1,20 +1,22 @@
-#' Generic function
+#' Coerce to Geometric Network
 #'
 #' Gasdda
 #'
 #' @param x An object that should be converted to a geometric network
 #' (object of class gn)
+#' @param ... further
 
 as.gn <- function(x, ...){
   UseMethod("as.gn")
 }
 
-#' Generic function
+#' Coerece to Point Pattern on Geometric Network
 #'
 #' Gasdda
 #'
 #' @param x An object that should be converted to a point pattern on a
 #' geometric network (object of class gnpp).
+#' @param ... further
 
 as.gnpp <- function(x, ...){
   UseMethod("as.gnpp")
@@ -25,20 +27,25 @@ as.gnpp <- function(x, ...){
 #' The function as.gn converts an object of class linnet to an object of
 #' class gn
 #'
-#' @param object an object of the spatstat class linnet or an object that can
+#' @param x an object of the spatstat class linnet or an object that can
 #' be converted to an instance of this class
-#' @return an object of class gn
+#' @return A geometric network (object of class \code{gnpp})
+#' @import dplyr
+#' @importFrom spatstat as.linnet
 #' @export
+#'
 as.gn.linnet <- function(x){
+  v1 <- v2 <- e <- NULL
   if (!inherits(x, "linnet")){
-    x <- spatstat::as.linnet(x)
+    x <- as.linnet(x)
     if (!inherits(x, "linnet")){
       stop("Object must be of class 'linnet' or must be converable to an object of class 'linnet'")
     }
   }
   L <- x
+  L$d <- diag(L$dpath[L$from, L$to])
   G <- list(
-    vertices = dplyr::tibble(id = 1:L$vertices$n,
+    vertices = tibble(id = 1:L$vertices$n,
                              v = NA,
                              x = L$vertices$x,
                              y = L$vertices$y),
@@ -63,7 +70,7 @@ as.gn.linnet <- function(x){
 
     # find the two adjacent vertices to vertex with degree 2
     adj <- which(A[ind[1], ] == 1)
-    P[[i]] <- dplyr::tibble(v1 = c(adj[1], ind[1]),
+    P[[i]] <- tibble(v1 = c(adj[1], ind[1]),
                             v2 = c(ind[1], adj[2]),
                             id = NA,
                             length = NA)
@@ -138,9 +145,9 @@ as.gn.linnet <- function(x){
 
 
   G$d <- G$lins %>%
-    dplyr::group_by(e) %>%
-    dplyr::summarize(length = sum(length), .groups = "drop") %>%
-    dplyr::pull(length)
+    group_by(e) %>%
+    summarize(length = sum(length), .groups = "drop") %>%
+    pull(length)
 
   # delete rows and cols in A
   A <- A[-ind_v, ]
@@ -160,28 +167,32 @@ as.gn.linnet <- function(x){
 #' The function as.gnpp.lpp converts an object of class linnet to an object of
 #' class gn
 #'
-#' @param object an object of the spatstat class linnet or an object that can
+#' @param x an object of the spatstat class linnet or an object that can
 #' be converted to an instance of this class
-#' @return an object of class gn
+#' @param ... asdd
+#' @return Point pattern on a geometric network (object of class \code{gnpp})
+#' @import dplyr
+#' @importFrom spatstat as.lpp as.linnet
 #' @export
 
 as.gnpp.lpp <- function(x, ...){
+  frac1 <- tp <- frac2 <- e <- y <-  NULL
   if (!inherits(x, "lpp")){
-    x <- spatstat::as.lpp(x)
+    x <- as.lpp(x)
     if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp' or must be converable to an object of class 'lpp'")
     }
   }
-  G <- as.gn(spatstat::as.linnet(x))
+  G <- as.gn(as.linnet(x))
   X <- x
-  dat <- dplyr::tibble(id = X$data$seg,
+  dat <- tibble(id = X$data$seg,
                        tp = X$data$tp,
                        x = X$data$x,
                        y = X$data$y)
-  dat <- dplyr::left_join(dat, G$lins, by = "id") %>%
-    dplyr::mutate(tp = frac1 + tp*frac2) %>%
-    dplyr::select(id, e, tp, x, y) %>%
-    dplyr::arrange(e, tp)
+  dat <- left_join(dat, G$lins, by = "id") %>%
+    mutate(tp = frac1 + tp*frac2) %>%
+    select(id, e, tp, x, y) %>%
+    arrange(e, tp)
   G$data <- dat
   class(G) <- "gnpp"
   G

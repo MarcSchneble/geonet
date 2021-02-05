@@ -16,6 +16,8 @@
 \item{y.title}{y-axis title}
 
 \item{title}{plot title}
+
+\item{size}{asd}
 }
 \value{
 an object of class ggplot
