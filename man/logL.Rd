@@ -2,24 +2,29 @@
 % Please edit documentation in R/ml.R
 \name{logL}
 \alias{logL}
-\title{Get the incidence matrix}
+\alias{score}
+\alias{fisher}
+\title{Maximum-Likelihood Estimation}
 \usage{
 logL(theta, design, rho)
+
+score(theta, design, rho)
+
+fisher(theta, design, rho)
 }
 \arguments{
-\item{theta}{an object of class gnd or an object of class linnet (or an object that can
-be converted to an instance of class linnet)}
+\item{theta}{A vector of model coefficients.}
 
-\item{design}{an object of class gnd or an object of class linnet (or an object that can
-be converted to an instance of class linnet)}
+\item{design}{The design of the model.}
 
-\item{rho}{an object of class gnd or an object of class linnet (or an object that can
-be converted to an instance of class linnet)}
+\item{rho}{A vector of smoothing parameters.}
 }
 \value{
-an object of class gnds
+A scalar (\code{logL}), a vector of the same length as
+theta (\code{score}) or a square matrix of the same dimension as
+theta (\code{fisher}).
 }
 \description{
-The function as.gnds converts an object of class gnpp to an object of
-class gnds
+\code{logL}, \code{score} and \code{fisher} compute the log-likelihood,
+the score-function and the Fisher-Information of the Poisson model.
 }

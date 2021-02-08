@@ -80,22 +80,23 @@ plot.gnppfit <- function(x, ..., title_x = "x", title_y = "y", title = "", size 
 
   stopifnot(inherits(x, "gnppfit"))
 
-  df <- tibble(id = integer(0), e = integer(0),
+  df <- tibble(seg = integer(0), e = integer(0),
                       x = numeric(0), xend = numeric(0),
                       y = numeric(0), yend = numeric(0),
                       z = numeric(0))
+  G <- as.gn(x)
 
-  for (m in 1:x$M) {
-    dat <- filter(x$lins, e == m)
+  for (m in 1:G$M) {
+    dat <- filter(G$lins, e == m)
     cs <- c(0, cumsum(dat$length))
     dx <- dat$v2_x - dat$v1_x
     dy <- dat$v2_y - dat$v1_y
-    for (i in 1:length(dat$id)) {
+    for (i in 1:length(dat$seg)) {
       tt <- seq(0, 1, 1/sol)
       xx <- dat$v1_x[i] + tt*dx[i]
       yy <- dat$v1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*dat$length[i]
-      df <- bind_rows(df, tibble(id = dat$id[i], e = m,
+      df <- bind_rows(df, tibble(seg = dat$seg[i], e = m,
                                                x = utils::head(xx, -1), xend = xx[-1],
                                                y = utils::head(yy, -1), yend = yy[-1],
                                                z = zz))
@@ -104,7 +105,8 @@ plot.gnppfit <- function(x, ..., title_x = "x", title_y = "y", title = "", size 
 
   # get intensity
   B <- getBplot(x, df)
-  df$intensity <- as.vector(exp(B%*%x$model$fit$theta))
+  ind <- grep("G.", x$names_theta)
+  df$intensity <- as.vector(exp(B[, ind]%*%x$theta[ind]))
   #
 
   g <- ggplot(df) +

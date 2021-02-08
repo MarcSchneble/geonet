@@ -1,16 +1,16 @@
-#' Get the incidence matrix
+#' Maximum-Likelihood Estimation
 #'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
+#' \code{logL}, \code{score} and \code{fisher} compute the log-likelihood,
+#' the score-function and the Fisher-Information of the Poisson model.
 #'
-#' @param theta an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param design an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param rho an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @param theta A vector of model coefficients.
+#' @param design The design of the model.
+#' @param rho A vector of smoothing parameters.
+#' @return A scalar (\code{logL}), a vector of the same length as
+#' theta (\code{score}) or a square matrix of the same dimension as
+#' theta (\code{fisher}).
 #' @export
+
 
 logL <- function(theta, design, rho){
   mu <- exp(as.vector(design$Z%*%theta) + log(design$data$h) + log(design$data$offset))
@@ -22,18 +22,7 @@ logL <- function(theta, design, rho){
   logL
 }
 
-#' Get the incidence matrix
-#'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
-#'
-#' @param theta an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param design an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param rho an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @rdname logL
 #' @export
 
 score <- function(theta, design, rho){
@@ -47,18 +36,7 @@ score <- function(theta, design, rho){
   score
 }
 
-#' Get the incidence matrix
-#'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
-#'
-#' @param theta an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param design an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param rho an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @rdname logL
 #' @export
 
 fisher <- function(theta, design, rho){

@@ -91,35 +91,38 @@ getBplot <- function(X, df){
   # returns design matrix for new data
   e <- NULL
 
+  P <- X$P
+  G <- X$network
+
   # design matrix for line segments
-  B <- matrix(0, nrow(df), sum(X$model$P$splines$J) + X$W)
+  B <- matrix(0, nrow(df), sum(P$splines$J) + G$W)
   N <- as.numeric(table(df$e))
-  z <- vector("list", X$M)
+  z <- vector("list", G$M)
 
   # line specific B-splines
-  for (m in 1:X$M) {
+  for (m in 1:G$M) {
     z[[m]] <- filter(df, e == m) %>% pull(z)
     B[((cumsum(N) - N)[m] + 1):cumsum(N)[m],
-      ((cumsum(X$model$P$splines$J) - X$model$P$splines$J)[m] + 1):cumsum(X$model$P$splines$J)[m]] <-
-      splineDesign(knots = X$model$P$splines$tau[[m]],
-                            x = z[[m]], ord = 2, outer.ok = TRUE)
+      ((cumsum(P$splines$J) - P$splines$J)[m] + 1):cumsum(P$splines$J)[m]] <-
+      splineDesign(knots = P$splines$tau[[m]],
+                   x = z[[m]], ord = 2, outer.ok = TRUE)
   }
 
 
   # vertex specific B-splines
-  for (v in 1:X$W) {
+  for (v in 1:G$W) {
     # left line ends
-    for (m in which(X$incidence[v, ] == -1)) {
+    for (m in which(G$incidence[v, ] == -1)) {
       B[((cumsum(N) - N)[m] + 1):
           ((cumsum(N) - N)[m] +
-             length(which(1 - (z[[m]])/X$model$P$splines$delta[m] > 0))), sum(X$model$P$splines$J) + v] <-
-        (1 - z[[m]]/X$model$P$splines$delta[m])[which(1 - z[[m]]/X$model$P$splines$delta[m] > 0)]
+             length(which(1 - (z[[m]])/P$splines$delta[m] > 0))), sum(P$splines$J) + v] <-
+        (1 - z[[m]]/P$splines$delta[m])[which(1 - z[[m]]/P$splines$delta[m] > 0)]
     }
     # right line ends
-    for (m in which(X$incidence[v, ] == 1)) {
-      B[(cumsum(N)[m] - length(which(1 - (X$d[m] - z[[m]])/X$model$P$splines$delta[m] > 0)) + 1):
-          cumsum(N)[m], sum(X$model$P$splines$J) + v] <-
-        (1 - (X$d[m] - z[[m]])/X$model$P$splines$delta[m])[which(1 - (X$d[m] - z[[m]])/X$model$P$splines$delta[m] > 0)]
+    for (m in which(G$incidence[v, ] == 1)) {
+      B[(cumsum(N)[m] - length(which(1 - (G$d[m] - z[[m]])/P$splines$delta[m] > 0)) + 1):
+          cumsum(N)[m], sum(P$splines$J) + v] <-
+        (1 - (G$d[m] - z[[m]])/P$splines$delta[m])[which(1 - (G$d[m] - z[[m]])/P$splines$delta[m] > 0)]
     }
   }
   # check if B is a valid design matrix

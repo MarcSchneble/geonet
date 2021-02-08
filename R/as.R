@@ -5,6 +5,7 @@
 #' @param x An object that should be converted to a geometric network
 #' (object of class gn)
 #' @param ... further
+#' @export
 
 as.gn <- function(x, ...){
   UseMethod("as.gn")
@@ -17,6 +18,7 @@ as.gn <- function(x, ...){
 #' @param x An object that should be converted to a point pattern on a
 #' geometric network (object of class gnpp).
 #' @param ... further
+#' @export
 
 as.gnpp <- function(x, ...){
   UseMethod("as.gnpp")
@@ -71,9 +73,9 @@ as.gn.linnet <- function(x){
     # find the two adjacent vertices to vertex with degree 2
     adj <- which(A[ind[1], ] == 1)
     P[[i]] <- tibble(v1 = c(adj[1], ind[1]),
-                            v2 = c(ind[1], adj[2]),
-                            id = NA,
-                            length = NA)
+                     v2 = c(ind[1], adj[2]),
+                     seg = NA,
+                     length = NA)
 
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
@@ -95,14 +97,14 @@ as.gn.linnet <- function(x){
 
     # save the line indices and their corresponding lengths which are removed from the network
     for (k in 1:nrow(P[[i]])) {
-      P[[i]]$id[k] <- which(L$from == P[[i]]$v1[k] & L$to == P[[i]]$v2[k] | L$from == P[[i]]$v2[k] & L$to == P[[i]]$v1[k])
-      P[[i]]$length[k] <- L$d[P[[i]]$id[k]]
+      P[[i]]$seg[k] <- which(L$from == P[[i]]$v1[k] & L$to == P[[i]]$v2[k] | L$from == P[[i]]$v2[k] & L$to == P[[i]]$v1[k])
+      P[[i]]$length[k] <- L$d[P[[i]]$seg[k]]
     }
 
     A[P[[i]]$v1[1], P[[i]]$v2[nrow(P[[i]])]] <-
       A[P[[i]]$v2[nrow(P[[i]])], P[[i]]$v1[1]] <- 1
     # add line segments to the delete vector
-    ind2 <- unique(c(ind2, P[[i]]$id))
+    ind2 <- unique(c(ind2, P[[i]]$seg))
 
     # remove vertices from the current vector of vertices with degree 2
     ind <- setdiff(ind, P[[i]]$v2[1:(nrow(P[[i]])-1)])
@@ -129,7 +131,7 @@ as.gn.linnet <- function(x){
                                    v2_x = L$vertices$x[v2],
                                    v2_y = L$vertices$y[v2])
   ind3 <- setdiff(1:L$lines$n, ind2)
-  lins2 <- tibble(id = ind3,
+  lins2 <- tibble(seg = ind3,
                   e = (length(P) + 1):G$M,
                   v1 = L$from[ind3],
                   v2 = L$to[ind3],
@@ -139,7 +141,7 @@ as.gn.linnet <- function(x){
                   v2_y = L$vertices$y[v2],
                   length = diag(L$dpath[L$from, L$to])[ind3],
                   frac1 = 0, frac2 = 1)
-  G$lins <- bind_rows(lins2, lins1) %>% arrange(id, e)
+  G$lins <- bind_rows(lins2, lins1) %>% arrange(seg, e)
 
   G$vertices$v[setdiff(1:nrow(G$vertices), ind_v)] <- 1:G$W
 
@@ -170,31 +172,71 @@ as.gn.linnet <- function(x){
 #' @param x an object of the spatstat class linnet or an object that can
 #' be converted to an instance of this class
 #' @param ... asdd
-#' @return Point pattern on a geometric network (object of class \code{gnpp})
+#' @return Point pattern on a geometric network (object of class \code{gnpp}).
+#' @export
+
+as.gn.gnpp <- function(x, ...){
+  if (!inherits(x, "gnpp")){
+    stop("Object must be of class 'gpp'")
+  }
+  G <- x$network
+  class(G) <- "gn"
+  G
+}
+
+#' Methods for Point Patterns on Linear Networks
+#'
+#' The function as.gnpp.lpp converts an object of class linnet to an object of
+#' class gn
+#'
+#' @param x an object of the spatstat class linnet or an object that can
+#' be converted to an instance of this class
+#' @param ... asdd
+#' @return Point pattern on a geometric network (object of class \code{gnpp}).
+#' @export
+
+as.gn.gnppfit <- function(x, ...){
+  if (!inherits(x, "gnppfit")){
+    stop("Object must be of class 'gnppfit'")
+  }
+  G <- x$network
+  class(G) <- "gn"
+  G
+}
+
+
+#' Methods for Point Patterns on Linear Networks
+#'
+#' The function as.gnpp.lpp converts an object of class linnet to an object of
+#' class gn
+#'
+#' @param x an object of the spatstat class linnet or an object that can
+#' be converted to an instance of this class
+#' @param ... asdd
+#' @return Point pattern on a geometric network (object of class \code{gnpp}).
 #' @import dplyr
-#' @importFrom spatstat as.lpp as.linnet
+#' @importFrom spatstat as.linnet
 #' @export
 
 as.gnpp.lpp <- function(x, ...){
   frac1 <- tp <- frac2 <- e <- y <-  NULL
   if (!inherits(x, "lpp")){
-    x <- as.lpp(x)
-    if (!inherits(x, "lpp")){
-      stop("Object must be of class 'lpp' or must be converable to an object of class 'lpp'")
-    }
+      stop("Object must be of class 'lpp'")
   }
   G <- as.gn(as.linnet(x))
-  X <- x
-  dat <- tibble(id = X$data$seg,
-                       tp = X$data$tp,
-                       x = X$data$x,
-                       y = X$data$y)
-  dat <- left_join(dat, G$lins, by = "id") %>%
-    mutate(tp = frac1 + tp*frac2) %>%
-    select(id, e, tp, x, y) %>%
+  dat <- tibble(seg = x$data$seg, tp = x$data$tp,
+                xx = x$data$x, y = x$data$y)
+  if (ncol(x$data) > 4){
+    covariates <- as_tibble(as.data.frame(x$data)[, -(1:4)])
+    colnames(covariates) <- colnames(x$data)[-(1:4)]
+    dat <- bind_cols(dat, covariates)
+  }
+  dat <- left_join(dat, G$lins, by = "seg") %>%
+    mutate(tp = frac1 + tp*frac2, x = xx) %>%
+    select(seg, e, tp, x, y, colnames(covariates)) %>%
     arrange(e, tp)
-  G$data <- dat
-  class(G) <- "gnpp"
-  G
+  X <- list(data = dat, network = G)
+  class(X) <- "gnpp"
+  X
 }
 

@@ -5,7 +5,6 @@
 \title{Fit a Penalized Spline Poisson Model on a Geometric Network}
 \usage{
 fitModel(
-  X,
   design,
   lins = NULL,
   smooths = NULL,
@@ -17,8 +16,6 @@ fitModel(
 )
 }
 \arguments{
-\item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
-
 \item{design}{as}
 
 \item{lins}{as}

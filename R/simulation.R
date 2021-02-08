@@ -11,7 +11,7 @@
 
 
 runifgn <- function(n, G){
-  e <- id <- tp <- frac1 <- frac2 <- x <- y <- NULL
+  e <- seg <- tp <- frac1 <- frac2 <- x <- y <- NULL
   cumlen <- c(0, cumsum(G$lins$length))
   dx <- G$lins$v2_x - G$lins$v1_x
   dy <- G$lins$v2_y - G$lins$v1_y
@@ -20,10 +20,10 @@ runifgn <- function(n, G){
   tt <- (uu - cumlen[ii])/G$lins$length[ii]
   xx <- G$lins$v1_x[ii] + tt*dx[ii]
   yy <- G$lins$v1_y[ii] + tt*dy[ii]
-  dat <- tibble(id = ii, tp = tt)
-  dat <- left_join(dat, G$lins, by = "id") %>%
+  dat <- tibble(seg = ii, tp = tt)
+  dat <- left_join(dat, G$lins, by = "seg") %>%
     mutate(x = xx, y = yy, tp = frac1 + tp*frac2) %>%
-    select(id, e, tp, x, y) %>%
+    select(seg, e, tp, x, y) %>%
     arrange(e, tp)
   G$data <- dat
   class(G) <- "gnpp"

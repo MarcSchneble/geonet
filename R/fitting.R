@@ -1,3 +1,7 @@
+internal <- function(){
+  c("dist2V")
+}
+
 #' Bin Point Pattern on a Geometric Network
 #'
 #' \code{binData} performs the actual model fit.
@@ -13,55 +17,37 @@
 #' @export
 
 binData <- function(X, P, lins, smooths){
-  h <- NULL
-
   # get covariates from every point on the network (if applicable)
-  name <- intersect(names(X$data), c(smooths, lins))
-  covariates <- as.data.frame(X$data) %>% select(all_of(name))
-  if (ncol(covariates) == 0){
-    covariates <- covariates %>%mutate(q = 1)
+  vars <- c(smooths, lins)
+  if (all(vars %in% c(colnames(X$data)[-(1:5)], internal()))) {
+    covariates <- as_tibble(X$data) %>% select(all_of(vars))
+  } else {
+    stop("At least one covariate was not found in data!")
   }
+  if (ncol(covariates) == 0) covariates <- covariates %>%mutate(a = 1)
 
   # get all combinations of covariates and calculate the number of rows of the data matrix
-  covariates.comb <- covariates %>%
-    distinct() %>%
-    expand.grid() %>%
-    distinct() %>%
-    as_tibble()
+  vars_comb <- covariates %>% distinct() %>% expand.grid() %>%
+    distinct() %>% as_tibble()
 
-  for (a in 1:length(covariates.comb)) {
-    covariates.comb <- arrange(covariates.comb, !!sym(names(covariates.comb[a])))
+  # sort data frame
+  for (a in 1:length(vars_comb)) {
+    vars_comb <- arrange(vars_comb, !!sym(names(vars_comb[a])))
   }
-
-  N <- sum(P$bins$N)*nrow(covariates.comb)
 
   # initializing
-  dat <- setNames(data.frame(matrix(nrow = N, ncol = length(name) + 3)), c("id", "count", "h", name)) %>% as_tibble() %>%
-    mutate(id = as.integer(id), count = as.double(count), h = as.double(h))
-
-  # set factor variable if applicable
-  if (length(name) > 0){
-    for (a in 1:length(name)) {
-      if (is.factor(covariates.comb %>% pull(sym(name[a])))){
-        dat <- mutate(dat, !!name[a] := factor(NA, levels = levels(covariates.comb %>% pull(sym(name[a])))))
-      }
-      if (is.double(covariates.comb %>% pull(sym(name[a])))){
-        dat <- mutate(dat, !!name[a] := as.double(NA))
-      }
-      if (is.integer(covariates.comb %>% pull(sym(name[a])))){
-        dat <- mutate(dat, !!name[a] := as.integer(NA))
-      }
-    }
-  }
+  dat <- tibble(seg = rep(1:sum(P$bins$N), nrow(vars_comb)),
+                count = NA, h = NA)
+  dat <- bind_cols(dat, vars_comb %>% slice(rep(1:n(), each = sum(P$bins$N))))
 
   ind <- 1
-  for (j in 1:nrow(covariates.comb)) {
-    ind.cov <- which(do.call(paste, covariates) == do.call(paste, covariates.comb[j, ]))
-    data.sub <- X$data[ind.cov, ]
-    for (m in 1:X$M) {
-      # positions of data on line m
-      ind.m <- which(data.sub$e == m)
-      y.m <- sort(as.numeric(data.sub[ind.m, ]$tp))*X$d[m]
+  for (j in 1:nrow(vars_comb)) {
+    ind_comb <- which(do.call(paste, list(vars)) == do.call(paste, vars_comb[j, ]))
+    data.sub <- X$data[ind_comb, ]
+    for (m in 1:X$network$M) {
+      # positions of data on curve e
+      ind_e <- which(data.sub$e == m)
+      y.m <- sort(as.numeric(data.sub[ind_e, ]$tp))*X$network$d[m]
 
       # bin data
       y.b <- rep(0, length(P$bins$z[[m]]))
@@ -75,12 +61,7 @@ binData <- function(X, P, lins, smooths){
       ind <- ind + length(y.b)
     }
     # add bin id for every row
-    dat$id[((j-1)*sum(P$bins$N) + 1):(j*sum(P$bins$N))] <- 1:sum(P$bins$N)
-
-    # add covariates
-    if (ncol(dat) > 3){
-      dat[((j-1)*sum(P$bins$N) + 1):(j*sum(P$bins$N)), 4:ncol(dat)] <- covariates.comb[j, ]
-    }
+    dat$seg[((j-1)*sum(P$bins$N) + 1):(j*sum(P$bins$N))] <- 1:sum(P$bins$N)
   }
   dat
 }
@@ -89,7 +70,6 @@ binData <- function(X, P, lins, smooths){
 #'
 #' \code{fitModel} performs the actual model fit.
 #'
-#' @param X Point pattern on a geometric network (object of class \code{gnpp})
 #' @param design as
 #' @param lins as
 #' @param smooths as
@@ -103,7 +83,7 @@ binData <- function(X, P, lins, smooths){
 #' @importFrom stats optim
 #' @export
 
-fitModel <- function(X, design, lins = NULL, smooths = NULL, offset = NULL, rho = 10,
+fitModel <- function(design, lins = NULL, smooths = NULL, offset = NULL, rho = 10,
                     rho_max = 1e5, eps_rho = 0.01, maxit_rho = 100){
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
@@ -118,7 +98,7 @@ fitModel <- function(X, design, lins = NULL, smooths = NULL, offset = NULL, rho 
                  control = list(fnscale = -1, maxit = 1000, factr = 1e4),
                  method = "L-BFGS-B")
     theta <- fit$par
-    V <- solve(fisher(theta, design, rho))
+    V <- Matrix::solve(fisher(theta, design, rho))
 
     # update rho
     rho_new <- rep(NA, length(design$K))
@@ -160,6 +140,7 @@ fitModel <- function(X, design, lins = NULL, smooths = NULL, offset = NULL, rho 
 #' \code{intensityPspline} estimates the intensity of a point pattern on a
 #' geometric network.
 #'
+#' @param formula Point pattern on a geometric network (object of class \code{gnpp})
 #' @param X Point pattern on a geometric network (object of class \code{gnpp})
 #' @param lins as
 #' @param smooths as
@@ -169,10 +150,20 @@ fitModel <- function(X, design, lins = NULL, smooths = NULL, offset = NULL, rho 
 #' @param r The order of the penalty
 #' @param density asd
 #' @return an object of class gnppfit
+#' @importFrom stats update
 #' @export
 
-intensityPspline <- function(X, lins = NULL, smooths = NULL, offset = NULL,
-                             delta = NULL, h = NULL, r = 1, density = FALSE){
+intensityPspline <- function(formula, X, offset = NULL,
+                             delta = NULL, h = NULL, r = 1,
+                             density = FALSE){
+  # remove response from formula
+  formula <- update(formula, NULL ~ .)
+
+  # get linear and smooth variables
+  vars <- all.vars(formula)
+  vars2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
+  lins <- vars[which(substring(vars2, 1, 2) != "s(")]
+  smooths <- vars[which(substring(vars2, 1, 2) == "s(")]
 
   P <- Pspline(X, delta, h, r)
   K <- B <- ind_smooths <- vector("list", length(smooths) + 1)
@@ -181,10 +172,18 @@ intensityPspline <- function(X, lins = NULL, smooths = NULL, offset = NULL,
   B[[1]] <- P$B
   dat <- binData(X, P, lins, smooths)
 
-  Z <- B[[1]][dat$id, ]
+  Z <- B[[1]][dat$seg, ]
   ind_smooths[[1]] <- 1:ncol(Z)
   names_theta <- paste0("G.", 1:ncol(Z))
   ind_lins <- NULL
+
+  if (length(lins) > 0){
+    ff <- as.formula(paste("~", paste(lins, collapse = " + ")))
+    model.matrix.lin <- model.matrix(ff, data = dat)
+    Z <- cbind(Z, model.matrix.lin[, -1])
+    ind_lins <- (ncol(Z) - ncol(model.matrix.lin) + 2):ncol(Z)
+    names_theta <- c(names_theta, colnames(model.matrix.lin)[-1])
+  }
 
   dat$offset <- 1
 
@@ -195,8 +194,27 @@ intensityPspline <- function(X, lins = NULL, smooths = NULL, offset = NULL,
   design$ind_smooths <- ind_smooths
   design$names_theta <- names_theta
 
-  fit <- fitModel(X, design, lins, smooths, offset)
-  X$model <- list(fit = fit, P = P)
-  class(X) <- "gnppfit"
-  X
+  fit <- fitModel(design, lins, smooths, offset)
+
+  # effects in one table
+  effects <- list(linear = NULL, smooth = NULL)
+
+  #linear effects
+  if (length(lins) > 0) {
+    effects$linear <- tibble(name = tail(design$names_theta, length(ind_lins)),
+                             estimate = NA, se = NA, rr = NA, rr.lower = NA, rr.upper = NA)
+    for (i in 1:length(ind_lins)) {
+      effects$linear$estimate[i] <- round(fit$theta[ind_lins[i]], 3)
+      effects$linear$se[i] <- round(sqrt(fit$V[ind_lins[i], ind_lins[i]]), 3)
+      effects$linear$rr[i] <- round(exp(effects$linear$estimate[i]), 2)
+      effects$linear$rr.lower[i] <- round(exp(effects$linear$estimate[i] - 1.96*effects$linear$se[i]), 2)
+      effects$linear$rr.upper[i] <- round(exp(effects$linear$estimate[i] + 1.96*effects$linear$se[i]), 2)
+    }
+  }
+  fit$effects <- effects
+  fit$P <- P
+  fit$data <- X$data
+  fit$network <- X$network
+  class(fit) <- "gnppfit"
+  fit
 }

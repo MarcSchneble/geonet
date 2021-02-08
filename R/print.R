@@ -20,7 +20,7 @@ print.gn <- function(x, ...){
 #' @export
 print.gnpp <- function(x, ...){
   stopifnot(inherits(x, "gnpp"))
-  cat(paste("Geometric network in", x$q, "dimensions"))
+  cat(paste("Geometric network in", x$network$q, "dimensions"))
   invisible(NULL)
 }
 
@@ -33,6 +33,6 @@ print.gnpp <- function(x, ...){
 #' @export
 print.gnppfit <- function(x, ...){
   stopifnot(inherits(x, "gnppfit"))
-  cat(paste("Geometric network in", x$q, "dimensions"))
+  cat(paste("Geometric network in", x$network$q, "dimensions"))
   invisible(NULL)
 }

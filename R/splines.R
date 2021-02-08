@@ -12,34 +12,35 @@
 #' @export
 
 Pspline <- function(X, delta = NULL, h = NULL, r = 1){
-  if (!inherits(X, c("gn", "gnpp"))){
+  if (!inherits(X, c("gnpp"))){
     stop(paste("Object ", deparse(quote(X)), " can not be converted to an object of class gns"))
   }
-  if (inherits(X, c("linnet", "lpp"))) xX <- as.gn(X)
-  if (is.null(delta)) delta <- min(X$d/2)
+  if (inherits(X, c("linnet", "lpp"))) X <- as.gnpp(X)
+  if (is.null(delta)) delta <- min(G$d)/2
   if (is.null(h)) h <- delta/2
   if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
   # line specific knot distances
-  delta <- X$d*(delta > X$d) + delta*(delta <= X$d)
-  delta <- pmin(X$d/floor(X$d/delta)*(X$d/delta - floor(X$d/delta) < 0.5) +
-                  X$d/ceiling(X$d/delta)*(X$d/delta - floor(X$d/delta) >= 0.5), X$d/2)
+  G <- as.gn(X)
+  delta <- G$d*(delta > G$d) + delta*(delta <= G$d)
+  delta <- pmin(G$d/floor(G$d/delta)*(G$d/delta - floor(G$d/delta) < 0.5) +
+                  G$d/ceiling(G$d/delta)*(G$d/delta - floor(G$d/delta) >= 0.5), G$d/2)
   # ensure that h <= delta
   h <- min(h, min(delta))
   # line specific bin widths
-  h <- X$d/floor(X$d/h)*(X$d/h - floor(X$d/h) < 0.5) +
-    X$d/ceiling(X$d/h)*(X$d/h - floor(X$d/h) >= 0.5)
+  h <- G$d/floor(G$d/h)*(G$d/h - floor(G$d/h) < 0.5) +
+    G$d/ceiling(G$d/h)*(G$d/h - floor(G$d/h) >= 0.5)
   # initializing...
-  tau <- b <- z <- vector("list", X$M)
-  N <- J <- rep(0, X$M)
+  tau <- b <- z <- vector("list", G$M)
+  N <- J <- rep(0, G$M)
 
   # do for every line segment
-  for (m in 1:X$M) {
+  for (m in 1:G$M) {
 
     # knot sequences tau
-    tau[[m]] <- seq(0, X$d[m], delta[m])
+    tau[[m]] <- seq(0, G$d[m], delta[m])
 
     # bin boundaries b
-    b[[m]] <- seq(0, X$d[m], h[m])
+    b[[m]] <- seq(0, G$d[m], h[m])
 
     # characterization of bins by midpoints z
     z[[m]] <- (b[[m]][1:(length(b[[m]])-1)] + b[[m]][2:length(b[[m]])])/2
@@ -58,7 +59,7 @@ Pspline <- function(X, delta = NULL, h = NULL, r = 1){
                  b = b,
                  z = z,
                  N = N)
-  P$B <- getB(X, P)
-  P$K <- getK(X, P, r)
+  P$B <- getB(G, P)
+  P$K <- getK(G, P, r)
   P
 }

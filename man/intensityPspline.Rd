@@ -5,9 +5,8 @@
 \title{Intensity Estimation on Geometric Networks with Penalized Splines}
 \usage{
 intensityPspline(
+  formula,
   X,
-  lins = NULL,
-  smooths = NULL,
   offset = NULL,
   delta = NULL,
   h = NULL,
@@ -16,11 +15,9 @@ intensityPspline(
 )
 }
 \arguments{
+\item{formula}{Point pattern on a geometric network (object of class \code{gnpp})}
+
 \item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
-
-\item{lins}{as}
-
-\item{smooths}{as}
 
 \item{offset}{as}
 
@@ -31,6 +28,10 @@ intensityPspline(
 \item{r}{The order of the penalty}
 
 \item{density}{asd}
+
+\item{lins}{as}
+
+\item{smooths}{as}
 }
 \value{
 an object of class gnppfit
