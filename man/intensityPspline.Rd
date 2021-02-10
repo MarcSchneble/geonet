@@ -28,10 +28,6 @@ intensityPspline(
 \item{r}{The order of the penalty}
 
 \item{density}{asd}
-
-\item{lins}{as}
-
-\item{smooths}{as}
 }
 \value{
 an object of class gnppfit

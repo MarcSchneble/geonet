@@ -25,7 +25,7 @@ getIncidence <- function(x){
 #' The function as.gnds converts an object of class gnpp to an object of
 #' class gnds
 #'
-#' @param X an object of class gnd or an object of class linnet (or an object that can
+#' @param G an object of class gnd or an object of class linnet (or an object that can
 #' be converted to an instance of class linnet)
 #' @param P an object of class gnd or an object of class linnet (or an object that can
 #' be converted to an instance of class linnet)
@@ -33,14 +33,14 @@ getIncidence <- function(x){
 #' @importFrom splines splineDesign
 #' @export
 
-getB <- function(X, P){
+getB <- function(G, P){
   # returns design matrix B with dimension N x J
 
   # design matrix for line segments
-  B <- Matrix::Matrix(matrix(0, sum(P$bins$N), sum(P$splines$J) + X$W), sparse = TRUE)
+  B <- Matrix::Matrix(matrix(0, sum(P$bins$N), sum(P$splines$J) + G$W), sparse = TRUE)
 
   # line specific B-splines
-  for (m in 1:X$M) {
+  for (m in 1:G$M) {
     B[((cumsum(P$bins$N) - P$bins$N)[m] + 1):cumsum(P$bins$N)[m],
       ((cumsum(P$splines$J) - P$splines$J)[m] + 1):cumsum(P$splines$J)[m]] <-
       splineDesign(knots = P$splines$tau[[m]],
@@ -51,19 +51,19 @@ getB <- function(X, P){
   }
 
   # vertex specific B-splines
-  for (v in 1:X$W) {
+  for (v in 1:G$W) {
     # left line ends
-    for (m in which(X$incidence[v, ] == -1)) {
+    for (m in which(G$incidence[v, ] == -1)) {
       B[((cumsum(P$bins$N) - P$bins$N)[m] + 1):
           ((cumsum(P$bins$N) - P$bins$N)[m] +
              length(which(1 - P$bins$z[[m]]/P$splines$delta[m] > 0))), sum(P$splines$J) + v] <-
         (1 - P$bins$z[[m]]/P$splines$delta[m])[which(1 - P$bins$z[[m]]/P$splines$delta[m] > 0)]
     }
     # right line ends
-    for (m in which(X$incidence[v, ] == 1)) {
-      B[(cumsum(P$bins$N)[m] - length(which(1 - (X$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)) + 1):
+    for (m in which(G$incidence[v, ] == 1)) {
+      B[(cumsum(P$bins$N)[m] - length(which(1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)) + 1):
           cumsum(P$bins$N)[m], sum(P$splines$J) + v] <-
-        (1 - (X$d[m] - P$bins$z[[m]])/P$splines$delta[m])[which(1 - (X$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)]
+        (1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m])[which(1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)]
     }
   }
   # check if B is a valid design matrix

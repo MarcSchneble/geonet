@@ -2,30 +2,48 @@
 % Please edit documentation in R/plot.R
 \name{plot.gnppfit}
 \alias{plot.gnppfit}
-\title{Plot Method for Points Patterns on Geometric Networks}
+\title{Plot Method for Fitted Models on Geometric Networks}
 \usage{
-\method{plot}{gnppfit}(x, ..., title_x = "x", title_y = "y", title = "", size = 1, sol = 100)
+\method{plot}{gnppfit}(
+  x,
+  ...,
+  select = NULL,
+  title = "",
+  title_x = "x",
+  title_y = "y",
+  size = 1,
+  frame = TRUE,
+  sol = 100
+)
 }
 \arguments{
-\item{x}{A geometric network with data (an object of class \code{gnppfit}).}
+\item{x}{A model fit on a geometric network
+(an object of class \code{gnppfit}).}
 
-\item{...}{further arguments passed to plot}
+\item{...}{Further arguments passed to plot}
 
-\item{title_x}{asd}
+\item{select}{Allows the plot for a single model term to be selected for
+printing. e.g. if you just want the plot for the second smooth term set
+\code{select = 2}.}
 
-\item{title_y}{asd}
+\item{title}{Main title of the plot.}
 
-\item{title}{plot title}
+\item{title_x}{x-axis title (ignored if \code{frame = FALSE}).}
 
-\item{size}{asdas}
+\item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
+
+\item{size}{Plotting size of the line segments. This specificies the
+\code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
+
+\item{frame}{Should a frame be drawn around the network?}
 
 \item{sol}{asd}
 }
 \value{
-an object of class ggplot
+Invisibly returns a list of objects with elements of class ggplot.
 }
 \description{
-This is the \code{plot} method for an object of class \code{gnpp}.
+This is the \code{plot} method for an object of class \code{gnppfit}.
 }
 \details{
 Details

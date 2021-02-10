@@ -31,12 +31,13 @@ as.gnpp <- function(x, ...){
 #'
 #' @param x an object of the spatstat class linnet or an object that can
 #' be converted to an instance of this class
+#' @param ... further
 #' @return A geometric network (object of class \code{gnpp})
 #' @import dplyr
 #' @importFrom spatstat as.linnet
 #' @export
 #'
-as.gn.linnet <- function(x){
+as.gn.linnet <- function(x, ...){
   v1 <- v2 <- e <- NULL
   if (!inherits(x, "linnet")){
     x <- as.linnet(x)
@@ -141,7 +142,8 @@ as.gn.linnet <- function(x){
                   v2_y = L$vertices$y[v2],
                   length = diag(L$dpath[L$from, L$to])[ind3],
                   frac1 = 0, frac2 = 1)
-  G$lins <- bind_rows(lins2, lins1) %>% arrange(seg, e)
+  G$lins <- bind_rows(lins2, lins1)
+  G$lins <- G$lins %>% dplyr::arrange(e)
 
   G$vertices$v[setdiff(1:nrow(G$vertices), ind_v)] <- 1:G$W
 
@@ -219,7 +221,7 @@ as.gn.gnppfit <- function(x, ...){
 #' @export
 
 as.gnpp.lpp <- function(x, ...){
-  frac1 <- tp <- frac2 <- e <- y <-  NULL
+  frac1 <- tp <- frac2 <- e <- y <- seg <- xx <-  NULL
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }

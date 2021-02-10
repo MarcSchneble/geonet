@@ -4,11 +4,13 @@
 \alias{as.gn.linnet}
 \title{Methods for Linear Networks}
 \usage{
-\method{as.gn}{linnet}(x)
+\method{as.gn}{linnet}(x, ...)
 }
 \arguments{
 \item{x}{an object of the spatstat class linnet or an object that can
 be converted to an instance of this class}
+
+\item{...}{further}
 }
 \value{
 A geometric network (object of class \code{gnpp})

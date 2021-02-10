@@ -4,23 +4,26 @@
 \alias{plot.gn}
 \title{Plot Method for Geometric Networks}
 \usage{
-\method{plot}{gn}(x, ..., x.title = "x", y.title = "y", title = NULL, size = 1)
+\method{plot}{gn}(x, ..., title = "", title_x = "", title_y = "", size = 1, frame = TRUE)
 }
 \arguments{
-\item{x}{an object of class \code{gn}}
+\item{x}{A geometric network (object of class \code{gn}).}
 
-\item{...}{further arguments passed to plot}
+\item{...}{Further arguments passed to plot.}
 
-\item{x.title}{x-axis title}
+\item{title}{Main title of the plot.}
 
-\item{y.title}{y-axis title}
+\item{title_x}{x-axis title (ignored if \code{frame = FALSE}).}
 
-\item{title}{plot title}
+\item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
 
-\item{size}{asd}
+\item{size}{Plotting size of the line segments. This specificies the
+\code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
+
+\item{frame}{Should a frame be drawn around the network?}
 }
 \value{
-an object of class ggplot
+Invisibly returns an object of class \code{ggplot}.
 }
 \description{
 This is the \code{plot} method for an object of class \code{gn}.

@@ -4,10 +4,10 @@
 \alias{getB}
 \title{Get the incidence matrix}
 \usage{
-getB(X, P)
+getB(G, P)
 }
 \arguments{
-\item{X}{an object of class gnd or an object of class linnet (or an object that can
+\item{G}{an object of class gnd or an object of class linnet (or an object that can
 be converted to an instance of class linnet)}
 
 \item{P}{an object of class gnd or an object of class linnet (or an object that can

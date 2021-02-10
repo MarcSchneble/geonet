@@ -4,23 +4,43 @@
 \alias{plot.gnpp}
 \title{Plot Method for Points Patterns on Geometric Networks}
 \usage{
-\method{plot}{gnpp}(x, ..., title_x = "x", title_y = "y", title = "", size = 1)
+\method{plot}{gnpp}(
+  x,
+  ...,
+  covariate = NULL,
+  title = "",
+  title_x = "",
+  title_y = "",
+  size_lines = 1,
+  size_points = 1,
+  frame = TRUE
+)
 }
 \arguments{
-\item{x}{A geometric network with data (an object of class \code{gnpp}).}
+\item{x}{A point pattern on a geometric network
+(object of class \code{gnpp}).}
 
-\item{...}{further arguments passed to plot}
+\item{...}{Further arguments passed to plot.}
 
-\item{title_x}{asd}
+\item{covariate}{Character vector of length 1, name of the covariate
+that should be plotted.}
 
-\item{title_y}{asd}
+\item{title}{Main title of the plot.}
 
-\item{title}{plot title}
+\item{title_x}{x-axis title (ignored if \code{frame = FALSE}).}
 
-\item{size}{asdas}
+\item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
+
+\item{size_lines}{Plotting size of the line segments. This specificies the
+\code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
+
+\item{size_points}{Plotting size of the point pattern. This specificies the
+\code{size} argument of \code{\link[ggplot2]{geom_point}}.}
+
+\item{frame}{Should a frame be drawn around the network?}
 }
 \value{
-an object of class ggplot
+Invisibly returns an object of class \code{ggplot}.
 }
 \description{
 This is the \code{plot} method for an object of class \code{gnpp}.
