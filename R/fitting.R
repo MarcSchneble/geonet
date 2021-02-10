@@ -155,7 +155,7 @@ intensityPspline <- function(formula, X, offset = NULL,
   # remove response from formula
   formula <- update(formula, NULL ~ .)
 
-  # get linear and smooth variables
+  # get linear and smooth terms
   variables <- all.vars(formula)
   if (length(variables) == 0){
     lins <- smooths <- NULL
@@ -164,39 +164,61 @@ intensityPspline <- function(formula, X, offset = NULL,
     lins <- variables[which(substring(variables2, 1, 2) != "s(")]
     smooths <- variables[which(substring(variables2, 1, 2) == "s(")]
   }
-
+  # get representation of P-splines on the network
   P <- Pspline(X, delta, h, r)
-  K <- B <- ind_smooths <- vector("list", length(smooths) + 1)
-  design <- list()
+  dat <- binData(X, P, lins, smooths)
+  B <- K <- ind_smooths <- vector("list", length(smooths) + 1)
   K[[1]] <- P$K
   B[[1]] <- P$B
-  dat <- binData(X, P, lins, smooths)
 
-  Z <- B[[1]][dat$id, ]
+  # design matrix of the whole model
+  Z <- P$B[dat$id, ]
   ind_smooths[[1]] <- 1:ncol(Z)
   names_theta <- paste0("G.", 1:ncol(Z))
   ind_lins <- NULL
 
-  # smooth effects
-  if (length(smooths) > 0){
-    m <- 10
-    for (a in 1:length(smooths)) {
-      dat_a <- dat %>% pull(as.symbol(smooths[a]))
-      z <- sort(unique(dat_a))
-      delta <- (max(z) - min(z))/(m-1)
-      k <- seq(min(z) - delta, max(z) + delta, delta)
-      B.uncentered <- splineDesign(knots = k, x = z, ord = 4, outer.ok = TRUE)
-      # remove first column for identification
-      B[[a + 1]] <- sweep(B.uncentered, 2, colMeans(B.uncentered))[, -1]
-      # compute penalty
-      D <- diff(diag(ncol(B[[a + 1]]) + 1), differences = 2)[, -1]
-      K[[a + 1]] <- t(D)%*%D
-      # add to design matrix
-      Z <- cbind(Z, B[[a + 1]][match(dat %>% pull(as.symbol(smooths[a])), z), ])
-      ind_smooths[[a + 1]] <- (ncol(Z) - ncol(B[[a + 1]]) + 1):ncol(Z)
-      names_theta <- c(names_theta, paste0(smooths[a], ".", 1:ncol(B[[a + 1]])))
+  sm <- vector("list", length(smooths))
+  if (length(sm) > 0) {
+    for (i in 1:length(smooths)) {
+      sm[[i]] <- smooth.construct(eval(parse(text = variables2[i])),
+                                  data = dat, knots = NULL)
+      D <- sm[[i]]$D[, -1]
+      K[[i + 1]] <- t(D)%*%D
+      Z_smooth <- sm[[i]]$X
+      B[[i + 1]] <- sweep(Z_smooth, 2, colMeans(Z_smooth))[, -1]
+      Z <- cbind(Z, sweep(Z_smooth, 2, colMeans(Z_smooth))[, -1])
+      ind_smooths[[i + 1]] <- (ncol(Z) - ncol(Z_smooth) + 2):ncol(Z)
+      names_theta <- c(names_theta, paste0(smooths[i], ".", 1:(ncol(Z_smooth) - 1)))
     }
   }
+
+  # smooth effects
+  # if (length(smooths) > 0){
+  #   m <- 8
+  #   for (a in 1:length(smooths)) {
+  #     dat_a <- dat %>% pull(as.symbol(smooths[a]))
+  #     z <- sort(unique(dat_a))
+  #     delta <- (max(z) - min(z))/(m-1)
+  #     k <- seq(min(z) - 3*delta, max(z) + 3*delta, delta)
+  #     B.uncentered <- splineDesign(knots = k, x = z, ord = 4, outer.ok = TRUE)
+  #
+  #     #C <- rep(1, nrow(B.uncentered)) %*% B.uncentered
+  #     #qrc <- qr(t(C))
+  #     #Z1 <- qr.Q(qrc,complete=TRUE)[,(nrow(C)+1):ncol(C)]
+  #     #B[[a + 1]] <- B.uncentered%*%Z1
+  #
+  #
+  #     # remove first column for identification
+  #     B[[a + 1]] <- sweep(B.uncentered, 2, colMeans(B.uncentered))[, -1]
+  #     # compute penalty
+  #     D <- diff(diag(ncol(B[[a + 1]]) + 1), differences = 2)[, -1]
+  #     K[[a + 1]] <- t(D)%*%D
+  #     # add to design matrix
+  #     Z_test <- cbind(Z, B[[a + 1]][match(dat %>% pull(as.symbol(smooths[a])), z), ])
+  #     ind_smooths[[a + 1]] <- (ncol(Z) - ncol(B[[a + 1]]) + 1):ncol(Z)
+  #     names_theta <- c(names_theta, paste0(smooths[a], ".", 1:ncol(B[[a + 1]])))
+  #   }
+  # }
 
   if (length(lins) > 0){
     ff <- as.formula(paste("~", paste(lins, collapse = " + ")))
@@ -207,11 +229,11 @@ intensityPspline <- function(formula, X, offset = NULL,
   }
 
   dat$offset <- 1
-
+  design <- list()
   design$K <- K
-  design$B <- B
   design$data <- dat
   design$Z <- Z
+  design$B <- B
   design$ind_smooths <- ind_smooths
   design$names_theta <- names_theta
 
@@ -238,7 +260,7 @@ intensityPspline <- function(formula, X, offset = NULL,
   if (length(smooths) > 0){
     for (i in 1:length(smooths)) {
       ind <- match(unique(design$data[[smooths[i]]]), design$data[[smooths[i]]])
-      confidence_band <- get_confidence_band(fit$theta, fit$V, design, i, ind, smooths)
+      confidence_band <- getConfidenceBand(fit$theta, fit$V, design, i, ind, smooths)
       effects$smooth[[i]] <- tibble(x = design$data[[smooths[i]]][ind],
                                     y = as.vector(design$Z[, design$ind_smooths[[i + 1]]]%*%fit$theta[design$ind_smooths[[i + 1]]])[ind],
                                     lwr = confidence_band$lower,
@@ -271,7 +293,7 @@ intensityPspline <- function(formula, X, offset = NULL,
 #' @importFrom stats quantile
 #' @export
 
-get_confidence_band <- function(theta, V, design, i, ind, smooths, q = 0.05, R = 10000){
+getConfidenceBand <- function(theta, V, design, i, ind, smooths, q = 0.05, R = 10000){
   gamma <- theta[design$ind_smooths[[i + 1]]]
   cov <- V[design$ind_smooths[[i + 1]], design$ind_smooths[[i + 1]]]
   x <- unique(design$data[[smooths[i]]])
@@ -281,7 +303,7 @@ get_confidence_band <- function(theta, V, design, i, ind, smooths, q = 0.05, R =
   mu.sim <- matrix(0, R, length(x))
   for (j in 1:R) {
     gamma.sim <- mgcv::rmvn(1, gamma, cov)
-    mu.sim[j, ] <- design$B[[i + 1]]%*%gamma.sim
+    mu.sim[j, ] <- design$B[[i + 1]][ind, ]%*%gamma.sim
   }
   lower <- upper <- rep(0, ncol(mu.sim))
   for (j in 1:ncol(mu.sim)) {
