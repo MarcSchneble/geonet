@@ -1,108 +1,179 @@
-internal <- function(){
-  c("dist2V")
-}
-
-#' Bin Point Pattern on a Geometric Network
+#' Intensity Estimation on Geometric Networks with Penalized Splines
 #'
-#' \code{binData} performs the actual model fit.
+#' This is the main function of the \code{geonet} package.
+#' \code{intensityPspline} estimates the intensity of a point pattern on a
+#' geometric network employing penalized splines as outlined in Schneble
+#' and Kauermann (2020). In distinction to
+#' \code{\link[spatstat]{density.lpp}} from the \code{spatstat} package,
+#' which provides kernel based tools for intensity estimation of point
+#' patterns on linear networks, \code{intensityPspline} allows to
+#' incorporate covariates while also estimating the baseline intensity.
+#' Covariates can be either internal or external. External covariates
+#' can also be incorporated as a smooth term using penalized splines
+#' with the same syntax as in \code{\link[mgcv]{gam}}.
 #'
-#' @param X Point pattern on a geometric network (object of class \code{gnpp})
-#' @param P as
-#' @param lins as
-#' @param smooths as
-#' @return The binned data.
-#' @import dplyr
-#' @importFrom stats setNames
+#' Details
+#'
+#' @param formula A one-sided formula (if a two-sided formula is supplied, the
+#' left hand side of the formula is ignored). The formula can consist of either
+#' linear terms as in linear models (\code{\link[base]{lm}}) or smooth terms as
+#' in \code{\link[mgcv]{gam}} formulae, where the usage is restricted to
+#' smooth terms constructed with \code{\link[mgcv]{s}} and the argument
+#' \code{bs} is set to
+#' \code{bs = "ps"} by default, i.e. \code{intensityPspline} can handle
+#' penalized spline
+#' based smooth terms. Internal linear covariates musst be supplied via
+#' \code{internal()}, see examples for details.
+#' @param X A point pattern on a geometric network (object of class
+#' \code{gnpp}). The point pattern (specified via \code{X$data}) musst contain information on
+#' all covariates included in \code{formula}.
+#' @param offset tba
+#' @param delta The global knot distance \eqn{\delta}, a numerical vector of length one. If
+#' not supplied, delta will be chosen properly according to the geometric
+#' network \code{X} which is supplied.
+#' @param h The global bin width \eqn{h}, a numerical vector of length one. If
+#' not supplied, \code{h} will be chosen properly according to the geometric
+#' network \code{X} which is supplied.
+#' @param r The order of the penalty of the baseline intensity on the geometric
+#' network, default to a penalty of order \code{r = 1}.
+#' @param density \code{TRUE} if the intensity should be normalized such that it
+#' can be interpreted as a density, i.e. the integral over the estimated density
+#' is equal to one.
+#' @return A fitted geometric network (object of class \code{gnppfit}).
+#' @references Schneble, M. and G. Kauermann (2020). Intensity estimation on
+#' geometric networks with penalized splines. arXiv preprint arXiv:2002.10270 .
+#' @importFrom  Matrix Matrix bdiag
+#' @importFrom stats update as.formula model.matrix setNames
+#' @importFrom utils tail
+#' @importFrom mgcv smooth.construct.ps.smooth.spec s
 #' @export
 
-binData <- function(X, P, lins, smooths){
-  # get covariates from every point on the network (if applicable)
-  variables <- c(smooths, lins)
-  if (all(variables %in% c(colnames(X$data)[-(1:5)], internal()))) {
-    covariates <- as_tibble(X$data) %>% select(all_of(variables))
+intensityPspline <- function(formula, X, offset = NULL,
+                             delta = NULL, h = NULL, r = 1,
+                             density = FALSE){
+  # remove response from formula if supplied
+  formula <- update(formula, NULL ~ .)
+
+  # get linear and smooth terms
+  vars <- all.vars(formula)
+  if (length(vars) == 0){
+    lins <- NULL
+    smooths <- "G"
   } else {
-    stop("At least one covariate was not found in data!")
-  }
-  if (ncol(covariates) == 0) covariates <- covariates %>%mutate(a = 1)
-
-  # get all combinations of covariates and calculate the number of rows of the data matrix
-  vars_comb <- covariates %>% distinct() %>% expand.grid() %>%
-    distinct() %>% as_tibble()
-
-  # sort data frame
-  for (a in 1:length(vars_comb)) {
-    vars_comb <- arrange(vars_comb, !!sym(names(vars_comb[a])))
+    vars2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
+    lins <- vars[which(substring(vars2, 1, 2) != "s(")]
+    smooths <- c("G", vars[which(substring(vars2, 1, 2) == "s(")])
+    intern <- which(substring(vars2, 1, 9) == "internal(")
   }
 
-  # initializing
-  dat <- tibble(id = rep(1:sum(P$bins$N), nrow(vars_comb)),
-                count = NA, h = NA)
-  dat <- bind_cols(dat, vars_comb %>% slice(rep(1:n(), each = sum(P$bins$N))))
+  # get representation of P-splines on the network
+  P <- Pspline(X, delta, h, r)
+  data <- binData(X, P, vars, intern)
+  ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
+  K <- P$K
 
-  ind <- 1
-  for (j in 1:nrow(vars_comb)) {
-    ind_comb <- which(do.call(paste, covariates) == do.call(paste, vars_comb[j, ]))
-    dat_sub <- X$data[ind_comb, ]
-    for (m in 1:X$network$M) {
-      # positions of data on curve e
-      ind_e <- which(dat_sub$e == m)
-      y_e <- sort(as.numeric(dat_sub[ind_e, ]$tp))*X$network$d[m]
+  # design matrix of for network splines
+  Z <- P$B[data$id, ]
+  ind$G <- setNames(1:ncol(Z), paste0("G.", 1:ncol(Z)))
 
-      # bin data
-      y_b <- rep(0, length(P$bins$z[[m]]))
-      for (k in 1:length(P$bins$z[[m]])) {
-        y_b[k] <- length(which(y_e < P$bins$b[[m]][k+1] & y_e > P$bins$b[[m]][k]))
-      }
-
-      # stack into one vector
-      dat$count[ind:(ind + length(y_b) - 1)] <- y_b
-      dat$h[ind:(ind + length(y_b) - 1)] <- P$bins$h[m]
-      ind <- ind + length(y_b)
+  smooth_terms <- setNames(vector("list", length(smooths) - 1), smooths[-1])
+  # design for smooth terms
+  if (length(smooths) > 1) {
+    for (i in 2:length(smooths)) {
+      sm <- smooth.construct.ps.smooth.spec(eval(parse(text = vars2[i - 1])),
+                                            data = data, knots = NULL)
+      D <- sm$D[, -1]
+      K <- bdiag(K, t(D)%*%D)
+      Z_smooth <- sm$X
+      smooth_terms[[smooths[i]]]$range <- range(data[[smooths[i]]])
+      smooth_terms[[smooths[i]]]$knots <- sm$knots
+      smooth_terms[[smooths[i]]]$l <- sm$m[1] + 1
+      smooth_terms[[smooths[i]]]$r <- sm$m[2]
+      smooth_terms[[smooths[i]]]$ident <- colMeans(Z_smooth)
+      Z <- cbind(Z, sweep(Z_smooth, 2, smooth_terms[[smooths[i]]]$ident)[, -1])
+      ind[[smooths[i]]] <- setNames((ncol(Z) - ncol(Z_smooth) + 2):ncol(Z),
+                                    paste0(smooths[i], ".", 1:(ncol(Z_smooth) - 1)))
     }
-    # add bin id for every row
-    dat$id[((j-1)*sum(P$bins$N) + 1):(j*sum(P$bins$N))] <- 1:sum(P$bins$N)
   }
-  dat
+
+  # design for linear terms
+  if (length(lins) > 0){
+    formula_lins <- as.formula(paste("~", paste(lins, collapse = " + ")))
+    model_matrix_lins <- model.matrix(formula_lins, data = data)[, -1]
+    ind[["lins"]] <- setNames((ncol(Z) + 1):(ncol(Z) + ncol(model_matrix_lins)),
+                              colnames(model_matrix_lins))
+    Z <- cbind(Z, model_matrix_lins)
+    K <- bdiag(K, Matrix(0, ncol(model_matrix_lins), ncol(model_matrix_lins), sparse = TRUE))
+  }
+
+  # fit the model
+  fit <- fitModel(data, Z, K, ind)
+
+  # output
+  out <- list()
+  out$coefficients <- setNames(fit$theta, names(unlist(ind)))
+  out$V <- fit$V
+  #out$effects <- effects
+  out$P <- P
+  out$smooth <- smooth_terms
+  out$ind <- ind
+  out$data <- X$data
+  out$network <- X$network
+  class(out) <- "gnppfit"
+  out
 }
 
 #' Fit a Penalized Spline Poisson Model on a Geometric Network
 #'
-#' \code{fitModel} performs the actual model fit.
+#' \code{fitModel} is called from \code{\link[geonet]{intensityPSpline}}
+#' and performs the iterative algorithm to estimate the smoothing parameters
+#' \eqn{rho} in the penalized Poisson model.
 #'
-#' @param design as
-#' @param lins as
-#' @param smooths as
-#' @param offset as
-#' @param rho as
-#' @param rho_max as
-#' @param eps_rho as
-#' @param maxit_rho as
+#' Generalized Fellner-Schall method (Wood and Fasiolo, 2017).
+#'
+#' @param data soll noch weg.
+#' @param Z The (sparse) model matrix where the number of coloums must
+#' correspond to the length of the vector of model coefficients \code{theta}.
+#' @param K A (sparse) square penalty matrix of with the same dimension as
+#' \code{theta}.
+#' @param ind A list which contains the indices belonging to each smooth term
+#' and the linear terms.
+#' @param rho An initial estimate of the smoothing parameter. Either a vector
+#' of length one or a vector which corresponds to the count of smooth terms
+#' (including the baseline intensity) in the model.
+#' @param rho_max If \code{rho} exceeds \code{rho_max}, the algorithm stops
+#' and returns the current values.
+#' @param eps_rho The termination condition for \code{rho}.
+#' @param maxit_rho Maximum number of iterations for \code{rho}.
 #' @return Model fit.
+#' @references Wood, S. N. and Fasiolo, M. (2017). A generalized Fellner-Schall
+#'  method for smoothing parameter optimization with application to
+#'  Tweedie location, scale and shape models. Biometrics 73 1071-1081.
 #' @import dplyr
 #' @importFrom stats optim
 #' @export
 
-fitModel <- function(design, lins = NULL, smooths = NULL, offset = NULL, rho = 10,
-                    rho_max = 1e5, eps_rho = 0.01, maxit_rho = 100){
+fitModel <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
+                     eps_rho = 0.01, maxit_rho = 100){
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
-  rho <- rep(rho, length(design$K))
+  rho <- rep(rho, length(ind) - 1)
   Delta_rho <- Inf
   it_rho <- 0
-  theta <- rep(0, ncol(design$Z))
+  theta <- rep(0, ncol(Z))
   while(Delta_rho > eps_rho){
     print(rho)
     it_rho <- it_rho + 1
-    theta <- scoring(theta, design, rho)
+    theta <- scoring(theta, rho, data, Z, K, ind)
 
-    V <- Matrix::solve(fisher(theta, design, rho))
+    V <- Matrix::solve(fisher(theta, rho, data, Z, K, ind))
 
-    # update rho
-    rho_new <- rep(NA, length(design$K))
-    for (a in 1:length(design$K)) {
-      rho_new[a] <- as.vector(rho[a]*(Matrix::rankMatrix(design$K[[a]], method = "qr.R")[1]/rho[a] -
-                                        sum(Matrix::diag(V[design$ind_smooths[[a]], design$ind_smooths[[a]]]%*%design$K[[a]])))/
-                                (Matrix::t(theta[design$ind_smooths[[a]]])%*%design$K[[a]]%*%theta[design$ind_smooths[[a]]]))
+    # updatae rho
+    rho_new <- rep(NA, length(ind) - 1)
+    for (i in 1:(length(ind) - 1)) {
+      rho_new[i] <- as.vector(rho[i]*(Matrix::rankMatrix(K[ind[[i]], ind[[i]]], method = "qr.R")[1]/rho[i] -
+                                        sum(Matrix::diag(V[ind[[i]], ind[[i]]]%*%K[ind[[i]], ind[[i]]])))/
+                                (Matrix::t(theta[ind[[i]]])%*%K[ind[[i]], ind[[i]]]%*%theta[ind[[i]]]))
     }
 
     if (any(rho_new > rho_max)) break
@@ -116,199 +187,39 @@ fitModel <- function(design, lins = NULL, smooths = NULL, offset = NULL, rho = 1
     Delta_rho <- sqrt(sum((rho_new - rho)^2))/sqrt(sum((rho)^2))
     rho <- rho_new
   }
-
-  # effects in one table
-  effects <- list(linear = NULL, smooth = NULL)
-
-  #linear effects
-  if (length(lins) > 0) {
-    effects$linear <- tibble(name = utils::tail(design$names.theta, length(design$ind.lins)), estimate = NA, se = NA)
-  }
-
-  # smooth effects
-  effects$smooth <- vector("list", length(smooths))
-  names(effects$smooth) <- smooths
-
-  list(theta = theta, V = V, ind_smooths = design$ind_smooths, names_theta = design$names_theta, effects = effects)
+  list(theta = theta, V = V, rho = rho, it_rho = it_rho)
 }
 
-#' Intensity Estimation on Geometric Networks with Penalized Splines
+#' Confidence Bands of Smooth Terms
 #'
-#' \code{intensityPspline} estimates the intensity of a point pattern on a
-#' geometric network.
+#' \code{smoothConfidence} computes the lower and upper limits of smooth
+#' terms fitted with \code{intensityPspline}.
 #'
-#' @param formula Point pattern on a geometric network (object of class \code{gnpp})
-#' @param X Point pattern on a geometric network (object of class \code{gnpp})
-#' @param offset as
-#' @param delta The knot distance delta
-#' @param h The bin width h
-#' @param r The order of the penalty
-#' @param density asd
-#' @return an object of class gnppfit
-#' @importFrom stats update as.formula model.matrix
-#' @importFrom utils tail
-#' @export
-
-intensityPspline <- function(formula, X, offset = NULL,
-                             delta = NULL, h = NULL, r = 1,
-                             density = FALSE){
-  # remove response from formula
-  formula <- update(formula, NULL ~ .)
-
-  # get linear and smooth terms
-  variables <- all.vars(formula)
-  if (length(variables) == 0){
-    lins <- smooths <- NULL
-  } else {
-    variables2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
-    lins <- variables[which(substring(variables2, 1, 2) != "s(")]
-    smooths <- variables[which(substring(variables2, 1, 2) == "s(")]
-  }
-  # get representation of P-splines on the network
-  P <- Pspline(X, delta, h, r)
-  dat <- binData(X, P, lins, smooths)
-  B <- K <- ind_smooths <- vector("list", length(smooths) + 1)
-  K[[1]] <- P$K
-  B[[1]] <- P$B
-
-  # design matrix of the whole model
-  Z <- P$B[dat$id, ]
-  ind_smooths[[1]] <- 1:ncol(Z)
-  names_theta <- paste0("G.", 1:ncol(Z))
-  ind_lins <- NULL
-
-  sm <- vector("list", length(smooths))
-  if (length(sm) > 0) {
-    for (i in 1:length(smooths)) {
-      sm[[i]] <- smooth.construct(eval(parse(text = variables2[i])),
-                                  data = dat, knots = NULL)
-      D <- sm[[i]]$D[, -1]
-      K[[i + 1]] <- t(D)%*%D
-      Z_smooth <- sm[[i]]$X
-      B[[i + 1]] <- sweep(Z_smooth, 2, colMeans(Z_smooth))[, -1]
-      Z <- cbind(Z, sweep(Z_smooth, 2, colMeans(Z_smooth))[, -1])
-      ind_smooths[[i + 1]] <- (ncol(Z) - ncol(Z_smooth) + 2):ncol(Z)
-      names_theta <- c(names_theta, paste0(smooths[i], ".", 1:(ncol(Z_smooth) - 1)))
-    }
-  }
-
-  # smooth effects
-  # if (length(smooths) > 0){
-  #   m <- 8
-  #   for (a in 1:length(smooths)) {
-  #     dat_a <- dat %>% pull(as.symbol(smooths[a]))
-  #     z <- sort(unique(dat_a))
-  #     delta <- (max(z) - min(z))/(m-1)
-  #     k <- seq(min(z) - 3*delta, max(z) + 3*delta, delta)
-  #     B.uncentered <- splineDesign(knots = k, x = z, ord = 4, outer.ok = TRUE)
-  #
-  #     #C <- rep(1, nrow(B.uncentered)) %*% B.uncentered
-  #     #qrc <- qr(t(C))
-  #     #Z1 <- qr.Q(qrc,complete=TRUE)[,(nrow(C)+1):ncol(C)]
-  #     #B[[a + 1]] <- B.uncentered%*%Z1
-  #
-  #
-  #     # remove first column for identification
-  #     B[[a + 1]] <- sweep(B.uncentered, 2, colMeans(B.uncentered))[, -1]
-  #     # compute penalty
-  #     D <- diff(diag(ncol(B[[a + 1]]) + 1), differences = 2)[, -1]
-  #     K[[a + 1]] <- t(D)%*%D
-  #     # add to design matrix
-  #     Z_test <- cbind(Z, B[[a + 1]][match(dat %>% pull(as.symbol(smooths[a])), z), ])
-  #     ind_smooths[[a + 1]] <- (ncol(Z) - ncol(B[[a + 1]]) + 1):ncol(Z)
-  #     names_theta <- c(names_theta, paste0(smooths[a], ".", 1:ncol(B[[a + 1]])))
-  #   }
-  # }
-
-  if (length(lins) > 0){
-    ff <- as.formula(paste("~", paste(lins, collapse = " + ")))
-    model.matrix.lin <- model.matrix(ff, data = dat)
-    Z <- cbind(Z, model.matrix.lin[, -1])
-    ind_lins <- (ncol(Z) - ncol(model.matrix.lin) + 2):ncol(Z)
-    names_theta <- c(names_theta, colnames(model.matrix.lin)[-1])
-  }
-
-  dat$offset <- 1
-  design <- list()
-  design$K <- K
-  design$data <- dat
-  design$Z <- Z
-  design$B <- B
-  design$ind_smooths <- ind_smooths
-  design$names_theta <- names_theta
-
-  fit <- fitModel(design, lins, smooths, offset)
-
-  # effects in one table
-  effects <- list(linear = NULL, smooth = NULL)
-
-  #linear effects
-  if (length(lins) > 0) {
-    effects$linear <- tibble(name = tail(design$names_theta, length(ind_lins)),
-                             estimate = NA, se = NA, rr = NA, rr.lower = NA, rr.upper = NA)
-    for (i in 1:length(ind_lins)) {
-      effects$linear$estimate[i] <- round(fit$theta[ind_lins[i]], 3)
-      effects$linear$se[i] <- round(sqrt(fit$V[ind_lins[i], ind_lins[i]]), 3)
-      effects$linear$rr[i] <- round(exp(effects$linear$estimate[i]), 2)
-      effects$linear$rr.lower[i] <- round(exp(effects$linear$estimate[i] - 1.96*effects$linear$se[i]), 2)
-      effects$linear$rr.upper[i] <- round(exp(effects$linear$estimate[i] + 1.96*effects$linear$se[i]), 2)
-    }
-  }
-
-  effects$smooth <- vector("list", length(smooths))
-  names(effects$smooth) <- smooths
-  if (length(smooths) > 0){
-    for (i in 1:length(smooths)) {
-      ind <- match(unique(design$data[[smooths[i]]]), design$data[[smooths[i]]])
-      confidence_band <- getConfidenceBand(fit$theta, fit$V, design, i, ind, smooths)
-      effects$smooth[[i]] <- tibble(x = design$data[[smooths[i]]][ind],
-                                    y = as.vector(design$Z[, design$ind_smooths[[i + 1]]]%*%fit$theta[design$ind_smooths[[i + 1]]])[ind],
-                                    lwr = confidence_band$lower,
-                                    upr = confidence_band$upper)
-    }
-  }
-
-  fit$effects <- effects
-  fit$P <- P
-  fit$data <- X$data
-  fit$network <- X$network
-  class(fit) <- "gnppfit"
-  fit
-}
-
-#' Intensity Estimation on Geometric Networks with Penalized Splines
-#'
-#' \code{intensityPspline} estimates the intensity of a point pattern on a
-#' geometric network.
-#'
-#' @param theta Point pattern on a geometric network (object of class \code{gnpp})
-#' @param V Point pattern on a geometric network (object of class \code{gnpp})
-#' @param design as
-#' @param i as
-#' @param ind as
-#' @param smooths The knot distance delta
-#' @param q The bin width h
-#' @param R The order of the penalty
-#' @return an object of class gnppfit
+#' @param theta The estimated coefficients which corresponds to the smooth
+#' term.
+#' @param V The covariance matrix of the estimated coefficients \code{theta}.
+#' @param X The design matrix of the model which corresponds to the smooth
+#' term.
+#' @param q The quantile. Default to \code{q = 0.05} which corresponds to
+#' 95% confidence bands.
+#' @param R The number of replications in the simulation process.
+#' @return A list of two vectors which contain the lower and the upper limits
+#' of the confidence band.
 #' @importFrom stats quantile
+#' @importFrom mgcv rmvn
 #' @export
 
-getConfidenceBand <- function(theta, V, design, i, ind, smooths, q = 0.05, R = 10000){
-  gamma <- theta[design$ind_smooths[[i + 1]]]
-  cov <- V[design$ind_smooths[[i + 1]], design$ind_smooths[[i + 1]]]
-  x <- unique(design$data[[smooths[i]]])
-  cov <- as.matrix(Matrix::Matrix(cov))
-
+smoothConfidence <- function(theta, V, X, q = 0.05, R = 1000){
   set.seed(1)
-  mu.sim <- matrix(0, R, length(x))
-  for (j in 1:R) {
-    gamma.sim <- mgcv::rmvn(1, gamma, cov)
-    mu.sim[j, ] <- design$B[[i + 1]][ind, ]%*%gamma.sim
+  mu_sim <- matrix(0, R, nrow(X))
+  for (i in 1:R) {
+    theta_sim <- rmvn(1, theta, V)
+    mu_sim[i, ] <- as.vector(X%*%theta_sim)
   }
-  lower <- upper <- rep(0, ncol(mu.sim))
-  for (j in 1:ncol(mu.sim)) {
-    lower[j] <- stats::quantile(mu.sim[, j], probs = q/2)
-    upper[j] <- stats::quantile(mu.sim[, j], probs = 1-q/2)
+  lower <- upper <- rep(0, ncol(mu_sim))
+  for (j in 1:ncol(mu_sim)) {
+    lower[j] <- quantile(mu_sim[, j], probs = q/2)
+    upper[j] <- quantile(mu_sim[, j], probs = 1 - q/2)
   }
   list(lower = lower, upper = upper)
 }

@@ -13,7 +13,8 @@
   title_y = "y",
   size = 1,
   frame = TRUE,
-  sol = 100
+  sol = 100,
+  scale = "log"
 )
 }
 \arguments{
@@ -38,6 +39,10 @@ printing. e.g. if you just want the plot for the second smooth term set
 \item{frame}{Should a frame be drawn around the network?}
 
 \item{sol}{asd}
+
+\item{scale}{The scale on which smooth terms should be plotted, either on
+the log scale (\code{scale = log}, default) or on the exp-scale
+(\code{scale = exp}).}
 }
 \value{
 Invisibly returns a list of objects with elements of class ggplot.

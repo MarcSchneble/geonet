@@ -13,9 +13,9 @@ getIncidence <- function(x){
   e <- NULL
   incidence <- matrix(0, x$W, x$M)
   for (m in 1:x$M) {
-    dat <- filter(x$lins, e == m)
-    incidence[x$vertices$v[match(dat$v1[1], x$vertices$id)], m] <- -1
-    incidence[x$vertices$v[match(utils::tail(dat$v2, 1), x$vertices$id)], m] <- 1
+    lins_m <- filter(x$lins, e == m)
+    incidence[x$vertices$v[match(lins_m$v1[1], x$vertices$id)], m] <- -1
+    incidence[x$vertices$v[match(utils::tail(lins_m$v2, 1), x$vertices$id)], m] <- 1
   }
   incidence
 }
@@ -95,7 +95,7 @@ getBplot <- function(X, df){
   G <- X$network
 
   # design matrix for line segments
-  B <- matrix(0, nrow(df), sum(P$splines$J) + G$W)
+  B <- Matrix(0, nrow(df), sum(P$splines$J) + G$W, sparse = TRUE)
   N <- as.numeric(table(df$e))
   z <- vector("list", G$M)
 
@@ -105,7 +105,7 @@ getBplot <- function(X, df){
     B[((cumsum(N) - N)[m] + 1):cumsum(N)[m],
       ((cumsum(P$splines$J) - P$splines$J)[m] + 1):cumsum(P$splines$J)[m]] <-
       splineDesign(knots = P$splines$tau[[m]],
-                   x = z[[m]], ord = 2, outer.ok = TRUE)
+                   x = z[[m]], ord = 2, outer.ok = TRUE, sparse = TRUE)
   }
 
 
@@ -126,7 +126,7 @@ getBplot <- function(X, df){
     }
   }
   # check if B is a valid design matrix
-  if (!all.equal(rowSums(B), rep(1, nrow(df)))){
+  if (!all.equal(Matrix::rowSums(B), rep(1, nrow(df)))){
     stop("Error! Rowsums of B are not equal to one!")
   }
   B

@@ -2,25 +2,57 @@
 % Please edit documentation in R/ml.R
 \name{scoring}
 \alias{scoring}
+\alias{score}
+\alias{fisher}
 \title{Maximum-Likelihood Estimation}
 \usage{
-scoring(theta, design, rho, eps_theta = 1e-05)
+scoring(theta, rho, data, Z, K, ind, eps_theta = 1e-05)
+
+score(theta, rho, data, Z, K, ind)
+
+fisher(theta, rho, data, Z, K, ind)
 }
 \arguments{
-\item{theta}{A vector of model coefficients.}
+\item{theta}{An initial vector of model coefficients.}
 
-\item{design}{The design of the model.}
+\item{rho}{The current vector of smoothing parameters. For each smooth term,
+including the baseline intensity of the network, one smoothing parameter
+must be supplied.}
 
-\item{rho}{A vector of smoothing parameters.}
+\item{data}{A data frame containing the data.}
 
-\item{eps_theta}{asdasd}
+\item{Z}{The (sparse) model matrix where the number of coloums must
+correspond to the length of the vector of model coefficients \code{theta}.}
+
+\item{K}{A (sparse) square penalty matrix of with the same dimension as
+\code{theta}.}
+
+\item{ind}{A list which contains the indices belonging to each smooth term
+and the linear terms.}
+
+\item{eps_theta}{The termination condition. If the relative change of the
+norm of the model parameters is less than \code{eps_theta}, the scoring
+algorithm terminates and returns the current vector of model parameters.}
 }
 \value{
-A scalar (\code{logL}), a vector of the same length as
-theta (\code{score}) or a square matrix of the same dimension as
-theta (\code{fisher}).
+The maximum likelihood estimate for fixed smoothing parameters.
 }
 \description{
-\code{logL}, \code{score} and \code{fisher} compute the log-likelihood,
-the score-function and the Fisher-Information of the Poisson model.
+Scoring algorithm for maximium-likelihood estimation of a penalized Poisson
+model while treating the smoothing parameters as fixed. Since the model
+matrix \code{Z} when fitting a point process model on a geometric network is
+very large with usually several millions of entries, \code{scoring} builds
+an sparse representations of matrices in R.
+}
+\details{
+\code{scoring} performs the scoring algorithm for maximum-likelihood
+estimation according to Fahrmeir et al. (2013). This algorithm is based
+on the score-function and the Fisher-information of the log-likelihood.
+\code{score} returns the score-function (the gradient of the log-likelihood)
+and \code{fisher} returns the Fisher-information (negative Hessian of the
+log-likelihood).
+}
+\references{
+Fahrmeir, L., Kneib, T., Lang, S. and Marx, B. (2013).
+Regression. Springer.
 }

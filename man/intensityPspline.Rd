@@ -15,24 +15,58 @@ intensityPspline(
 )
 }
 \arguments{
-\item{formula}{Point pattern on a geometric network (object of class \code{gnpp})}
+\item{formula}{A one-sided formula (if a two-sided formula is supplied, the
+left hand side of the formula is ignored). The formula can consist of either
+linear terms as in linear models (\code{\link[base]{lm}}) or smooth terms as
+in \code{\link[mgcv]{gam}} formulae, where the usage is restricted to
+smooth terms constructed with \code{\link[mgcv]{s}} and the argument
+\code{bs} is set to
+\code{bs = "ps"} by default, i.e. \code{intensityPspline} can handle
+penalized spline
+based smooth terms. Internal linear covariates musst be supplied via
+\code{internal()}, see examples for details.}
 
-\item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
+\item{X}{A point pattern on a geometric network (object of class
+\code{gnpp}). The point pattern (specified via \code{X$data}) musst contain information on
+all covariates included in \code{formula}.}
 
-\item{offset}{as}
+\item{offset}{tba}
 
-\item{delta}{The knot distance delta}
+\item{delta}{The global knot distance \eqn{\delta}, a numerical vector of length one. If
+not supplied, delta will be chosen properly according to the geometric
+network \code{X} which is supplied.}
 
-\item{h}{The bin width h}
+\item{h}{The global bin width \eqn{h}, a numerical vector of length one. If
+not supplied, \code{h} will be chosen properly according to the geometric
+network \code{X} which is supplied.}
 
-\item{r}{The order of the penalty}
+\item{r}{The order of the penalty of the baseline intensity on the geometric
+network, default to a penalty of order \code{r = 1}.}
 
-\item{density}{asd}
+\item{density}{\code{TRUE} if the intensity should be normalized such that it
+can be interpreted as a density, i.e. the integral over the estimated density
+is equal to one.}
 }
 \value{
-an object of class gnppfit
+A fitted geometric network (object of class \code{gnppfit}).
 }
 \description{
+This is the main function of the \code{geonet} package.
 \code{intensityPspline} estimates the intensity of a point pattern on a
-geometric network.
+geometric network employing penalized splines as outlined in Schneble
+and Kauermann (2020). In distinction to
+\code{\link[spatstat]{density.lpp}} from the \code{spatstat} package,
+which provides kernel based tools for intensity estimation of point
+patterns on linear networks, \code{intensityPspline} allows to
+incorporate covariates while also estimating the baseline intensity.
+Covariates can be either internal or external. External covariates
+can also be incorporated as a smooth term using penalized splines
+with the same syntax as in \code{\link[mgcv]{gam}}.
+}
+\details{
+Details
+}
+\references{
+Schneble, M. and G. Kauermann (2020). Intensity estimation on
+geometric networks with penalized splines. arXiv preprint arXiv:2002.10270 .
 }

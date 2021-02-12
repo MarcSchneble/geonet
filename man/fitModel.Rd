@@ -5,10 +5,10 @@
 \title{Fit a Penalized Spline Poisson Model on a Geometric Network}
 \usage{
 fitModel(
-  design,
-  lins = NULL,
-  smooths = NULL,
-  offset = NULL,
+  data,
+  Z,
+  K,
+  ind,
   rho = 10,
   rho_max = 1e+05,
   eps_rho = 0.01,
@@ -16,25 +16,41 @@ fitModel(
 )
 }
 \arguments{
-\item{design}{as}
+\item{data}{soll noch weg.}
 
-\item{lins}{as}
+\item{Z}{The (sparse) model matrix where the number of coloums must
+correspond to the length of the vector of model coefficients \code{theta}.}
 
-\item{smooths}{as}
+\item{K}{A (sparse) square penalty matrix of with the same dimension as
+\code{theta}.}
 
-\item{offset}{as}
+\item{ind}{A list which contains the indices belonging to each smooth term
+and the linear terms.}
 
-\item{rho}{as}
+\item{rho}{An initial estimate of the smoothing parameter. Either a vector
+of length one or a vector which corresponds to the count of smooth terms
+(including the baseline intensity) in the model.}
 
-\item{rho_max}{as}
+\item{rho_max}{If \code{rho} exceeds \code{rho_max}, the algorithm stops
+and returns the current values.}
 
-\item{eps_rho}{as}
+\item{eps_rho}{The termination condition for \code{rho}.}
 
-\item{maxit_rho}{as}
+\item{maxit_rho}{Maximum number of iterations for \code{rho}.}
 }
 \value{
 Model fit.
 }
 \description{
-\code{fitModel} performs the actual model fit.
+\code{fitModel} is called from \code{\link[geonet]{intensityPSpline}}
+and performs the iterative algorithm to estimate the smoothing parameters
+\eqn{rho} in the penalized Poisson model.
+}
+\details{
+Generalized Fellner-Schall method (Wood and Fasiolo, 2017).
+}
+\references{
+Wood, S. N. and Fasiolo, M. (2017). A generalized Fellner-Schall
+method for smoothing parameter optimization with application to
+Tweedie location, scale and shape models. Biometrics 73 1071-1081.
 }

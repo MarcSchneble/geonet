@@ -226,18 +226,18 @@ as.gnpp.lpp <- function(x, ...){
       stop("Object must be of class 'lpp'")
   }
   G <- as.gn(as.linnet(x))
-  dat <- tibble(seg = x$data$seg, tp = x$data$tp,
+  data <- tibble(seg = x$data$seg, tp = x$data$tp,
                 xx = x$data$x, y = x$data$y)
   if (ncol(x$data) > 4){
     covariates <- as_tibble(as.data.frame(x$data)[, -(1:4)])
     colnames(covariates) <- colnames(x$data)[-(1:4)]
-    dat <- bind_cols(dat, covariates)
+    data <- bind_cols(data, covariates)
   }
-  dat <- left_join(dat, G$lins, by = "seg") %>%
+  data <- left_join(data, G$lins, by = "seg") %>%
     mutate(tp = frac1 + tp*frac2, x = xx) %>%
     select(seg, e, tp, x, y, colnames(covariates)) %>%
     arrange(e, tp)
-  X <- list(data = dat, network = G)
+  X <- list(data = data, network = G)
   class(X) <- "gnpp"
   X
 }

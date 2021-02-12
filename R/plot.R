@@ -105,47 +105,44 @@ plot.gnpp <- function(x, ..., covariate = NULL,
 #' \code{size} argument of \code{\link[ggplot2]{geom_segment}}.
 #' @param frame Should a frame be drawn around the network?
 #' @param sol asd
+#' @param scale The scale on which smooth terms should be plotted, either on
+#' the log scale (\code{scale = log}, default) or on the exp-scale
+#' (\code{scale = exp}).
 #' @return Invisibly returns a list of objects with elements of class ggplot.
 #' @import ggplot2
 #' @importFrom  grDevices devAskNewPage
+#' @importFrom splines splineDesign
 #' @export
 
 plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title_y = "y",
-                         size = 1, frame = TRUE, sol = 100) {
-
-  e <- xend <- y <- yend <- intensity <- lwr <- upr <- NULL
+                         size = 1, frame = TRUE, sol = 100, scale = "log") {
 
   stopifnot(inherits(x, "gnppfit"))
-
-  df <- tibble(seg = integer(0), e = integer(0),
-                      x = numeric(0), xend = numeric(0),
-                      y = numeric(0), yend = numeric(0),
-                      z = numeric(0))
+  e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
   G <- as.gn(x)
-
-  g <- df <- vector("list", 1 + length(x$effects$smooth))
+  g <- df <- vector("list", length(x$smooth) + 1)
 
   for (m in 1:G$M) {
-    dat <- filter(G$lins, e == m)
-    cs <- c(0, cumsum(dat$length))
-    dx <- dat$v2_x - dat$v1_x
-    dy <- dat$v2_y - dat$v1_y
-    for (i in 1:length(dat$seg)) {
+    lins_m <- filter(G$lins, e == m)
+    cs <- c(0, cumsum(lins_m$length))
+    dx <- lins_m$v2_x - lins_m$v1_x
+    dy <- lins_m$v2_y - lins_m$v1_y
+    for (i in 1:length(lins_m$seg)) {
       tt <- seq(0, 1, 1/sol)
-      xx <- dat$v1_x[i] + tt*dx[i]
-      yy <- dat$v1_y[i] + tt*dy[i]
-      zz <- cs[i] + (tt - 1/(2*sol))[-1]*dat$length[i]
-      df[[1]] <- bind_rows(df, tibble(seg = dat$seg[i], e = m,
+      xx <- lins_m$v1_x[i] + tt*dx[i]
+      yy <- lins_m$v1_y[i] + tt*dy[i]
+      zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
+      df[[1]] <- bind_rows(df, tibble(seg = lins_m$seg[i], e = m,
                                                x = utils::head(xx, -1), xend = xx[-1],
                                                y = utils::head(yy, -1), yend = yy[-1],
                                                z = zz))
     }
   }
 
-  # get intensity
+  # get baseline intensity of the point pattern on the geometric network
   B <- getBplot(x, df[[1]])
-  ind <- grep("G.", x$names_theta)
-  df[[1]]$intensity <- as.vector(exp(B[, ind]%*%x$theta[ind]))
+  theta <- x$coefficients[x$ind[["G"]]]
+  df[[1]]$intensity <- as.vector(exp(B%*%theta))
   #
 
   g[[1]] <- ggplot(df[[1]])
@@ -163,10 +160,23 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
 
   if (length(g) > 1){
     for (i in 2:length(g)) {
-      df[[i]] <- x$effects$smooth[[i - 1]]
+      var <- names(x$ind)[i]
+      xx <- seq(x$smooth[[var]]$range[1], x$smooth[[var]]$range[2], length.out = 100)
+      X <- splineDesign(knots = x$smooth[[var]]$knots, x = xx,
+                        ord = x$smooth[[var]]$l + 1, outer.ok = TRUE)
+      X <- sweep(X, 2, x$smooth[[var]]$ident)[, -1]
+      theta <- x$coefficients[x$ind[[var]]]
+      V <- as.matrix(x$V[x$ind[[var]], x$ind[[var]]])
+      y <- as.vector(X%*%theta)
+      limits <- smoothConfidence(theta, V, X, R = 1000)
+      df[[i]] <- tibble(x = xx, y = y, lower = limits$lower, upper = limits$upper)
+      if (scale == "exp"){
+        df[[i]] <- mutate(df[[i]], y = exp(y),
+                          lower = exp(lower), upper = exp(upper))
+      }
       g[[i]] <- ggplot(df[[i]]) +
-        geom_ribbon(aes(x = x, ymin = exp(lwr), ymax = exp(upr)), fill = "grey50") +
-        geom_line(aes(x = x, y = exp(y)), color = "red") +
+        geom_ribbon(aes(x = x, ymin = lower, ymax = upper), fill = "grey50") +
+        geom_line(aes(x = x, y = y), color = "red") +
         theme_bw()
     }
   }
