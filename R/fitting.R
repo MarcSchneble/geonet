@@ -1,12 +1,12 @@
 #' Intensity Estimation on Geometric Networks with Penalized Splines
 #'
 #' This is the main function of the \code{geonet} package.
-#' \code{intensityPspline} estimates the intensity of a point pattern on a
+#' \code{intensity_pspline} estimates the intensity of a point pattern on a
 #' geometric network employing penalized splines as outlined in Schneble
 #' and Kauermann (2020). In distinction to
 #' \code{\link[spatstat]{density.lpp}} from the \code{spatstat} package,
 #' which provides kernel based tools for intensity estimation of point
-#' patterns on linear networks, \code{intensityPspline} allows to
+#' patterns on linear networks, \code{intensity_pspline} allows to
 #' incorporate covariates while also estimating the baseline intensity.
 #' Covariates can be either internal or external. External covariates
 #' can also be incorporated as a smooth term using penalized splines
@@ -16,18 +16,17 @@
 #'
 #' @param formula A one-sided formula (if a two-sided formula is supplied, the
 #' left hand side of the formula is ignored). The formula can consist of either
-#' linear terms as in linear models (\code{\link[base]{lm}}) or smooth terms as
+#' linear terms as in linear models (\code{\link{lm}}) or smooth terms as
 #' in \code{\link[mgcv]{gam}} formulae, where the usage is restricted to
 #' smooth terms constructed with \code{\link[mgcv]{s}} and the argument
 #' \code{bs} is set to
-#' \code{bs = "ps"} by default, i.e. \code{intensityPspline} can handle
+#' \code{bs = "ps"} by default, i.e. \code{intensity_pspline} can handle
 #' penalized spline
 #' based smooth terms. Internal linear covariates musst be supplied via
 #' \code{internal()}, see examples for details.
 #' @param X A point pattern on a geometric network (object of class
 #' \code{gnpp}). The point pattern (specified via \code{X$data}) musst contain information on
 #' all covariates included in \code{formula}.
-#' @param offset tba
 #' @param delta The global knot distance \eqn{\delta}, a numerical vector of length one. If
 #' not supplied, delta will be chosen properly according to the geometric
 #' network \code{X} which is supplied.
@@ -48,8 +47,7 @@
 #' @importFrom mgcv smooth.construct.ps.smooth.spec s
 #' @export
 
-intensityPspline <- function(formula, X, offset = NULL,
-                             delta = NULL, h = NULL, r = 1,
+intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
                              density = FALSE){
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
@@ -67,8 +65,10 @@ intensityPspline <- function(formula, X, offset = NULL,
   }
 
   # get representation of P-splines on the network
-  P <- Pspline(X, delta, h, r)
-  data <- binData(X, P, vars, intern)
+  P <- pspline(X$network, delta, h)
+  P$B <- getB(X$network, P)
+  P$K <- getK(X$network, P, r)
+  data <- bin_data(X, P, vars, intern)
   ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
   K <- P$K
 
@@ -107,7 +107,7 @@ intensityPspline <- function(formula, X, offset = NULL,
   }
 
   # fit the model
-  fit <- fitModel(data, Z, K, ind)
+  fit <- fit_poisson_model(data, Z, K, ind)
 
   # output
   out <- list()
@@ -125,7 +125,7 @@ intensityPspline <- function(formula, X, offset = NULL,
 
 #' Fit a Penalized Spline Poisson Model on a Geometric Network
 #'
-#' \code{fitModel} is called from \code{\link[geonet]{intensityPSpline}}
+#' \code{fit_poisson_model} is called from \code{\link[geonet]{intensity_pspline}}
 #' and performs the iterative algorithm to estimate the smoothing parameters
 #' \eqn{rho} in the penalized Poisson model.
 #'
@@ -153,7 +153,7 @@ intensityPspline <- function(formula, X, offset = NULL,
 #' @importFrom stats optim
 #' @export
 
-fitModel <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
+fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
                      eps_rho = 0.01, maxit_rho = 100){
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
@@ -188,38 +188,4 @@ fitModel <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
     rho <- rho_new
   }
   list(theta = theta, V = V, rho = rho, it_rho = it_rho)
-}
-
-#' Confidence Bands of Smooth Terms
-#'
-#' \code{smoothConfidence} computes the lower and upper limits of smooth
-#' terms fitted with \code{intensityPspline}.
-#'
-#' @param theta The estimated coefficients which corresponds to the smooth
-#' term.
-#' @param V The covariance matrix of the estimated coefficients \code{theta}.
-#' @param X The design matrix of the model which corresponds to the smooth
-#' term.
-#' @param q The quantile. Default to \code{q = 0.05} which corresponds to
-#' 95% confidence bands.
-#' @param R The number of replications in the simulation process.
-#' @return A list of two vectors which contain the lower and the upper limits
-#' of the confidence band.
-#' @importFrom stats quantile
-#' @importFrom mgcv rmvn
-#' @export
-
-smoothConfidence <- function(theta, V, X, q = 0.05, R = 1000){
-  set.seed(1)
-  mu_sim <- matrix(0, R, nrow(X))
-  for (i in 1:R) {
-    theta_sim <- rmvn(1, theta, V)
-    mu_sim[i, ] <- as.vector(X%*%theta_sim)
-  }
-  lower <- upper <- rep(0, ncol(mu_sim))
-  for (j in 1:ncol(mu_sim)) {
-    lower[j] <- quantile(mu_sim[, j], probs = q/2)
-    upper[j] <- quantile(mu_sim[, j], probs = 1 - q/2)
-  }
-  list(lower = lower, upper = upper)
 }

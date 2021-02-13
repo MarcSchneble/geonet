@@ -2,12 +2,48 @@
 % Please edit documentation in R/plot.R
 \name{plot.gn}
 \alias{plot.gn}
-\title{Plot Method for Geometric Networks}
+\alias{plot.gnpp}
+\alias{plot.gnppfit}
+\title{Plot Method for Geometric Network related Objects}
 \usage{
-\method{plot}{gn}(x, ..., title = "", title_x = "", title_y = "", size = 1, frame = TRUE)
+\method{plot}{gn}(
+  x,
+  ...,
+  title = "",
+  title_x = "",
+  title_y = "",
+  size_lines = 1,
+  frame = TRUE
+)
+
+\method{plot}{gnpp}(
+  x,
+  ...,
+  covariate = NULL,
+  title = "",
+  title_x = "",
+  title_y = "",
+  size_lines = 1,
+  size_points = 1,
+  frame = TRUE
+)
+
+\method{plot}{gnppfit}(
+  x,
+  ...,
+  select = NULL,
+  title = "",
+  title_x = "x",
+  title_y = "y",
+  size_lines = 1,
+  frame = TRUE,
+  sol = 100,
+  scale = "log"
+)
 }
 \arguments{
-\item{x}{A geometric network (object of class \code{gn}).}
+\item{x}{An object which is related to a geonmetric network
+(object of class \code{gn}, \code{gnpp} or \code{gnppfit}).}
 
 \item{...}{Further arguments passed to plot.}
 
@@ -17,16 +53,33 @@
 
 \item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
 
-\item{size}{Plotting size of the line segments. This specificies the
+\item{size_lines}{Plotting size of the line segments. This specificies the
 \code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
 
 \item{frame}{Should a frame be drawn around the network?}
+
+\item{covariate}{Character vector of length 1, name of the covariate
+that should be plotted.}
+
+\item{size_points}{Plotting size of the point pattern. This specificies the
+\code{size} argument of \code{\link[ggplot2]{geom_point}}.}
+
+\item{select}{Allows the plot for a single model term to be selected for
+printing. e.g. if you just want the plot for the second smooth term set
+\code{select = 2}.}
+
+\item{sol}{asd}
+
+\item{scale}{The scale on which smooth terms should be plotted, either on
+the log scale (\code{scale = log}, default) or on the exp-scale
+(\code{scale = exp}).}
 }
 \value{
-Invisibly returns an object of class \code{ggplot}.
+Invisibly returns an object of class \code{ggplot} or a list
+of \code{ggplot} objects.
 }
 \description{
-This is the \code{plot} method for an object of class \code{gn}.
+These are \code{plot} methods for objects related to geometric networks.
 }
 \details{
 Details

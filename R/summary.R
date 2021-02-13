@@ -3,7 +3,7 @@
 #' \code{intensityPspline} estimates the intensity of a point pattern on a
 #' geometric network.
 #'
-#' @param x Point pattern on a geometric network (object of class \code{gnpp})
+#' @param object Point pattern on a geometric network (object of class \code{gnpp})
 #' @param ... asdad
 #' @return A fitted geometric network (object of class \code{gnppfit}).
 #' @import dplyr

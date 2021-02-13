@@ -7,9 +7,9 @@
 \method{summary}{gnppfit}(object, ...)
 }
 \arguments{
-\item{...}{asdad}
+\item{object}{Point pattern on a geometric network (object of class \code{gnpp})}
 
-\item{x}{Point pattern on a geometric network (object of class \code{gnpp})}
+\item{...}{asdad}
 }
 \value{
 A fitted geometric network (object of class \code{gnppfit}).

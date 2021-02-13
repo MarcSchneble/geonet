@@ -1,52 +1,46 @@
 #' Coerce to Geometric Network
 #'
-#' Gasdda
+#' \code{as_gn} coerces an existing object into a geometric network, an object
+#' of class \code{gn}.
 #'
-#' @param x An object that should be converted to a geometric network
-#' (object of class gn)
-#' @param ... further
+#' @param x An object that could reasonably be coerced to a geometric network
+#' (object of class gn).
+#' @param ... Further arguments passed to \code{as_gn}.
 #' @export
 
-as.gn <- function(x, ...){
-  UseMethod("as.gn")
+as_gn <- function(x, ...){
+  UseMethod("as_gn")
 }
 
-#' Coerece to Point Pattern on Geometric Network
+#' Coerece to Point Pattern on a Geometric Network
 #'
-#' Gasdda
+#' \code{as_gnpp} coerces an existing object into a point pattern on a geometric
+#' network, an object
+#' of class \code{gnpp}.
 #'
-#' @param x An object that should be converted to a point pattern on a
-#' geometric network (object of class gnpp).
+#' @param x An object that could reasonable coerced to a point pattern on a
+#' geometric network (object of class \code{gnpp}).
 #' @param ... further
 #' @export
 
-as.gnpp <- function(x, ...){
-  UseMethod("as.gnpp")
+as_gnpp <- function(x, ...){
+  UseMethod("as_gnpp")
 }
 
-#' Methods for Linear Networks
-#'
-#' The function as.gn converts an object of class linnet to an object of
-#' class gn
-#'
-#' @param x an object of the spatstat class linnet or an object that can
-#' be converted to an instance of this class
-#' @param ... further
-#' @return A geometric network (object of class \code{gnpp})
-#' @import dplyr
-#' @importFrom spatstat as.linnet
+
+
+#' @param spatstat Set to \code{TRUE} if retransformation to an object of any
+#' \code{spatstat} class is desired. Some elements of these objects (such as
+#' the window) are discared when being coerced to an object of class
+#' \code{gn}.
+#' @rdname as_gn
 #' @export
-#'
-as.gn.linnet <- function(x, ...){
+
+as_gn.linnet <- function(x, ..., spatstat = FALSE){
+  if (!inherits(x, "linnet")) stop("x muss be of class 'linnet'")
   v1 <- v2 <- e <- NULL
-  if (!inherits(x, "linnet")){
-    x <- as.linnet(x)
-    if (!inherits(x, "linnet")){
-      stop("Object must be of class 'linnet' or must be converable to an object of class 'linnet'")
-    }
-  }
   L <- x
-  L$d <- diag(L$dpath[L$from, L$to])
+  d <- diag(L$dpath[L$from, L$to])
   G <- list(
     vertices = tibble(id = 1:L$vertices$n,
                              v = NA,
@@ -59,125 +53,87 @@ as.gn.linnet <- function(x, ...){
   # adjacency matrix of vertices in linear network representation
   A <- L$m*1
   # vertex indices with degree 2
-  deg_v <- as.numeric(table(c(L$from, L$to)))
-  ind <- which(deg_v == 2)
-
+  degrees <- as.numeric(table(c(L$from, L$to)))
+  v_deg2 <- which(degrees == 2)
   # initialize
-  ind2 <- NULL
+  lins_remove <- NULL
+  curves <- list()
   i <- 0
-  P <- list()
-
   # remove vertices with degree 2 until none is left
-  while(length(ind) > 0){
+  while(length(v_deg2) > 0){
     i <- i+1
-
     # find the two adjacent vertices to vertex with degree 2
-    adj <- which(A[ind[1], ] == 1)
-    P[[i]] <- tibble(v1 = c(adj[1], ind[1]),
-                     v2 = c(ind[1], adj[2]),
+    adj <- which(A[v_deg2[1], ] == 1)
+    curves[[i]] <- tibble(v1 = c(adj[1], v_deg2[1]),
+                     v2 = c(v_deg2[1], adj[2]),
                      seg = NA,
                      length = NA)
-
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
     while(sum(A[adj[1], ]) == 2){
       adj.new <- which(A[adj[1], ] == 1)
-      l <- adj.new[which(!is.element(adj.new, P[[i]]$v1))]
-      P[[i]] <- rbind(c(l, adj[1], NA, NA), P[[i]])
+      l <- adj.new[which(!is.element(adj.new, curves[[i]]$v1))]
+      curves[[i]] <- rbind(c(l, adj[1], NA, NA), curves[[i]])
       adj[1] <- l
     }
-
     # go into the direction of the second adjecent vertex and search for more
     # vertices with degree 2
     while(sum(A[adj[2], ]) == 2){
       adj.new <- which(A[adj[2], ] == 1)
-      r <- adj.new[which(!is.element(adj.new, P[[i]]$v2))]
-      P[[i]] <- rbind(P[[i]], c(adj[2], r, NA, NA))
+      r <- adj.new[which(!is.element(adj.new, curves[[i]]$v2))]
+      curves[[i]] <- rbind(curves[[i]], c(adj[2], r, NA, NA))
       adj[2] <- r
     }
-
     # save the line indices and their corresponding lengths which are removed from the network
-    for (k in 1:nrow(P[[i]])) {
-      P[[i]]$seg[k] <- which(L$from == P[[i]]$v1[k] & L$to == P[[i]]$v2[k] | L$from == P[[i]]$v2[k] & L$to == P[[i]]$v1[k])
-      P[[i]]$length[k] <- L$d[P[[i]]$seg[k]]
+    for (k in 1:nrow(curves[[i]])) {
+      curves[[i]]$seg[k] <- which(L$from == curves[[i]]$v1[k] & L$to == curves[[i]]$v2[k] |
+                                    L$from == curves[[i]]$v2[k] & L$to == curves[[i]]$v1[k])
+      curves[[i]]$length[k] <- d[curves[[i]]$seg[k]]
     }
-
-    A[P[[i]]$v1[1], P[[i]]$v2[nrow(P[[i]])]] <-
-      A[P[[i]]$v2[nrow(P[[i]])], P[[i]]$v1[1]] <- 1
+    # add new connection to adjacancy matrix
+    A[curves[[i]]$v1[1], curves[[i]]$v2[nrow(curves[[i]])]] <-
+      A[curves[[i]]$v2[nrow(curves[[i]])], curves[[i]]$v1[1]] <- 1
     # add line segments to the delete vector
-    ind2 <- unique(c(ind2, P[[i]]$seg))
-
+    lins_remove <- unique(c(lins_remove, curves[[i]]$seg))
     # remove vertices from the current vector of vertices with degree 2
-    ind <- setdiff(ind, P[[i]]$v2[1:(nrow(P[[i]])-1)])
-
-    #
-    P[[i]]$e <- i
-    cs <- cumsum(P[[i]]$length)
-    P[[i]]$frac1 <- c(0, cs[-length(cs)]/cs[length(cs)])
-    P[[i]]$frac2 <- P[[i]]$length/sum(P[[i]]$length)
-
-    #G$lins$e[P[[i]]$m] <- i
-
-    # get fraction of line segments with respect to the whole curce at the end and at the beginning
-
-    #G$lins$frac1[which(G$lins$e == i)] <- c(0, cs[-length(cs)]/cs[length(cs)])
-    #G$lins$frac2[which(G$lins$e == i)] <- P[[i]]$length/sum(P[[i]]$length)
+    v_deg2 <- setdiff(v_deg2, curves[[i]]$v2[1:(nrow(curves[[i]])-1)])
+    # add information for geometric network representation
+    cs <- cumsum(curves[[i]]$length)
+    curves[[i]]$e <- i
+    curves[[i]]$frac1 <- c(0, cs[-length(cs)]/cs[length(cs)])
+    curves[[i]]$frac2 <- curves[[i]]$length/sum(curves[[i]]$length)
   }
-  ind_v <- which(deg_v == 2)
-  G$W <- L$vertices$n - length(ind_v)
-  G$M <-  L$lines$n - length(ind2) + length(P)
-
-  lins1 <- bind_rows(P) %>% mutate(v1_x = L$vertices$x[v1],
+  v_deg2 <- which(degrees == 2)
+  G$W <- L$vertices$n - length(v_deg2)
+  G$M <-  L$lines$n - length(lins_remove) + length(curves)
+  curves <- bind_rows(curves) %>% mutate(v1_x = L$vertices$x[v1],
                                    v1_y = L$vertices$y[v1],
                                    v2_x = L$vertices$x[v2],
                                    v2_y = L$vertices$y[v2])
-  ind3 <- setdiff(1:L$lines$n, ind2)
-  lins2 <- tibble(seg = ind3,
-                  e = (length(P) + 1):G$M,
-                  v1 = L$from[ind3],
-                  v2 = L$to[ind3],
-                  v1_x = L$vertices$x[v1],
-                  v1_y = L$vertices$y[v1],
-                  v2_x = L$vertices$x[v2],
-                  v2_y = L$vertices$y[v2],
-                  length = diag(L$dpath[L$from, L$to])[ind3],
+  ind_lins <- setdiff(1:L$lines$n, lins_remove)
+  lins <- tibble(seg = ind_lins, e = (i+1):G$M,
+                  v1 = L$from[ind_lins], v2 = L$to[ind_lins],
+                  v1_x = L$vertices$x[v1], v1_y = L$vertices$y[v1],
+                  v2_x = L$vertices$x[v2], v2_y = L$vertices$y[v2],
+                  length = diag(L$dpath[L$from, L$to])[ind_lins],
                   frac1 = 0, frac2 = 1)
-  G$lins <- bind_rows(lins2, lins1)
-  G$lins <- G$lins %>% dplyr::arrange(e)
-
-  G$vertices$v[setdiff(1:nrow(G$vertices), ind_v)] <- 1:G$W
-
-
-  G$d <- G$lins %>%
-    group_by(e) %>%
-    summarize(length = sum(length), .groups = "drop") %>%
-    pull(length)
-
-  # delete rows and cols in A
-  A <- A[-ind_v, ]
-  A <- A[, -ind_v]
-  #G$adjacency <- A
+  G$lins <- bind_rows(lins, curves)
+  G$lins <- G$lins %>% arrange(e)
+  G$vertices$v[setdiff(1:nrow(G$vertices), v_deg2)] <- 1:G$W
+  G$d <- G$lins %>% group_by(e) %>%
+    summarize(length = sum(length), .groups = "drop") %>% pull(length)
+  # delete rows and cols in A which relate to vertices with degree 2
+  A <- A[-v_deg2, ]
+  G$adjacency <- A[, -v_deg2]
   G$incidence <- getIncidence(G)
-  G$adjacency <- upper.tri(A)*A
-  #net <- network::as.network(G$adjacency)
-  #G$incidence <- network::as.matrix.network(net, matrix.type = "incidence")
-
   class(G) <- "gn"
   G
 }
 
-#' Methods for Point Patterns on Linear Networks
-#'
-#' The function as.gnpp.lpp converts an object of class linnet to an object of
-#' class gn
-#'
-#' @param x an object of the spatstat class linnet or an object that can
-#' be converted to an instance of this class
-#' @param ... asdd
-#' @return Point pattern on a geometric network (object of class \code{gnpp}).
+#' @rdname as_gn
 #' @export
 
-as.gn.gnpp <- function(x, ...){
+as_gn.gnpp <- function(x, ...){
   if (!inherits(x, "gnpp")){
     stop("Object must be of class 'gpp'")
   }
@@ -186,18 +142,10 @@ as.gn.gnpp <- function(x, ...){
   G
 }
 
-#' Methods for Point Patterns on Linear Networks
-#'
-#' The function as.gnpp.lpp converts an object of class linnet to an object of
-#' class gn
-#'
-#' @param x an object of the spatstat class linnet or an object that can
-#' be converted to an instance of this class
-#' @param ... asdd
-#' @return Point pattern on a geometric network (object of class \code{gnpp}).
+#' @rdname as_gn
 #' @export
 
-as.gn.gnppfit <- function(x, ...){
+as_gn.gnppfit <- function(x, ...){
   if (!inherits(x, "gnppfit")){
     stop("Object must be of class 'gnppfit'")
   }
@@ -206,26 +154,31 @@ as.gn.gnppfit <- function(x, ...){
   G
 }
 
+#' @rdname as_gnpp
+#' @export
 
-#' Methods for Point Patterns on Linear Networks
-#'
-#' The function as.gnpp.lpp converts an object of class linnet to an object of
-#' class gn
-#'
-#' @param x an object of the spatstat class linnet or an object that can
-#' be converted to an instance of this class
-#' @param ... asdd
-#' @return Point pattern on a geometric network (object of class \code{gnpp}).
+as_gnpp.gnppfit <- function(x, ...){
+  X <- list(data = x$data, network = x$network)
+  class(X) <- "gnpp"
+  X
+}
+
+
+#' @rdname as_gnpp
+#' @param spatstat Set to \code{TRUE} if retransformation to an object of any
+#' \code{spatstat} class is desired. Some elements of these objects (such as
+#' the window) are discared when being coerced to an object of class
+#' \code{gn}.
 #' @import dplyr
 #' @importFrom spatstat as.linnet
 #' @export
 
-as.gnpp.lpp <- function(x, ...){
+as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
   frac1 <- tp <- frac2 <- e <- y <- seg <- xx <-  NULL
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }
-  G <- as.gn(as.linnet(x))
+  G <- as_gn(as.linnet(x))
   data <- tibble(seg = x$data$seg, tp = x$data$tp,
                 xx = x$data$x, y = x$data$y)
   if (ncol(x$data) > 4){

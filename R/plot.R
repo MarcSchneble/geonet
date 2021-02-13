@@ -1,47 +1,11 @@
-#' Plot Method for Geometric Networks
+#' Plot Method for Geometric Network related Objects
 #'
-#' This is the \code{plot} method for an object of class \code{gn}.
-#'
-#' Details
-#'
-#' @param x A geometric network (object of class \code{gn}).
-#' @param ... Further arguments passed to plot.
-#' @param title Main title of the plot.
-#' @param title_x x-axis title (ignored if \code{frame = FALSE}).
-#' @param title_y y-axis title (ignored if \code{frame = FALSE}).
-#' @param size Plotting size of the line segments. This specificies the
-#' \code{size} argument of \code{\link[ggplot2]{geom_segment}}.
-#' @param frame Should a frame be drawn around the network?
-#' @return Invisibly returns an object of class \code{ggplot}.
-#' @import ggplot2
-#' @export
-
-plot.gn <- function(x, ..., title = "", title_x = "", title_y = "",
-                    size = 1, frame = TRUE) {
-  v1_x <- v1_y <- v2_x <- v2_y <- NULL
-  g <- ggplot(x$lins)
-  if (!frame) {
-    g <- g + theme_void()
-  } else {
-    g <- g + theme_bw()
-  }
-  g <- g + geom_segment(aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y), size = size,
-                        lineend = "round", linejoin = "bevel") +
-    labs(x = title_x, y = title_y, title = title) +
-    theme(panel.grid = element_blank(),
-          plot.title = element_text(hjust = 0.5))
-  print(g)
-  invisible(g)
-}
-
-#' Plot Method for Points Patterns on Geometric Networks
-#'
-#' This is the \code{plot} method for an object of class \code{gnpp}.
+#' These are \code{plot} methods for objects related to geometric networks.
 #'
 #' Details
 #'
-#' @param x A point pattern on a geometric network
-#' (object of class \code{gnpp}).
+#' @param x An object which is related to a geonmetric network
+#' (object of class \code{gn}, \code{gnpp} or \code{gnppfit}).
 #' @param ... Further arguments passed to plot.
 #' @param covariate Character vector of length 1, name of the covariate
 #' that should be plotted.
@@ -53,7 +17,37 @@ plot.gn <- function(x, ..., title = "", title_x = "", title_y = "",
 #' @param size_points Plotting size of the point pattern. This specificies the
 #' \code{size} argument of \code{\link[ggplot2]{geom_point}}.
 #' @param frame Should a frame be drawn around the network?
-#' @return Invisibly returns an object of class \code{ggplot}.
+#' @param sol asd
+#' @param scale The scale on which smooth terms should be plotted, either on
+#' the log scale (\code{scale = log}, default) or on the exp-scale
+#' (\code{scale = exp}).
+#' @param select Allows the plot for a single model term to be selected for
+#' printing. e.g. if you just want the plot for the second smooth term set
+#' \code{select = 2}.
+#' @return Invisibly returns an object of class \code{ggplot} or a list
+#' of \code{ggplot} objects.
+#' @import ggplot2
+#' @export
+
+plot.gn <- function(x, ..., title = "", title_x = "", title_y = "",
+                    size_lines = 1, frame = TRUE) {
+  v1_x <- v1_y <- v2_x <- v2_y <- NULL
+  g <- ggplot(x$lins)
+  if (!frame) {
+    g <- g + theme_void()
+  } else {
+    g <- g + theme_bw()
+  }
+  g <- g + geom_segment(aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y), size = size_lines,
+                        lineend = "round", linejoin = "bevel") +
+    labs(x = title_x, y = title_y, title = title) +
+    theme(panel.grid = element_blank(),
+          plot.title = element_text(hjust = 0.5))
+  print(g)
+  invisible(g)
+}
+
+#' @rdname plot.gn
 #' @import ggplot2
 #' @export
 
@@ -86,40 +80,18 @@ plot.gnpp <- function(x, ..., covariate = NULL,
   invisible(g)
 }
 
-#' Plot Method for Fitted Models on Geometric Networks
-#'
-#' This is the \code{plot} method for an object of class \code{gnppfit}.
-#'
-#' Details
-#'
-#' @param x A model fit on a geometric network
-#' (an object of class \code{gnppfit}).
-#' @param ... Further arguments passed to plot
-#' @param select Allows the plot for a single model term to be selected for
-#' printing. e.g. if you just want the plot for the second smooth term set
-#' \code{select = 2}.
-#' @param title Main title of the plot.
-#' @param title_x x-axis title (ignored if \code{frame = FALSE}).
-#' @param title_y y-axis title (ignored if \code{frame = FALSE}).
-#' @param size Plotting size of the line segments. This specificies the
-#' \code{size} argument of \code{\link[ggplot2]{geom_segment}}.
-#' @param frame Should a frame be drawn around the network?
-#' @param sol asd
-#' @param scale The scale on which smooth terms should be plotted, either on
-#' the log scale (\code{scale = log}, default) or on the exp-scale
-#' (\code{scale = exp}).
-#' @return Invisibly returns a list of objects with elements of class ggplot.
+#' @rdname plot.gn
 #' @import ggplot2
 #' @importFrom  grDevices devAskNewPage
 #' @importFrom splines splineDesign
 #' @export
 
 plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title_y = "y",
-                         size = 1, frame = TRUE, sol = 100, scale = "log") {
+                         size_lines = 1, frame = TRUE, sol = 100, scale = "log") {
 
   stopifnot(inherits(x, "gnppfit"))
   e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
-  G <- as.gn(x)
+  G <- as_gn(x)
   g <- df <- vector("list", length(x$smooth) + 1)
 
   for (m in 1:G$M) {
@@ -152,7 +124,7 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
     g[[1]] <- g[[1]] + theme_bw()
   }
   g[[1]] <- g[[1]] + geom_segment(aes(x = x, xend = xend, y = y, yend = yend, color = intensity),
-                          size = size, lineend = "round", linejoin = "mitre") +
+                          size = size_lines, lineend = "round", linejoin = "mitre") +
     labs(color = "Intensity", x = title_x, y = title_y, title = title) +
     theme(panel.grid = element_blank(),
                  plot.title = element_text(hjust = 0.5)) +

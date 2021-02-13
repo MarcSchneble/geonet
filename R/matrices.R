@@ -149,7 +149,7 @@ getBplot <- function(X, df){
 
 getK <- function(X, P, r){
   # returns the first or second penalty matrix K
-
+  if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
   # adjacency matrix of knots
   A_tau <- matrix(0, sum(P$splines$J) + X$W, sum(P$splines$J) + X$W)
 
