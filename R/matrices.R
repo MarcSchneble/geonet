@@ -1,39 +1,41 @@
-#' Get the incidence matrix
+#' Incidence matrix of a geometric network
 #'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
+#' \code{incidence} constructs the incidence matrix of a geometric network
+#' from the vertices and the curve segments.
 #'
-#' @param x an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @param vertices A data frame containing the vertices of the geometric
+#' network.
+#' @param lins A data frame containing the curve segments of the geometric
+#' network.
+#' @return The incidence matrix of dimension \eqn{W} by \eqn{M}.
 #' @import dplyr
 #' @export
 
-getIncidence <- function(x){
+incidence <- function(vertices, lins){
   e <- NULL
-  incidence <- matrix(0, x$W, x$M)
-  for (m in 1:x$M) {
-    lins_m <- filter(x$lins, e == m)
-    incidence[x$vertices$v[match(lins_m$v1[1], x$vertices$id)], m] <- -1
-    incidence[x$vertices$v[match(utils::tail(lins_m$v2, 1), x$vertices$id)], m] <- 1
+  W <- max(vertices$v, na.rm = TRUE)
+  M <- max(lins$e, na.rm = TRUE)
+  A <- matrix(0, W, M)
+  for (m in 1:M) {
+    lins_m <- filter(lins, e == m)
+    A[vertices$v[match(lins_m$v1[1], vertices$id)], m] <- -1
+    A[vertices$v[match(utils::tail(lins_m$v2, 1), vertices$id)], m] <- 1
   }
-  incidence
+  A
 }
 
-#' Get the incidence matrix
+#' Design Matrix of Linear B-Splines on a Geometric Network
 #'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
+#' \code{bspline_design} constructs the design matrix which represents
+#' the baseline intensity on the geometric network.
 #'
-#' @param G an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param P an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @param G A geometric network (object of class \code{gn}).
+#' @param P B-splines on a geometric network.
+#' @return A sparse matrix.
 #' @importFrom splines splineDesign
 #' @export
 
-getB <- function(G, P){
+bspline_design <- function(G, P){
   # returns design matrix B with dimension N x J
 
   # design matrix for line segments
@@ -73,16 +75,14 @@ getB <- function(G, P){
   B
 }
 
-#' Get the incidence matrix
+#' B-Spline Design for Plotting
 #'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
 #'
-#' @param X an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param df an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#'
+#' @param X A point pattern on a geometric network (object of class \code{gnpp}).
+#' @param df A data frame with points at which the fitted intensity should be
+#' plotted.
+#' @return A sparse design matrix.
 #' @import dplyr
 #' @importFrom splines splineDesign
 #' @export
@@ -133,28 +133,25 @@ getBplot <- function(X, df){
 }
 
 
-#' Get the incidence matrix
+#' Penalty Matrix of a Geometric Network
 #'
-#' The function as.gnds converts an object of class gnpp to an object of
-#' class gnds
+#' \code{penalty_network} constructs the penalty matrix which relates to the B-Spline
+#' design matrix created by \code{\link[geonet]{bspline_design}}.
 #'
-#' @param X an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param P an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @param r an object of class gnd or an object of class linnet (or an object that can
-#' be converted to an instance of class linnet)
-#' @return an object of class gnds
+#' @param G A geometric network (object of class \code{gnpp}).
+#' @param P B-splines on a geometric network.
+#' @param r The order of the penalty, default to first-order penalty (\code{r = 1}.
+#' @return A sparse and square penalty matrix.
 #' @export
 
-getK <- function(X, P, r){
+penalty_network <- function(G, P, r){
   # returns the first or second penalty matrix K
   if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
   # adjacency matrix of knots
-  A_tau <- matrix(0, sum(P$splines$J) + X$W, sum(P$splines$J) + X$W)
+  A_tau <- matrix(0, sum(P$splines$J) + G$W, sum(P$splines$J) + G$W)
 
   # on each line
-  for (m in 1:X$M) {
+  for (m in 1:G$M) {
     if (P$splines$J[m] > 1){
       A_tau[((cumsum(P$splines$J) - P$splines$J)[m] + 2):cumsum(P$splines$J)[m],
             ((cumsum(P$splines$J) - P$splines$J)[m] + 1):(cumsum(P$splines$J)[m] - 1)] <-
@@ -163,14 +160,14 @@ getK <- function(X, P, r){
   }
 
   # around each vertex
-  for (v in 1:X$W) {
+  for (v in 1:G$W) {
     # left line ends
-    for (m in which(X$incidence[v, ] == -1)) {
+    for (m in which(G$incidence[v, ] == -1)) {
       A_tau[sum(P$splines$J) + v,
             (cumsum(P$splines$J) - P$splines$J)[m] + 1] <- 1
     }
     # right line ends
-    for (m in which(X$incidence[v, ] == 1)) {
+    for (m in which(G$incidence[v, ] == 1)) {
       A_tau[sum(P$splines$J) + v, cumsum(P$splines$J)[m]] <- 1
     }
   }
@@ -183,7 +180,7 @@ getK <- function(X, P, r){
     adj <- which(A_tau*lower.tri(A_tau) == 1, arr.ind = T)
 
     # initalizing first order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + X$W)
+    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + G$W)
 
     for(i in 1:nrow(adj)){
       D[i, adj[i, 1]] <- 1
@@ -198,7 +195,7 @@ getK <- function(X, P, r){
     adj_2 <- which(S_A*lower.tri(S_A) == 2, arr.ind = T)
 
     # initalizing second order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + X$W)
+    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + G$W)
 
     for (i in 1:nrow(adj_2)) {
       D[i, adj_2[i, 1]] <- D[i, adj_2[i, 2]] <- 1

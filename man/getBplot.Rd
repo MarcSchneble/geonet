@@ -2,21 +2,19 @@
 % Please edit documentation in R/matrices.R
 \name{getBplot}
 \alias{getBplot}
-\title{Get the incidence matrix}
+\title{B-Spline Design for Plotting}
 \usage{
 getBplot(X, df)
 }
 \arguments{
-\item{X}{an object of class gnd or an object of class linnet (or an object that can
-be converted to an instance of class linnet)}
+\item{X}{A point pattern on a geometric network (object of class \code{gnpp}).}
 
-\item{df}{an object of class gnd or an object of class linnet (or an object that can
-be converted to an instance of class linnet)}
+\item{df}{A data frame with points at which the fitted intensity should be
+plotted.}
 }
 \value{
-an object of class gnds
+A sparse design matrix.
 }
 \description{
-The function as.gnds converts an object of class gnpp to an object of
-class gnds
+B-Spline Design for Plotting
 }

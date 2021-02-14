@@ -2,15 +2,16 @@
 % Please edit documentation in R/print.R
 \name{print.gnppfit}
 \alias{print.gnppfit}
-\title{Print Method for Geometric Networks Splines}
+\title{Print Method for a fitted Geometric Network Model}
 \usage{
 \method{print}{gnppfit}(x, ...)
 }
 \arguments{
-\item{x}{an object of class gns}
+\item{x}{A model fit on a geometric network (object of class \code{gnpp}).}
 
 \item{...}{further arguments passed to print}
 }
 \description{
-This is the print method for object of the class gns.
+Prints basic information on the model fit and the underlying geometric
+network.
 }

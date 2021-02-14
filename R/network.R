@@ -85,10 +85,10 @@ bin_data <- function(X, P, vars, intern){
   # initializing
   data <- tibble(id = 1:sum(P$bins$N), count = NA, h = NA)
   if (length(intern) > 0) {
-    data <- bind_cols(data, as_tibble(internal(vars[intern], X, P))) %>%
-      slice(rep(1:n(), nrow(vars_comb)))
+    data <- bind_cols(data, as_tibble(internal(vars[intern], X, P)))
   }
-  data <- bind_cols(data, vars_comb %>% slice(rep(1:n(), each = sum(P$bins$N))))
+  data <- data %>% slice(rep(1:n(), nrow(vars_comb))) %>%
+    bind_cols(vars_comb %>% slice(rep(1:n(), each = sum(P$bins$N))))
 
   ind <- 1
   for (j in 1:nrow(vars_comb)) {

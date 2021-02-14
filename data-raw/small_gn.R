@@ -36,7 +36,7 @@ for (m in 1:x$M) {
   x$lins$frac1[which(x$lins$e == m)] <- c(0, cs[-length(cs)]/cs[length(cs)])
   x$lins$frac2[which(x$lins$e == m)] <- dat$length/sum(dat$length)
 }
-x$incidence <- getIncidence(x)
+x$incidence <- incidence(x$vertices, x$lins)
 
 small_gn <- x
 class(small_gn) <- "gn"

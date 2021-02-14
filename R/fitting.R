@@ -66,15 +66,14 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
 
   # get representation of P-splines on the network
   P <- pspline(X$network, delta, h)
-  P$B <- getB(X$network, P)
-  P$K <- getK(X$network, P, r)
   data <- bin_data(X, P, vars, intern)
   ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
-  K <- P$K
 
   # design matrix of for network splines
-  Z <- P$B[data$id, ]
+  B <- bspline_design(X$network, P)
+  Z <- B[data$id, ]
   ind$G <- setNames(1:ncol(Z), paste0("G.", 1:ncol(Z)))
+  K <- penalty_network(X$network, P, r)
 
   smooth_terms <- setNames(vector("list", length(smooths) - 1), smooths[-1])
   # design for smooth terms

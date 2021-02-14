@@ -125,7 +125,7 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
   # delete rows and cols in A which relate to vertices with degree 2
   A <- A[-v_deg2, ]
   G$adjacency <- A[, -v_deg2]
-  G$incidence <- getIncidence(G)
+  G$incidence <- incidence(G$vertices, G$lins)
   class(G) <- "gn"
   G
 }

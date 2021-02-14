@@ -2,15 +2,19 @@
 % Please edit documentation in R/print.R
 \name{print.gn}
 \alias{print.gn}
+\alias{print.gnpp}
 \title{Print Method for Geometric Networks}
 \usage{
 \method{print}{gn}(x, ...)
+
+\method{print}{gnpp}(x, ...)
 }
 \arguments{
-\item{x}{an object of class gn}
+\item{x}{A geometric network (object of class \code{gn}) or a
+point pattern on a geometric network (object of class \code{gnpp}).}
 
 \item{...}{further arguments passed to print}
 }
 \description{
-This is the print method for object of the class gn.
+Prints basic information on the geometric network
 }
