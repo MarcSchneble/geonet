@@ -170,7 +170,7 @@ as_gnpp.gnppfit <- function(x, ...){
 #' the window) are discared when being coerced to an object of class
 #' \code{gn}.
 #' @import dplyr
-#' @importFrom spatstat as.linnet
+#' @importFrom spatstat.linnet as.linnet
 #' @export
 
 as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
@@ -195,3 +195,6 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
   X
 }
 
+as.linnet.gn <- function(X, ...) {
+
+}

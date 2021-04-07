@@ -14,8 +14,9 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
-    spatstat (>= 1.64-1),
+    spatstat (>= 2.1-0),
     spatstat.data,
+    spatstat.linnet,
     mgcv,
     Matrix,
     splines,

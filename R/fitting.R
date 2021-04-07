@@ -4,7 +4,7 @@
 #' \code{intensity_pspline} estimates the intensity of a point pattern on a
 #' geometric network employing penalized splines as outlined in Schneble
 #' and Kauermann (2020). In distinction to
-#' \code{\link[spatstat]{density.lpp}} from the \code{spatstat} package,
+#' \code{\link[spatstat.linnet]{density.lpp}} from the \code{spatstat.linnet} package,
 #' which provides kernel based tools for intensity estimation of point
 #' patterns on linear networks, \code{intensity_pspline} allows to
 #' incorporate covariates while also estimating the baseline intensity.
