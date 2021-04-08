@@ -27,6 +27,21 @@ as_gnpp <- function(x, ...){
   UseMethod("as_gnpp")
 }
 
+#' Coerece to Point Pattern on a Linear Network
+#'
+#' \code{as_lpp} coerces an existing object into a point pattern on a geometric
+#' network, an object
+#' of class \code{lpp}.
+#'
+#' @param x An object that could reasonable coerced to a point pattern on a
+#' linear network (object of class \code{lpp}).
+#' @param ... further
+#' @export
+
+as_lpp <- function(x, ...){
+  UseMethod("as_lpp")
+}
+
 
 
 #' @param spatstat Set to \code{TRUE} if retransformation to an object of any
@@ -66,7 +81,7 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
     adj <- which(A[v_deg2[1], ] == 1)
     curves[[i]] <- tibble(v1 = c(adj[1], v_deg2[1]),
                      v2 = c(v_deg2[1], adj[2]),
-                     seg = NA,
+                     id = NA,
                      length = NA)
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
@@ -86,15 +101,15 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
     }
     # save the line indices and their corresponding lengths which are removed from the network
     for (k in 1:nrow(curves[[i]])) {
-      curves[[i]]$seg[k] <- which(L$from == curves[[i]]$v1[k] & L$to == curves[[i]]$v2[k] |
+      curves[[i]]$id[k] <- which(L$from == curves[[i]]$v1[k] & L$to == curves[[i]]$v2[k] |
                                     L$from == curves[[i]]$v2[k] & L$to == curves[[i]]$v1[k])
-      curves[[i]]$length[k] <- d[curves[[i]]$seg[k]]
+      curves[[i]]$length[k] <- d[curves[[i]]$id[k]]
     }
     # add new connection to adjacancy matrix
     A[curves[[i]]$v1[1], curves[[i]]$v2[nrow(curves[[i]])]] <-
       A[curves[[i]]$v2[nrow(curves[[i]])], curves[[i]]$v1[1]] <- 1
     # add line segments to the delete vector
-    lins_remove <- unique(c(lins_remove, curves[[i]]$seg))
+    lins_remove <- unique(c(lins_remove, curves[[i]]$id))
     # remove vertices from the current vector of vertices with degree 2
     v_deg2 <- setdiff(v_deg2, curves[[i]]$v2[1:(nrow(curves[[i]])-1)])
     # add information for geometric network representation
@@ -111,7 +126,7 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
                                    v2_x = L$vertices$x[v2],
                                    v2_y = L$vertices$y[v2])
   ind_lins <- setdiff(1:L$lines$n, lins_remove)
-  lins <- tibble(seg = ind_lins, e = (i+1):G$M,
+  lins <- tibble(id = ind_lins, e = (i+1):G$M,
                   v1 = L$from[ind_lins], v2 = L$to[ind_lins],
                   v1_x = L$vertices$x[v1], v1_y = L$vertices$y[v1],
                   v2_x = L$vertices$x[v2], v2_y = L$vertices$y[v2],
@@ -126,6 +141,11 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
   A <- A[-v_deg2, ]
   G$adjacency <- A[, -v_deg2]
   G$incidence <- incidence(G$vertices, G$lins)
+  if (spatstat) {
+    G$window <- x$window
+    lins <- G$lins %>% arrange(id)
+    G$seg_permut <- which(lins$v1_x == L$lines$end$x1)
+  }
   class(G) <- "gn"
   G
 }
@@ -154,6 +174,18 @@ as_gn.gnppfit <- function(x, ...){
   G
 }
 
+#' @rdname as_gn
+#' @import spatstat.linnet
+#' @export
+
+as_gn.lpp <- function(x, ..., spatstat = FALSE) {
+  if (!inherits(x, "lpp")){
+    stop("Object must be of class 'lpp'")
+  }
+  L <- as.linnet(x)
+  as_gn(L, spatstat = spatstat)
+}
+
 #' @rdname as_gnpp
 #' @export
 
@@ -174,27 +206,88 @@ as_gnpp.gnppfit <- function(x, ...){
 #' @export
 
 as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
-  frac1 <- tp <- frac2 <- e <- y <- seg <- xx <-  NULL
+  frac1 <- tp <- frac2 <- e <- y <- id <- xx <-  NULL
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }
-  G <- as_gn(as.linnet(x))
-  data <- tibble(seg = x$data$seg, tp = x$data$tp,
+  G <- as_gn(as.linnet(x), spatstat = spatstat)
+  data <- tibble(id = x$data$seg, tp = x$data$tp,
                 xx = x$data$x, y = x$data$y)
   if (ncol(x$data) > 4){
     covariates <- as_tibble(as.data.frame(x$data)[, -(1:4)])
     colnames(covariates) <- colnames(x$data)[-(1:4)]
     data <- bind_cols(data, covariates)
   }
-  data <- left_join(data, G$lins, by = "seg") %>%
-    mutate(tp = frac1 + tp*frac2, x = xx) %>%
-    select(seg, e, tp, x, y, colnames(covariates)) %>%
-    arrange(e, tp)
+  data <- left_join(data, G$lins, by = "id") %>%
+    mutate(tp_id = tp,
+           tp = frac1 + tp*frac2, x = xx) %>%
+    select(id, tp_id, e, tp, x, y, colnames(covariates))
+  if (!spatstat) data <- data %>% arrange(e, tp)
   X <- list(data = data, network = G)
   class(X) <- "gnpp"
   X
 }
 
-as.linnet.gn <- function(X, ...) {
+#' Coerce to Linear Network
+#'
+#' \code{as.linnet.gn} coerces an existing object into a linear network, an object
+#' of class \code{linnet}.
+#'
+#' @param X An object of class gn.
+#' @import spatstat.linnet spatstat.geom
+#' @import dplyr
+#' @export
+#' @examples
+#' library(spatstat.data)
+#' library(spatstat.linnet)
+#'
+#' x <- as.linnet(small_gn)
+#' plot(x)
+#'
+#' L <- simplenet
+#' X <- as_gn(L, spatstat = TRUE)
+#' x <- as.linnet(X)
+#' # TRUE
+#' all.equal(x, L)
 
+as.linnet.gn <- function(X, ...) {
+  window <- owin(xrange = range(X$vertices$x),
+                 yrange = range(X$vertices$y))
+  vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)
+  edges <- X$lins %>% arrange(id) %>% select(v1, v2) %>% as.matrix()
+  if (!is.null(X$window)) {
+    vertices$window <- X$window
+    v1 <- edges[, 1]
+    edges[X$seg_permut, 1] <- edges[X$seg_permut, 2]
+    edges[X$seg_permut, 2] <- v1[X$seg_permut]
+  }
+  out <- linnet(vertices = vertices, edges = edges)
+}
+
+#' @rdname as_lpp
+#' @param x An object of class gnpp.
+#' @import spatstat.linnet spatstat.geom
+#' @import dplyr
+#' @export
+#' @examples
+#' library(spatstat.data)
+#' library(spatstat.linnet)
+#'
+#' x <- as_lpp(Montgomery)
+#' plot(x)
+#'
+#' L <- simplenet
+#' X <- as_gn(L, spatstat = TRUE)
+#' x <- as.linnet(X)
+#' # TRUE
+#' all.equal(x, L)
+
+as_lpp.gnpp <- function(x, ...) {
+  L <- as.linnet(as_gn(x))
+  data <- x$data
+  marks <- NULL
+  if (!is.null(data$marks)) marks <- data$marks
+  out <- as.lpp(x = data$x, y = data$y,
+                seg = data$id, tp = data$tp_id, L = L, marks = marks)
+  out
 }

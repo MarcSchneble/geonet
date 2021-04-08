@@ -5,6 +5,7 @@
 \alias{as_gn.linnet}
 \alias{as_gn.gnpp}
 \alias{as_gn.gnppfit}
+\alias{as_gn.lpp}
 \title{Coerce to Geometric Network}
 \usage{
 as_gn(x, ...)
@@ -14,6 +15,8 @@ as_gn(x, ...)
 \method{as_gn}{gnpp}(x, ...)
 
 \method{as_gn}{gnppfit}(x, ...)
+
+\method{as_gn}{lpp}(x, ..., spatstat = FALSE)
 }
 \arguments{
 \item{x}{An object that could reasonably be coerced to a geometric network

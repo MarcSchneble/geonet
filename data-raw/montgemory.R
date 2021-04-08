@@ -35,7 +35,7 @@ P <- ppp(x = V$lon, y = V$lat,
          window = owin(xrange = c(min(V$lon), max(V$lon)), yrange = c(min(V$lat), max(V$lat))))
 L <- linnet(vertices = P, edges = as.matrix(E[, 2:3]))
 s <- L$dpath[191, 193]/2.2
-L <- spatstat::rescale(L, s = s, unitname = "Kilometers")
+L <- spatstat.geom::rescale(L, s = s, unitname = "Kilometers")
 
 data <- data %>%
   mutate(lon.net = (lon - min.lon)/s, lat.net = (lat - min.lat)/s)
@@ -64,7 +64,7 @@ plot(unmark(L.lpp))
 
 L.lpp$data$hour <- hour(data %>% filter(on == 1) %>% pull(date)) + floor(minute(data %>% filter(on == 1) %>% pull(date))/15)/4
 
-montgomery <- geonet::as.gnpp(L.lpp)
+montgomery <- geonet::as_gnpp(L.lpp)
 montgomery$data <- select(montgomery$data, -marks)
 
 plot(montgomery)

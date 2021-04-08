@@ -20,12 +20,12 @@ runifgn <- function(n, G){
   tt <- (uu - cumlen[ii])/G$lins$length[ii]
   xx <- G$lins$v1_x[ii] + tt*dx[ii]
   yy <- G$lins$v1_y[ii] + tt*dy[ii]
-  data <- tibble(seg = ii, tp = tt)
-  data <- left_join(data, G$lins, by = "seg") %>%
+  data <- tibble(id = ii, tp = tt)
+  data <- left_join(data, G$lins, by = "id") %>%
     mutate(x = xx, y = yy, tp = frac1 + tp*frac2) %>%
-    select(seg, e, tp, x, y) %>%
+    select(id, e, tp, x, y) %>%
     arrange(e, tp)
-  G$data <- data
-  class(G) <- "gnpp"
-  G
+  out <- list(data = data, network = G)
+  class(out) <- "gnpp"
+  out
 }

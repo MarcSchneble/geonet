@@ -99,12 +99,12 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
     cs <- c(0, cumsum(lins_m$length))
     dx <- lins_m$v2_x - lins_m$v1_x
     dy <- lins_m$v2_y - lins_m$v1_y
-    for (i in 1:length(lins_m$seg)) {
+    for (i in 1:length(lins_m$id)) {
       tt <- seq(0, 1, 1/sol)
       xx <- lins_m$v1_x[i] + tt*dx[i]
       yy <- lins_m$v1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df[[1]] <- bind_rows(df, tibble(seg = lins_m$seg[i], e = m,
+      df[[1]] <- bind_rows(df, tibble(id = lins_m$id[i], e = m,
                                                x = utils::head(xx, -1), xend = xx[-1],
                                                y = utils::head(yy, -1), yend = yy[-1],
                                                z = zz))
