@@ -4,16 +4,21 @@
 \alias{bin_data}
 \title{Bin Point Pattern on a Geometric Network}
 \usage{
-bin_data(X, P, vars, intern)
+bin_data(X, bins = NULL, vars = NULL, intern = NULL, scale)
 }
 \arguments{
 \item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
 
-\item{P}{as}
+\item{bins}{A list containing the bins of the geometric network.}
 
-\item{vars}{as}
+\item{vars}{A character vector containing the name of all covariates in the
+model.}
 
-\item{intern}{as}
+\item{intern}{A character vector containing the name of all interval
+covariates in the model.}
+
+\item{scale}{A named list which specifies the rescaling of network related
+covariates. Currently, only x- and y-coordinates can be scaled.}
 }
 \value{
 The binned data.
@@ -21,4 +26,7 @@ The binned data.
 \description{
 \code{bin_data} bins the data on the supplied point pattern according to
 all possible combination of covariates.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

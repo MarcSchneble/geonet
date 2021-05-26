@@ -6,7 +6,7 @@
 \alias{as_gn.gnpp}
 \alias{as_gn.gnppfit}
 \alias{as_gn.lpp}
-\title{Coerce to Geometric Network}
+\title{Transmute to Geometric Network}
 \usage{
 as_gn(x, ...)
 
@@ -19,17 +19,23 @@ as_gn(x, ...)
 \method{as_gn}{lpp}(x, ..., spatstat = FALSE)
 }
 \arguments{
-\item{x}{An object that could reasonably be coerced to a geometric network
-(object of class gn).}
+\item{x}{An object that could reasonably be transmuted to an
+object of class \code{gn}.}
 
-\item{...}{Further arguments passed to \code{as_gn}.}
+\item{...}{Other arguments.}
 
 \item{spatstat}{Set to \code{TRUE} if retransformation to an object of any
 \code{spatstat} class is desired. Some elements of these objects (such as
-the window) are discared when being coerced to an object of class
-\code{gn}.}
+the window) are otherweise discared when being transmuted to an object of
+class \code{gn}.}
+}
+\value{
+An object of class \code{gn}.
 }
 \description{
-\code{as_gn} coerces an existing object into a geometric network, an object
+\code{as_gn} transmutes an existing object into a geometric network, an object
 of class \code{gn}.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

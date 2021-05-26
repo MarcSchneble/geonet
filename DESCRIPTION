@@ -1,13 +1,15 @@
 Package: geonet
-Title: Intensity Estimation on Geometric Networks
-Version: 0.0.0.9000
+Title: Intensity Estimation on Geometric Networks with Penalized Splines
+Version: 0.1.0
 Authors@R: 
     person(given = "Marc",
            family = "Schneble",
            role = c("aut", "cre"),
            email = "marc.schneble@stat.uni-muenchen.de")
-Description: This package allows to represent geometric networks in two- or 
-    three-dimensional space.
+Description: This package allows to fit the intensity function of point 
+    processes on geometric networks. The method makes use of generalized 
+    additive models (GAM). A new class for representing linear networks from the
+    spatstat package as geometric networks is the core of the package.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,6 +19,7 @@ Imports:
     spatstat (>= 2.1-0),
     spatstat.data,
     spatstat.linnet,
+    spatstat.geom,
     mgcv,
     Matrix,
     splines,
@@ -27,6 +30,6 @@ Imports:
     lubridate,
     readxl
 Depends: 
-    R (>= 2.10),
+    R (>= 4.0.0),
 Suggests: 
     testthat

@@ -3,32 +3,34 @@
 \name{as_lpp}
 \alias{as_lpp}
 \alias{as_lpp.gnpp}
-\title{Coerece to Point Pattern on a Linear Network}
+\title{Transmute to Point Pattern on a Linear Network}
 \usage{
 as_lpp(x, ...)
 
 \method{as_lpp}{gnpp}(x, ...)
 }
 \arguments{
-\item{x}{An object of class gnpp.}
+\item{x}{An object of class \code{gnpp}.}
 
-\item{...}{further}
+\item{...}{Other arguments.}
 }
 \description{
-\code{as_lpp} coerces an existing object into a point pattern on a geometric
-network, an object
-of class \code{lpp}.
+\code{as_lpp} transmutes an existing object into a point pattern on a
+geometric network, an object of class \code{lpp}.
 }
 \examples{
 library(spatstat.data)
 library(spatstat.linnet)
 
-x <- as_lpp(Montgomery)
+x <- as_lpp(montgomery)
 plot(x)
 
-L <- simplenet
-X <- as_gn(L, spatstat = TRUE)
-x <- as.linnet(X)
+L <- chicago
+X <- as_gnpp(chicago, spatstat = TRUE)
+x <- as_lpp(X)
 # TRUE
 all.equal(x, L)
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

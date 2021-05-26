@@ -4,7 +4,7 @@
 \alias{plot.gn}
 \alias{plot.gnpp}
 \alias{plot.gnppfit}
-\title{Plot Method for Geometric Network related Objects}
+\title{Plot Methods for Geometric Network related Objects}
 \usage{
 \method{plot}{gn}(
   x,
@@ -42,7 +42,7 @@
 )
 }
 \arguments{
-\item{x}{An object which is related to a geonmetric network
+\item{x}{An object which is related to a geometric network
 (object of class \code{gn}, \code{gnpp} or \code{gnppfit}).}
 
 \item{...}{Further arguments passed to plot.}
@@ -79,8 +79,6 @@ Invisibly returns an object of class \code{ggplot} or a list
 of \code{ggplot} objects.
 }
 \description{
-These are \code{plot} methods for objects related to geometric networks.
-}
-\details{
-Details
+\code{plot} method for geometric networks, point patterns on geometric
+networks, or a fitted point process.
 }

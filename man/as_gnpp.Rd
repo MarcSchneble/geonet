@@ -4,7 +4,7 @@
 \alias{as_gnpp}
 \alias{as_gnpp.gnppfit}
 \alias{as_gnpp.lpp}
-\title{Coerece to Point Pattern on a Geometric Network}
+\title{Transmute to Point Pattern on a Geometric Network}
 \usage{
 as_gnpp(x, ...)
 
@@ -13,18 +13,23 @@ as_gnpp(x, ...)
 \method{as_gnpp}{lpp}(x, ..., spatstat = FALSE)
 }
 \arguments{
-\item{x}{An object that could reasonable coerced to a point pattern on a
-geometric network (object of class \code{gnpp}).}
+\item{x}{An object that could reasonably transmuted to an object of class
+\code{gnpp}.}
 
-\item{...}{further}
+\item{...}{Other arguments.}
 
 \item{spatstat}{Set to \code{TRUE} if retransformation to an object of any
 \code{spatstat} class is desired. Some elements of these objects (such as
-the window) are discared when being coerced to an object of class
-\code{gn}.}
+the window) are otherwise discarded when being transmuted to an object of
+class \code{gn}.}
+}
+\value{
+An object of class \code{gnpp}.
 }
 \description{
-\code{as_gnpp} coerces an existing object into a point pattern on a geometric
-network, an object
-of class \code{gnpp}.
+\code{as_gnpp} transmutes an existing object into a point pattern on a geometric
+network, an object of class \code{gnpp}.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

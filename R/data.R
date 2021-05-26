@@ -10,7 +10,9 @@
 
 #' Car Crashes on Highways in Montgomery County
 #'
-#' asd
+#' A point pattern which represents 18,263 car crashes on a network of
+#' highways in Montgomery county, Maryland. The temporal dimension is
+#' represented through the covariate "hour".
 #'
 #' @usage data(montgomery)
 #' @format \code{montgomery} is an object of class "\code{gnpp}".

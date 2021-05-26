@@ -4,7 +4,7 @@
 \alias{internal}
 \title{Internal Covariates}
 \usage{
-internal(vars, X, P)
+internal(vars, X, bins, scale)
 }
 \arguments{
 \item{vars}{The name of the covariates which should go into the model
@@ -12,14 +12,22 @@ as linear internal covariates.}
 
 \item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
 
-\item{P}{Penalized spline representation of the geometric network \code{X}.}
+\item{bins}{A list containing the bins of the geometric network.}
+
+\item{scale}{A named list which specifies the rescaling of network related
+covariates. Currently, only x- and y-coordinates can be scaled.}
 }
 \value{
-A data frame with the number of rows as the number of bins on the
-geometric network (\code{sum(P$bins$N)}) and the number of columns equal to
+A data frame with the number of rows equal to the number of bins of the
+geometric network (\code{sum(bins$N)}) and the number of columns equal to
 the length of \code{vars}.
 }
 \description{
-\code{internal} computes the values of internal covariates in every
-bin of the network.
+\code{internal} computes the values of internal covariates at the midpoints
+of the bins of the network. Internal covariates can either be supplied via
+the point pattern or they are a function of the network. Currently, x- and y-
+coordinates are supported for the latter.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

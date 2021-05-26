@@ -1,29 +1,42 @@
-#' Intensity Estimation on Geometric Networks with Penalized Splines
+#' Summary for fitted point process on a geometric network
 #'
-#' \code{intensityPspline} estimates the intensity of a point pattern on a
-#' geometric network.
+#' Takes a fitted \code{gnppfit} object produced by \code{intensity_spline} and
+#' computes a summary from it.
 #'
-#' @param object Point pattern on a geometric network (object of class \code{gnpp})
-#' @param ... asdad
-#' @return A fitted geometric network (object of class \code{gnppfit}).
-#' @import dplyr
+#' @param object Fitted point process on a geometric network (object of class
+#' \code{gnppfit})
+#' @param ... other arguments
+#' @return A summary of a fitted point process on a geometric network (object of
+#' class \code{summary.gnppfit}).
+#' @importFrom stats pnorm
 #' @export
 #'
 
 summary.gnppfit <- function(object, ...) {
 
-  if (length(object$ind[["lins"]]) > 0) {
-    tab <- tibble(name = names(object$ind[["lins"]]),
-                  estimate = NA, se = NA, rr = NA, rr.lower = NA, rr.upper = NA)
-    for (i in 1:length(object$ind[["lins"]])) {
-      tab$estimate[i] <- round(object$coefficients[object$ind[["lins"]][i]], 3)
-      tab$se[i] <- round(sqrt(object$V[object$ind[["lins"]][i], object$ind[["lins"]][i]]), 3)
-      tab$rr[i] <- round(exp(tab$estimate[i]), 2)
-      tab$rr.lower[i] <- round(exp(tab$estimate[i] - 1.96*tab$se[i]), 2)
-      tab$rr.upper[i] <- round(exp(tab$estimate[i] + 1.96*tab$se[i]), 2)
+  x <- object
+  ans <- list()
+  if (length(x$ind[["lins"]]) > 0) {
+    ans$tab <- data.frame(estimate = numeric(length(x$ind[["lins"]])),
+                          se = NA, rr = NA, rr.lower = NA, rr.upper = NA,
+                          z = NA, p = NA)
+    for (i in 1:length(x$ind[["lins"]])) {
+      ans$tab$estimate[i] <- x$coefficients[x$ind[["lins"]][i]]
+      ans$tab$se[i] <- sqrt(x$V[x$ind[["lins"]][i], x$ind[["lins"]][i]])
+      ans$tab$rr[i] <- exp(ans$tab$estimate[i])
+      ans$tab$rr.lower[i] <- exp(ans$tab$estimate[i] - 1.96*ans$tab$se[i])
+      ans$tab$rr.upper[i] <- exp(ans$tab$estimate[i] + 1.96*ans$tab$se[i])
+      ans$tab$z[i] <- ans$tab$estimate[i]/ans$tab$se[i]
+      ans$tab$p[i] <- (1 - pnorm(abs(ans$tab$z[i])))*2
     }
-    tab
+    colnames(ans$tab) <- c("Estimate", "Std. Error", "rr", "rr.lower",
+                           "rr.upper", "z value", "Pr(>|z|)")
+    rownames(ans$tab) <- names(x$ind[["lins"]])
   } else {
     "No linear effects to display."
   }
+  ans$formula <- x$formula
+  ans$it_rho <- x$it_rho
+  class(ans) <- "summary.gnppfit"
+  ans
 }

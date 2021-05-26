@@ -1,10 +1,9 @@
-#' Plot Method for Geometric Network related Objects
+#' Plot Methods for Geometric Network related Objects
 #'
-#' These are \code{plot} methods for objects related to geometric networks.
+#' \code{plot} method for geometric networks, point patterns on geometric
+#' networks, or a fitted point process.
 #'
-#' Details
-#'
-#' @param x An object which is related to a geonmetric network
+#' @param x An object which is related to a geometric network
 #' (object of class \code{gn}, \code{gnpp} or \code{gnppfit}).
 #' @param ... Further arguments passed to plot.
 #' @param covariate Character vector of length 1, name of the covariate
@@ -112,7 +111,7 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
   }
 
   # get baseline intensity of the point pattern on the geometric network
-  B <- getBplot(x, df[[1]])
+  B <- bspline_design_plot(x, df[[1]])
   theta <- x$coefficients[x$ind[["G"]]]
   df[[1]]$intensity <- as.vector(exp(B%*%theta))
   #

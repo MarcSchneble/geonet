@@ -4,7 +4,15 @@
 \alias{intensity_pspline}
 \title{Intensity Estimation on Geometric Networks with Penalized Splines}
 \usage{
-intensity_pspline(formula, X, delta = NULL, h = NULL, r = 1, density = FALSE)
+intensity_pspline(
+  formula,
+  X,
+  delta = NULL,
+  h = NULL,
+  r = 1,
+  scale = NULL,
+  density = FALSE
+)
 }
 \arguments{
 \item{formula}{A one-sided formula (if a two-sided formula is supplied, the
@@ -15,11 +23,11 @@ smooth terms constructed with \code{\link[mgcv]{s}} and the argument
 \code{bs} is set to
 \code{bs = "ps"} by default, i.e. \code{intensity_pspline} can handle
 penalized spline
-based smooth terms. Internal linear covariates musst be supplied via
+based smooth terms. Internal linear covariates must be supplied via
 \code{internal()}, see examples for details.}
 
 \item{X}{A point pattern on a geometric network (object of class
-\code{gnpp}). The point pattern (specified via \code{X$data}) musst contain information on
+\code{gnpp}). The data (\code{X$data}) must contain information on
 all covariates included in \code{formula}.}
 
 \item{delta}{The global knot distance \eqn{\delta}, a numerical vector of length one. If
@@ -32,6 +40,9 @@ network \code{X} which is supplied.}
 
 \item{r}{The order of the penalty of the baseline intensity on the geometric
 network, default to a penalty of order \code{r = 1}.}
+
+\item{scale}{A named list which specifies the rescaling of network related
+covariates. Currently, only x- and y-coordinates can be scaled.}
 
 \item{density}{\code{TRUE} if the intensity should be normalized such that it
 can be interpreted as a density, i.e. the integral over the estimated density
@@ -59,4 +70,7 @@ Details
 \references{
 Schneble, M. and G. Kauermann (2020). Intensity estimation on
 geometric networks with penalized splines. arXiv preprint arXiv:2002.10270 .
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

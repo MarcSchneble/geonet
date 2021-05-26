@@ -1,41 +1,44 @@
-#' Coerce to Geometric Network
+#' Transmute to Geometric Network
 #'
-#' \code{as_gn} coerces an existing object into a geometric network, an object
+#' \code{as_gn} transmutes an existing object into a geometric network, an object
 #' of class \code{gn}.
 #'
-#' @param x An object that could reasonably be coerced to a geometric network
-#' (object of class gn).
-#' @param ... Further arguments passed to \code{as_gn}.
+#' @param x An object that could reasonably be transmuted to an
+#' object of class \code{gn}.
+#' @param ... Other arguments.
+#' @return An object of class \code{gn}.
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 as_gn <- function(x, ...){
   UseMethod("as_gn")
 }
 
-#' Coerece to Point Pattern on a Geometric Network
+#' Transmute to Point Pattern on a Geometric Network
 #'
-#' \code{as_gnpp} coerces an existing object into a point pattern on a geometric
-#' network, an object
-#' of class \code{gnpp}.
+#' \code{as_gnpp} transmutes an existing object into a point pattern on a geometric
+#' network, an object of class \code{gnpp}.
 #'
-#' @param x An object that could reasonable coerced to a point pattern on a
-#' geometric network (object of class \code{gnpp}).
-#' @param ... further
+#' @param x An object that could reasonably transmuted to an object of class
+#' \code{gnpp}.
+#' @param ... Other arguments.
+#' @return An object of class \code{gnpp}.
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 as_gnpp <- function(x, ...){
   UseMethod("as_gnpp")
 }
 
-#' Coerece to Point Pattern on a Linear Network
+#' Transmute to Point Pattern on a Linear Network
 #'
-#' \code{as_lpp} coerces an existing object into a point pattern on a geometric
-#' network, an object
-#' of class \code{lpp}.
+#' \code{as_lpp} transmutes an existing object into a point pattern on a
+#' geometric network, an object of class \code{lpp}.
 #'
-#' @param x An object that could reasonable coerced to a point pattern on a
-#' linear network (object of class \code{lpp}).
-#' @param ... further
+#' @param x An object that could reasonably transmuted to an object of class
+#' \code{lpp}.
+#' @param ... Other arguments.
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 as_lpp <- function(x, ...){
@@ -43,11 +46,10 @@ as_lpp <- function(x, ...){
 }
 
 
-
 #' @param spatstat Set to \code{TRUE} if retransformation to an object of any
 #' \code{spatstat} class is desired. Some elements of these objects (such as
-#' the window) are discared when being coerced to an object of class
-#' \code{gn}.
+#' the window) are otherweise discared when being transmuted to an object of
+#' class \code{gn}.
 #' @rdname as_gn
 #' @export
 
@@ -199,14 +201,14 @@ as_gnpp.gnppfit <- function(x, ...){
 #' @rdname as_gnpp
 #' @param spatstat Set to \code{TRUE} if retransformation to an object of any
 #' \code{spatstat} class is desired. Some elements of these objects (such as
-#' the window) are discared when being coerced to an object of class
-#' \code{gn}.
+#' the window) are otherwise discarded when being transmuted to an object of
+#' class \code{gn}.
 #' @import dplyr
 #' @importFrom spatstat.linnet as.linnet
 #' @export
 
 as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
-  frac1 <- tp <- frac2 <- e <- y <- id <- xx <-  NULL
+  frac1 <- tp <- tp_id <- frac2 <- e <- y <- id <- xx <-  NULL
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }
@@ -228,14 +230,18 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
   X
 }
 
-#' Coerce to Linear Network
+#' Transmute to Linear Network
 #'
-#' \code{as.linnet.gn} coerces an existing object into a linear network, an object
-#' of class \code{linnet}.
+#' \code{as.linnet.gn} is a method for the generic function
+#' \code{\link[spatstat.linnet]{as.linnet}} which transmutes a geometric network
+#' (object of class \code{gn}) to a linear network (object of
+#' class \code{\link[spatstat.linnet]{linnet}}).
 #'
-#' @param X An object of class gn.
+#' @param X An object of class \code{gn}.
+#' @param ... Other arguments.
 #' @import spatstat.linnet spatstat.geom
 #' @import dplyr
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 #' @examples
 #' library(spatstat.data)
@@ -251,6 +257,7 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 #' all.equal(x, L)
 
 as.linnet.gn <- function(X, ...) {
+  v2 <- NULL
   window <- owin(xrange = range(X$vertices$x),
                  yrange = range(X$vertices$y))
   vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)
@@ -265,7 +272,7 @@ as.linnet.gn <- function(X, ...) {
 }
 
 #' @rdname as_lpp
-#' @param x An object of class gnpp.
+#' @param x An object of class \code{gnpp}.
 #' @import spatstat.linnet spatstat.geom
 #' @import dplyr
 #' @export
@@ -273,12 +280,12 @@ as.linnet.gn <- function(X, ...) {
 #' library(spatstat.data)
 #' library(spatstat.linnet)
 #'
-#' x <- as_lpp(Montgomery)
+#' x <- as_lpp(montgomery)
 #' plot(x)
 #'
-#' L <- simplenet
-#' X <- as_gn(L, spatstat = TRUE)
-#' x <- as.linnet(X)
+#' L <- chicago
+#' X <- as_gnpp(chicago, spatstat = TRUE)
+#' x <- as_lpp(X)
 #' # TRUE
 #' all.equal(x, L)
 

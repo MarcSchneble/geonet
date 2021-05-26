@@ -22,10 +22,10 @@
 #' \code{bs} is set to
 #' \code{bs = "ps"} by default, i.e. \code{intensity_pspline} can handle
 #' penalized spline
-#' based smooth terms. Internal linear covariates musst be supplied via
+#' based smooth terms. Internal linear covariates must be supplied via
 #' \code{internal()}, see examples for details.
 #' @param X A point pattern on a geometric network (object of class
-#' \code{gnpp}). The point pattern (specified via \code{X$data}) musst contain information on
+#' \code{gnpp}). The data (\code{X$data}) must contain information on
 #' all covariates included in \code{formula}.
 #' @param delta The global knot distance \eqn{\delta}, a numerical vector of length one. If
 #' not supplied, delta will be chosen properly according to the geometric
@@ -35,6 +35,8 @@
 #' network \code{X} which is supplied.
 #' @param r The order of the penalty of the baseline intensity on the geometric
 #' network, default to a penalty of order \code{r = 1}.
+#' @param scale A named list which specifies the rescaling of network related
+#' covariates. Currently, only x- and y-coordinates can be scaled.
 #' @param density \code{TRUE} if the intensity should be normalized such that it
 #' can be interpreted as a density, i.e. the integral over the estimated density
 #' is equal to one.
@@ -45,10 +47,11 @@
 #' @importFrom stats update as.formula model.matrix setNames
 #' @importFrom utils tail
 #' @importFrom mgcv smooth.construct.ps.smooth.spec s
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
-                             density = FALSE){
+                             scale = NULL, density = FALSE){
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
 
@@ -65,15 +68,17 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
   }
 
   # get representation of P-splines on the network
-  P <- pspline(X$network, delta, h)
-  data <- bin_data(X, P, vars, intern)
+  knots <- network_knots(X$network, delta)
+  bins <- network_bins(X$network, h)
+  #P <- list(splines = knots, bins = bins)
+  data <- bin_data(X, bins, vars, intern, scale = scale)
   ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
 
   # design matrix of for network splines
-  B <- bspline_design(X$network, P)
+  B <- bspline_design(X$network, knots, bins)
   Z <- B[data$id, ]
   ind$G <- setNames(1:ncol(Z), paste0("G.", 1:ncol(Z)))
-  K <- penalty_network(X$network, P, r)
+  K <- network_penalty(X$network, knots, r)
 
   smooth_terms <- setNames(vector("list", length(smooths) - 1), smooths[-1])
   # design for smooth terms
@@ -113,11 +118,15 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
   out$coefficients <- setNames(fit$theta, names(unlist(ind)))
   out$V <- fit$V
   #out$effects <- effects
-  out$P <- P
+  #out$P <- P
+  out$knots <- knots
+  out$bins <- bins
   out$smooth <- smooth_terms
   out$ind <- ind
   out$data <- X$data
   out$network <- X$network
+  out$formula <- formula
+  out$it_rho <- fit$it_rho
   class(out) <- "gnppfit"
   out
 }
@@ -125,12 +134,13 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
 #' Fit a Penalized Spline Poisson Model on a Geometric Network
 #'
 #' \code{fit_poisson_model} is called from \code{\link[geonet]{intensity_pspline}}
-#' and performs the iterative algorithm to estimate the smoothing parameters
-#' \eqn{rho} in the penalized Poisson model.
+#' and performs the iterative algorithm to estimate the model parameters and the
+#'  smoothing parameters \eqn{rho} in the penalized Poisson model.
 #'
-#' Generalized Fellner-Schall method (Wood and Fasiolo, 2017).
+#' Smmothing parameters are estimated using the generalized Fellner-Schall
+#' method (Wood and Fasiolo, 2017).
 #'
-#' @param data soll noch weg.
+#' @param data The binned data.
 #' @param Z The (sparse) model matrix where the number of coloums must
 #' correspond to the length of the vector of model coefficients \code{theta}.
 #' @param K A (sparse) square penalty matrix of with the same dimension as
@@ -150,6 +160,7 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
 #'  Tweedie location, scale and shape models. Biometrics 73 1071-1081.
 #' @import dplyr
 #' @importFrom stats optim
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,

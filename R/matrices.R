@@ -9,6 +9,7 @@
 #' network.
 #' @return The incidence matrix of dimension \eqn{W} by \eqn{M}.
 #' @import dplyr
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 incidence <- function(vertices, lins){
@@ -24,29 +25,32 @@ incidence <- function(vertices, lins){
   A
 }
 
-#' Design Matrix of Linear B-Splines on a Geometric Network
+#' Design Matrix for Linear B-Splines on a Geometric Network
 #'
 #' \code{bspline_design} constructs the design matrix which represents
-#' the baseline intensity on the geometric network.
+#' the (log-)baseline intensity on the geometric network.
 #'
-#' @param G A geometric network (object of class \code{gn}).
-#' @param P B-splines on a geometric network.
-#' @return A sparse matrix.
+#' @param G An object of class \code{gn}.
+#' @param knots A list which contains the knots on which the
+#' B-splines are defined
+#' @param bins list of which contains the mid points of the bins.
+#' @return A sparse matrix design matrix of dimension N x J.
 #' @importFrom splines splineDesign
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
-bspline_design <- function(G, P){
+bspline_design <- function(G, knots, bins){
   # returns design matrix B with dimension N x J
 
   # design matrix for line segments
-  B <- Matrix::Matrix(matrix(0, sum(P$bins$N), sum(P$splines$J) + G$W), sparse = TRUE)
+  B <- Matrix::Matrix(matrix(0, sum(bins$N), sum(knots$J) + G$W), sparse = TRUE)
 
   # line specific B-splines
   for (m in 1:G$M) {
-    B[((cumsum(P$bins$N) - P$bins$N)[m] + 1):cumsum(P$bins$N)[m],
-      ((cumsum(P$splines$J) - P$splines$J)[m] + 1):cumsum(P$splines$J)[m]] <-
-      splineDesign(knots = P$splines$tau[[m]],
-                            x = P$bins$z[[m]],
+    B[((cumsum(bins$N) - bins$N)[m] + 1):cumsum(bins$N)[m],
+      ((cumsum(knots$J) - knots$J)[m] + 1):cumsum(knots$J)[m]] <-
+      splineDesign(knots = knots$tau[[m]],
+                            x = bins$z[[m]],
                             ord = 2,
                             outer.ok = TRUE,
                             sparse = TRUE)
@@ -56,28 +60,26 @@ bspline_design <- function(G, P){
   for (v in 1:G$W) {
     # left line ends
     for (m in which(G$incidence[v, ] == -1)) {
-      B[((cumsum(P$bins$N) - P$bins$N)[m] + 1):
-          ((cumsum(P$bins$N) - P$bins$N)[m] +
-             length(which(1 - P$bins$z[[m]]/P$splines$delta[m] > 0))), sum(P$splines$J) + v] <-
-        (1 - P$bins$z[[m]]/P$splines$delta[m])[which(1 - P$bins$z[[m]]/P$splines$delta[m] > 0)]
+      B[((cumsum(bins$N) - bins$N)[m] + 1):
+          ((cumsum(bins$N) - bins$N)[m] +
+             length(which(1 - bins$z[[m]]/knots$delta[m] > 0))), sum(knots$J) + v] <-
+        (1 - bins$z[[m]]/knots$delta[m])[which(1 - bins$z[[m]]/knots$delta[m] > 0)]
     }
     # right line ends
     for (m in which(G$incidence[v, ] == 1)) {
-      B[(cumsum(P$bins$N)[m] - length(which(1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)) + 1):
-          cumsum(P$bins$N)[m], sum(P$splines$J) + v] <-
-        (1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m])[which(1 - (G$d[m] - P$bins$z[[m]])/P$splines$delta[m] > 0)]
+      B[(cumsum(bins$N)[m] - length(which(1 - (G$d[m] - bins$z[[m]])/knots$delta[m] > 0)) + 1):
+          cumsum(bins$N)[m], sum(knots$J) + v] <-
+        (1 - (G$d[m] - bins$z[[m]])/knots$delta[m])[which(1 - (G$d[m] - bins$z[[m]])/knots$delta[m] > 0)]
     }
   }
   # check if B is a valid design matrix
-  if (sum(B) != sum(P$bins$N)){
+  if (sum(B) != sum(bins$N)){
     stop("Error! Rowsums of B are not equal to one!")
   }
   B
 }
 
-#' B-Spline Design for Plotting
-#'
-#'
+#' B-Spline Design Matrix for Plotting
 #'
 #' @param X A point pattern on a geometric network (object of class \code{gnpp}).
 #' @param df A data frame with points at which the fitted intensity should be
@@ -85,17 +87,18 @@ bspline_design <- function(G, P){
 #' @return A sparse design matrix.
 #' @import dplyr
 #' @importFrom splines splineDesign
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
-getBplot <- function(X, df){
+bspline_design_plot <- function(X, df){
   # returns design matrix for new data
   e <- NULL
 
-  P <- X$P
+  knots <- X$knots
   G <- X$network
 
   # design matrix for line segments
-  B <- Matrix(0, nrow(df), sum(P$splines$J) + G$W, sparse = TRUE)
+  B <- Matrix(0, nrow(df), sum(knots$J) + G$W, sparse = TRUE)
   N <- as.numeric(table(df$e))
   z <- vector("list", G$M)
 
@@ -103,8 +106,8 @@ getBplot <- function(X, df){
   for (m in 1:G$M) {
     z[[m]] <- filter(df, e == m) %>% pull(z)
     B[((cumsum(N) - N)[m] + 1):cumsum(N)[m],
-      ((cumsum(P$splines$J) - P$splines$J)[m] + 1):cumsum(P$splines$J)[m]] <-
-      splineDesign(knots = P$splines$tau[[m]],
+      ((cumsum(knots$J) - knots$J)[m] + 1):cumsum(knots$J)[m]] <-
+      splineDesign(knots = knots$tau[[m]],
                    x = z[[m]], ord = 2, outer.ok = TRUE, sparse = TRUE)
   }
 
@@ -115,14 +118,14 @@ getBplot <- function(X, df){
     for (m in which(G$incidence[v, ] == -1)) {
       B[((cumsum(N) - N)[m] + 1):
           ((cumsum(N) - N)[m] +
-             length(which(1 - (z[[m]])/P$splines$delta[m] > 0))), sum(P$splines$J) + v] <-
-        (1 - z[[m]]/P$splines$delta[m])[which(1 - z[[m]]/P$splines$delta[m] > 0)]
+             length(which(1 - (z[[m]])/knots$delta[m] > 0))), sum(knots$J) + v] <-
+        (1 - z[[m]]/knots$delta[m])[which(1 - z[[m]]/knots$delta[m] > 0)]
     }
     # right line ends
     for (m in which(G$incidence[v, ] == 1)) {
-      B[(cumsum(N)[m] - length(which(1 - (G$d[m] - z[[m]])/P$splines$delta[m] > 0)) + 1):
-          cumsum(N)[m], sum(P$splines$J) + v] <-
-        (1 - (G$d[m] - z[[m]])/P$splines$delta[m])[which(1 - (G$d[m] - z[[m]])/P$splines$delta[m] > 0)]
+      B[(cumsum(N)[m] - length(which(1 - (G$d[m] - z[[m]])/knots$delta[m] > 0)) + 1):
+          cumsum(N)[m], sum(knots$J) + v] <-
+        (1 - (G$d[m] - z[[m]])/knots$delta[m])[which(1 - (G$d[m] - z[[m]])/knots$delta[m] > 0)]
     }
   }
   # check if B is a valid design matrix
@@ -135,27 +138,29 @@ getBplot <- function(X, df){
 
 #' Penalty Matrix of a Geometric Network
 #'
-#' \code{penalty_network} constructs the penalty matrix which relates to the B-Spline
-#' design matrix created by \code{\link[geonet]{bspline_design}}.
+#' \code{network_penalty} constructs the penalty matrix which relates to the
+#' B-Splines created by \code{\link[geonet]{bspline_design}}.
 #'
 #' @param G A geometric network (object of class \code{gnpp}).
-#' @param P B-splines on a geometric network.
+#' @param knots A list which contains the knots on which the
+#' B-splines are defined
 #' @param r The order of the penalty, default to first-order penalty (\code{r = 1}.
 #' @return A sparse and square penalty matrix.
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
-penalty_network <- function(G, P, r){
+network_penalty <- function(G, knots, r){
   # returns the first or second penalty matrix K
   if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
   # adjacency matrix of knots
-  A_tau <- matrix(0, sum(P$splines$J) + G$W, sum(P$splines$J) + G$W)
+  A_tau <- matrix(0, sum(knots$J) + G$W, sum(knots$J) + G$W)
 
   # on each line
   for (m in 1:G$M) {
-    if (P$splines$J[m] > 1){
-      A_tau[((cumsum(P$splines$J) - P$splines$J)[m] + 2):cumsum(P$splines$J)[m],
-            ((cumsum(P$splines$J) - P$splines$J)[m] + 1):(cumsum(P$splines$J)[m] - 1)] <-
-        diag(P$splines$J[m] - 1)
+    if (knots$J[m] > 1){
+      A_tau[((cumsum(knots$J) - knots$J)[m] + 2):cumsum(knots$J)[m],
+            ((cumsum(knots$J) - knots$J)[m] + 1):(cumsum(knots$J)[m] - 1)] <-
+        diag(knots$J[m] - 1)
     }
   }
 
@@ -163,12 +168,12 @@ penalty_network <- function(G, P, r){
   for (v in 1:G$W) {
     # left line ends
     for (m in which(G$incidence[v, ] == -1)) {
-      A_tau[sum(P$splines$J) + v,
-            (cumsum(P$splines$J) - P$splines$J)[m] + 1] <- 1
+      A_tau[sum(knots$J) + v,
+            (cumsum(knots$J) - knots$J)[m] + 1] <- 1
     }
     # right line ends
     for (m in which(G$incidence[v, ] == 1)) {
-      A_tau[sum(P$splines$J) + v, cumsum(P$splines$J)[m]] <- 1
+      A_tau[sum(knots$J) + v, cumsum(knots$J)[m]] <- 1
     }
   }
 
@@ -179,8 +184,8 @@ penalty_network <- function(G, P, r){
     # find for every spline function the adjacent spline functions
     adj <- which(A_tau*lower.tri(A_tau) == 1, arr.ind = T)
 
-    # initalizing first order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + G$W)
+    # initializing first order difference matrix
+    D <- matrix(0, nrow(adj_2), sum(knots$J) + G$W)
 
     for(i in 1:nrow(adj)){
       D[i, adj[i, 1]] <- 1
@@ -194,8 +199,8 @@ penalty_network <- function(G, P, r){
     adj_1 <- which(S_A == 1, arr.ind = T)
     adj_2 <- which(S_A*lower.tri(S_A) == 2, arr.ind = T)
 
-    # initalizing second order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(P$splines$J) + G$W)
+    # initializing second order difference matrix
+    D <- matrix(0, nrow(adj_2), sum(knots$J) + G$W)
 
     for (i in 1:nrow(adj_2)) {
       D[i, adj_2[i, 1]] <- D[i, adj_2[i, 2]] <- 1

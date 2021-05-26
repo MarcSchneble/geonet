@@ -2,16 +2,20 @@
 % Please edit documentation in R/as.R
 \name{as.linnet.gn}
 \alias{as.linnet.gn}
-\title{Coerce to Linear Network}
+\title{Transmute to Linear Network}
 \usage{
 \method{as.linnet}{gn}(X, ...)
 }
 \arguments{
-\item{X}{An object of class gn.}
+\item{X}{An object of class \code{gn}.}
+
+\item{...}{Other arguments.}
 }
 \description{
-\code{as.linnet.gn} coerces an existing object into a linear network, an object
-of class \code{linnet}.
+\code{as.linnet.gn} is a method for the generic function
+\code{\link[spatstat.linnet]{as.linnet}} which transmutes a geometric network
+(object of class \code{gn}) to a linear network (object of
+class \code{\link[spatstat.linnet]{linnet}}).
 }
 \examples{
 library(spatstat.data)
@@ -25,4 +29,7 @@ X <- as_gn(L, spatstat = TRUE)
 x <- as.linnet(X)
 # TRUE
 all.equal(x, L)
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

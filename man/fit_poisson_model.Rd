@@ -16,7 +16,7 @@ fit_poisson_model(
 )
 }
 \arguments{
-\item{data}{soll noch weg.}
+\item{data}{The binned data.}
 
 \item{Z}{The (sparse) model matrix where the number of coloums must
 correspond to the length of the vector of model coefficients \code{theta}.}
@@ -43,14 +43,18 @@ Model fit.
 }
 \description{
 \code{fit_poisson_model} is called from \code{\link[geonet]{intensity_pspline}}
-and performs the iterative algorithm to estimate the smoothing parameters
-\eqn{rho} in the penalized Poisson model.
+and performs the iterative algorithm to estimate the model parameters and the
+smoothing parameters \eqn{rho} in the penalized Poisson model.
 }
 \details{
-Generalized Fellner-Schall method (Wood and Fasiolo, 2017).
+Smmothing parameters are estimated using the generalized Fellner-Schall
+method (Wood and Fasiolo, 2017).
 }
 \references{
 Wood, S. N. and Fasiolo, M. (2017). A generalized Fellner-Schall
 method for smoothing parameter optimization with application to
 Tweedie location, scale and shape models. Biometrics 73 1071-1081.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

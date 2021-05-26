@@ -3,18 +3,22 @@
 \name{print.gn}
 \alias{print.gn}
 \alias{print.gnpp}
+\alias{print.gnppfit}
 \title{Print Method for Geometric Networks}
 \usage{
 \method{print}{gn}(x, ...)
 
 \method{print}{gnpp}(x, ...)
+
+\method{print}{gnppfit}(x, ...)
 }
 \arguments{
-\item{x}{A geometric network (object of class \code{gn}) or a
-point pattern on a geometric network (object of class \code{gnpp}).}
+\item{x}{A geometric network (object of class \code{gn}), a
+point pattern on a geometric network (object of class \code{gnpp}) or a
+fitted point process on a geometric network (object of class \code{gnppfit}).}
 
-\item{...}{further arguments passed to print}
+\item{...}{Other arguments.}
 }
 \description{
-Prints basic information on the geometric network
+Prints basic information of a geometric network related object.
 }

@@ -2,19 +2,25 @@
 % Please edit documentation in R/matrices.R
 \name{bspline_design}
 \alias{bspline_design}
-\title{Design Matrix of Linear B-Splines on a Geometric Network}
+\title{Design Matrix for Linear B-Splines on a Geometric Network}
 \usage{
-bspline_design(G, P)
+bspline_design(G, knots, bins)
 }
 \arguments{
-\item{G}{A geometric network (object of class \code{gn}).}
+\item{G}{An object of class \code{gn}.}
 
-\item{P}{B-splines on a geometric network.}
+\item{knots}{A list which contains the knots on which the
+B-splines are defined}
+
+\item{bins}{list of which contains the mid points of the bins.}
 }
 \value{
-A sparse matrix.
+A sparse matrix design matrix of dimension N x J.
 }
 \description{
 \code{bspline_design} constructs the design matrix which represents
-the baseline intensity on the geometric network.
+the (log-)baseline intensity on the geometric network.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

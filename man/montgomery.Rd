@@ -14,6 +14,8 @@ Created by Marc Schneble \email{marc.schneble@lmu.de}.
 data(montgomery)
 }
 \description{
-asd
+A point pattern which represents 18,263 car crashes on a network of
+highways in Montgomery county, Maryland. The temporal dimension is
+represented through the covariate "hour".
 }
 \keyword{datasets}

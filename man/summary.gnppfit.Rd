@@ -2,19 +2,21 @@
 % Please edit documentation in R/summary.R
 \name{summary.gnppfit}
 \alias{summary.gnppfit}
-\title{Intensity Estimation on Geometric Networks with Penalized Splines}
+\title{Summary for fitted point process on a geometric network}
 \usage{
 \method{summary}{gnppfit}(object, ...)
 }
 \arguments{
-\item{object}{Point pattern on a geometric network (object of class \code{gnpp})}
+\item{object}{Fitted point process on a geometric network (object of class
+\code{gnppfit})}
 
-\item{...}{asdad}
+\item{...}{other arguments}
 }
 \value{
-A fitted geometric network (object of class \code{gnppfit}).
+A summary of a fitted point process on a geometric network (object of
+class \code{summary.gnppfit}).
 }
 \description{
-\code{intensityPspline} estimates the intensity of a point pattern on a
-geometric network.
+Takes a fitted \code{gnppfit} object produced by \code{intensity_spline} and
+computes a summary from it.
 }

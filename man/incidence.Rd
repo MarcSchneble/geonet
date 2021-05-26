@@ -20,3 +20,6 @@ The incidence matrix of dimension \eqn{W} by \eqn{M}.
 \code{incidence} constructs the incidence matrix of a geometric network
 from the vertices and the curve segments.
 }
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
+}
