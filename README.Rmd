@@ -2,8 +2,6 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -18,7 +16,11 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of geonet is to ...
+The goal of geonet is to provide a tool for the estimation of the intensity
+function of a spatial point process on a geometric network. It makes use of
+generalized additive model (GAM) theory and has a similar workaround. In comparison
+to other methods, it allows to include external and internal covariates in
+the model, see the example below.
 
 ## Installation
 
@@ -40,21 +42,16 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(geonet)
-## basic example code
+library(spatstat.data)
+
+X <- as_gnpp(chicago)
+delta <- 10
+h <- 2
+r <- 2
+formula <- X ~ marks + internal(x) + internal(y)
+
+model <- intensity_pspline(formula, X, delta = delta, h = h, r = r,
+                           scale = list(x = 1/1000, y = 1/1000))
+summary(model)
+plot(model)
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
