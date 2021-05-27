@@ -1,6 +1,6 @@
 #' Confidence Bands of Smooth Terms
 #'
-#' \code{smoothConfidence} computes the lower and upper limits of smooth
+#' \code{confidence_band} computes the lower and upper limits of smooth
 #' terms fitted with \code{intensity_pspline}.
 #'
 #' @param theta The estimated coefficients which corresponds to the smooth
@@ -17,7 +17,7 @@
 #' @importFrom mgcv rmvn
 #' @export
 
-smoothConfidence <- function(theta, V, X, q = 0.05, R = 1000){
+confidence_band <- function(theta, V, X, q = 0.05, R = 1000){
   set.seed(1)
   mu_sim <- matrix(0, R, nrow(X))
   for (i in 1:R) {

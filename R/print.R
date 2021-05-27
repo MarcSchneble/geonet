@@ -74,16 +74,20 @@ print.gnppfit <- function(x, ...){
 #' network.
 #'
 #' @param x A model fit on a geometric network (object of class \code{gnpp}).
-#' @param ... further arguments passed to print
+#' @param ... Other arguments.
 #' @importFrom stats printCoefmat
 #' @export
 
 print.summary.gnppfit <- function(x, ...){
-  cat("Poisson model on a geometric network fitted with maximum likelihood")
+  cat("Poisson model on a geometric network fitted with maximum likelihood.")
   cat("\n\nFormula:\n")
   print(x$formula)
-  cat("\nParametric coefficients:\n")
-  printCoefmat(x$tab[, c(1:2, 6:7)], #digits = digits, signif.stars = signif.stars,
-               na.print = "NA", ...)
+  if (!is.null(x$tab)) {
+    cat("\nParametric coefficients:\n")
+    printCoefmat(x$tab[, c(1:2, 6:7)], #digits = digits, signif.stars = signif.stars,
+                 na.print = "NA", ...)
+  } else {
+    cat("\nNo parametric coefficients.\n")
+  }
   cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho))
 }

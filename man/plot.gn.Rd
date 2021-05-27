@@ -45,7 +45,7 @@
 \item{x}{An object which is related to a geometric network
 (object of class \code{gn}, \code{gnpp} or \code{gnppfit}).}
 
-\item{...}{Further arguments passed to plot.}
+\item{...}{Other arguments.}
 
 \item{title}{Main title of the plot.}
 

@@ -8,9 +8,9 @@
 }
 \arguments{
 \item{object}{Fitted point process on a geometric network (object of class
-\code{gnppfit})}
+\code{gnppfit}).}
 
-\item{...}{other arguments}
+\item{...}{Other arguments.}
 }
 \value{
 A summary of a fitted point process on a geometric network (object of
@@ -19,4 +19,7 @@ class \code{summary.gnppfit}).
 \description{
 Takes a fitted \code{gnppfit} object produced by \code{intensity_spline} and
 computes a summary from it.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

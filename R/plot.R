@@ -5,7 +5,7 @@
 #'
 #' @param x An object which is related to a geometric network
 #' (object of class \code{gn}, \code{gnpp} or \code{gnppfit}).
-#' @param ... Further arguments passed to plot.
+#' @param ... Other arguments.
 #' @param covariate Character vector of length 1, name of the covariate
 #' that should be plotted.
 #' @param title Main title of the plot.
@@ -139,7 +139,7 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
       theta <- x$coefficients[x$ind[[var]]]
       V <- as.matrix(x$V[x$ind[[var]], x$ind[[var]]])
       y <- as.vector(X%*%theta)
-      limits <- smoothConfidence(theta, V, X, R = 1000)
+      limits <- confidence_band(theta, V, X, R = 1000)
       df[[i]] <- tibble(x = xx, y = y, lower = limits$lower, upper = limits$upper)
       if (scale == "exp"){
         df[[i]] <- mutate(df[[i]], y = exp(y),

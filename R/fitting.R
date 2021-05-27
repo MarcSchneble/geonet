@@ -12,8 +12,6 @@
 #' can also be incorporated as a smooth term using penalized splines
 #' with the same syntax as in \code{\link[mgcv]{gam}}.
 #'
-#' Details
-#'
 #' @param formula A one-sided formula (if a two-sided formula is supplied, the
 #' left hand side of the formula is ignored). The formula can consist of either
 #' linear terms as in linear models (\code{\link{lm}}) or smooth terms as
@@ -49,6 +47,19 @@
 #' @importFrom mgcv smooth.construct.ps.smooth.spec s
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
+#' @examples
+#' library(spatstat)
+#' library(geonet)
+
+#' X <- as_gnpp(chicago)
+#' delta <- 10
+#' h <- 2
+#' r <- 2
+#' formula <- X ~ marks + internal(x) + internal(y)
+
+#' model <- intensity_pspline(formula, X, delta = delta, h = h, r = r,
+#'                            scale = list(x = 1/1000, y = 1/1000))
+#' summary(model)
 
 intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
                              scale = NULL, density = FALSE){
@@ -172,7 +183,6 @@ fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
   it_rho <- 0
   theta <- rep(0, ncol(Z))
   while(Delta_rho > eps_rho){
-    print(rho)
     it_rho <- it_rho + 1
     theta <- scoring(theta, rho, data, Z, K, ind)
 

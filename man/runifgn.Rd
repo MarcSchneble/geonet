@@ -2,18 +2,22 @@
 % Please edit documentation in R/simulation.R
 \name{runifgn}
 \alias{runifgn}
-\title{Simluate Uniform Points on a Geometric Network}
+\title{Simulate Uniform Points on a Geometric Network}
 \usage{
 runifgn(n, G)
 }
 \arguments{
 \item{n}{Number of random points to generate. A nonnegative integer.}
 
-\item{G}{A geometric network (object of class "gn", see gn)}
+\item{G}{A geometric network (object of class \code{gn}).}
 }
 \value{
-an object of class gnd
+An object of class \code{gnpp}.
 }
 \description{
-The function runifgn simulates points on a geometric network
+\code{runifgn} simulates points on a geometric network according
+to a uniform density.
+}
+\author{
+Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

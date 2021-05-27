@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{A model fit on a geometric network (object of class \code{gnpp}).}
 
-\item{...}{further arguments passed to print}
+\item{...}{Other arguments.}
 }
 \description{
 Prints basic information on the model fit and the underlying geometric

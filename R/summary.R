@@ -4,13 +4,13 @@
 #' computes a summary from it.
 #'
 #' @param object Fitted point process on a geometric network (object of class
-#' \code{gnppfit})
-#' @param ... other arguments
+#' \code{gnppfit}).
+#' @param ... Other arguments.
 #' @return A summary of a fitted point process on a geometric network (object of
 #' class \code{summary.gnppfit}).
 #' @importFrom stats pnorm
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
-#'
 
 summary.gnppfit <- function(object, ...) {
 
@@ -32,8 +32,6 @@ summary.gnppfit <- function(object, ...) {
     colnames(ans$tab) <- c("Estimate", "Std. Error", "rr", "rr.lower",
                            "rr.upper", "z value", "Pr(>|z|)")
     rownames(ans$tab) <- names(x$ind[["lins"]])
-  } else {
-    "No linear effects to display."
   }
   ans$formula <- x$formula
   ans$it_rho <- x$it_rho

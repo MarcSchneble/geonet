@@ -64,8 +64,17 @@ Covariates can be either internal or external. External covariates
 can also be incorporated as a smooth term using penalized splines
 with the same syntax as in \code{\link[mgcv]{gam}}.
 }
-\details{
-Details
+\examples{
+library(spatstat)
+library(geonet)
+X <- as_gnpp(chicago)
+delta <- 10
+h <- 2
+r <- 2
+formula <- X ~ marks + internal(x) + internal(y)
+model <- intensity_pspline(formula, X, delta = delta, h = h, r = r,
+                           scale = list(x = 1/1000, y = 1/1000))
+summary(model)
 }
 \references{
 Schneble, M. and G. Kauermann (2020). Intensity estimation on

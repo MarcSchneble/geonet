@@ -1,12 +1,14 @@
-#' Simluate Uniform Points on a Geometric Network
+#' Simulate Uniform Points on a Geometric Network
 #'
-#' The function runifgn simulates points on a geometric network
+#' \code{runifgn} simulates points on a geometric network according
+#' to a uniform density.
 #'
 #' @param n Number of random points to generate. A nonnegative integer.
-#' @param G A geometric network (object of class "gn", see gn)
-#' @return an object of class gnd
+#' @param G A geometric network (object of class \code{gn}).
+#' @return An object of class \code{gnpp}.
 #' @import dplyr
 #' @importFrom stats runif
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
 
