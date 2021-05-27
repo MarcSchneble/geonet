@@ -48,7 +48,7 @@ as_lpp <- function(x, ...){
 
 #' @param spatstat Set to \code{TRUE} if retransformation to an object of any
 #' \code{spatstat} class is desired. Some elements of these objects (such as
-#' the window) are otherweise discared when being transmuted to an object of
+#' the window) are otherwise discarded when being transmuted to an object of
 #' class \code{gn}.
 #' @rdname as_gn
 #' @export

@@ -11,12 +11,12 @@
 #' @param title Main title of the plot.
 #' @param title_x x-axis title (ignored if \code{frame = FALSE}).
 #' @param title_y y-axis title (ignored if \code{frame = FALSE}).
-#' @param size_lines Plotting size of the line segments. This specificies the
+#' @param size_lines Plotting size of the line segments. This specifies the
 #' \code{size} argument of \code{\link[ggplot2]{geom_segment}}.
-#' @param size_points Plotting size of the point pattern. This specificies the
+#' @param size_points Plotting size of the point pattern. This specifies the
 #' \code{size} argument of \code{\link[ggplot2]{geom_point}}.
 #' @param frame Should a frame be drawn around the network?
-#' @param sol asd
+#' @param sol Solution of the color network plot.
 #' @param scale The scale on which smooth terms should be plotted, either on
 #' the log scale (\code{scale = log}, default) or on the exp-scale
 #' (\code{scale = exp}).

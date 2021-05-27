@@ -148,11 +148,11 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
 #' and performs the iterative algorithm to estimate the model parameters and the
 #'  smoothing parameters \eqn{rho} in the penalized Poisson model.
 #'
-#' Smmothing parameters are estimated using the generalized Fellner-Schall
+#' Smoothing parameters are estimated using the generalized Fellner-Schall
 #' method (Wood and Fasiolo, 2017).
 #'
 #' @param data The binned data.
-#' @param Z The (sparse) model matrix where the number of coloums must
+#' @param Z The (sparse) model matrix where the number of columns must
 #' correspond to the length of the vector of model coefficients \code{theta}.
 #' @param K A (sparse) square penalty matrix of with the same dimension as
 #' \code{theta}.

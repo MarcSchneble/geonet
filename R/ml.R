@@ -1,6 +1,6 @@
 #' Maximum-Likelihood Estimation
 #'
-#' Scoring algorithm for maximium-likelihood estimation of a penalized Poisson
+#' Scoring algorithm for maximum-likelihood estimation of a penalized Poisson
 #' model while treating the smoothing parameters as fixed. Since the model
 #' matrix \code{Z} when fitting a point process model on a geometric network is
 #' very large with usually several millions of entries, \code{scoring} builds
@@ -18,7 +18,7 @@
 #' including the baseline intensity of the network, one smoothing parameter
 #' must be supplied.
 #' @param data A data frame containing the data.
-#' @param Z The (sparse) model matrix where the number of coloums must
+#' @param Z The (sparse) model matrix where the number of column must
 #' correspond to the length of the vector of model coefficients \code{theta}.
 #' @param K A (sparse) square penalty matrix of with the same dimension as
 #' \code{theta}.

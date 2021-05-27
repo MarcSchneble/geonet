@@ -53,7 +53,7 @@
 
 \item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
 
-\item{size_lines}{Plotting size of the line segments. This specificies the
+\item{size_lines}{Plotting size of the line segments. This specifies the
 \code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
 
 \item{frame}{Should a frame be drawn around the network?}
@@ -61,14 +61,14 @@
 \item{covariate}{Character vector of length 1, name of the covariate
 that should be plotted.}
 
-\item{size_points}{Plotting size of the point pattern. This specificies the
+\item{size_points}{Plotting size of the point pattern. This specifies the
 \code{size} argument of \code{\link[ggplot2]{geom_point}}.}
 
 \item{select}{Allows the plot for a single model term to be selected for
 printing. e.g. if you just want the plot for the second smooth term set
 \code{select = 2}.}
 
-\item{sol}{asd}
+\item{sol}{Solution of the color network plot.}
 
 \item{scale}{The scale on which smooth terms should be plotted, either on
 the log scale (\code{scale = log}, default) or on the exp-scale

@@ -18,7 +18,7 @@ fit_poisson_model(
 \arguments{
 \item{data}{The binned data.}
 
-\item{Z}{The (sparse) model matrix where the number of coloums must
+\item{Z}{The (sparse) model matrix where the number of columns must
 correspond to the length of the vector of model coefficients \code{theta}.}
 
 \item{K}{A (sparse) square penalty matrix of with the same dimension as
@@ -47,7 +47,7 @@ and performs the iterative algorithm to estimate the model parameters and the
 smoothing parameters \eqn{rho} in the penalized Poisson model.
 }
 \details{
-Smmothing parameters are estimated using the generalized Fellner-Schall
+Smoothing parameters are estimated using the generalized Fellner-Schall
 method (Wood and Fasiolo, 2017).
 }
 \references{
