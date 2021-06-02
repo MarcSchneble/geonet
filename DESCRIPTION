@@ -6,10 +6,10 @@ Authors@R:
            family = "Schneble",
            role = c("aut", "cre"),
            email = "marc.schneble@stat.uni-muenchen.de")
-Description: This package allows to fit the intensity function of point 
+Description: Fitting the intensity function of point 
     processes on geometric networks. The method makes use of generalized 
-    additive models (GAM). A new class for representing linear networks from the
-    spatstat package as geometric networks is the core of the package.
+    additive models (GAM). A new class for representing linear networks as 
+    geometric networks is the core of the package.
 Language: en-US
 License: MIT + file LICENSE
 Encoding: UTF-8

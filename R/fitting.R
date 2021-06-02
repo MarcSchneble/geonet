@@ -71,6 +71,7 @@ intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
   if (length(vars) == 0){
     lins <- NULL
     smooths <- "G"
+    intern <- NULL
   } else {
     vars2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
     lins <- vars[which(substring(vars2, 1, 2) != "s(")]
