@@ -6,4 +6,6 @@
 * using session charset: ISO8859-1
 
 ## R CMD check results
-There were no errors, warnings or notes.
+There were no errors or warnings.
+
+Two notes: 2 examples with elapsed time > 5s
