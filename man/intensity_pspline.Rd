@@ -5,8 +5,8 @@
 \title{Intensity Estimation on Geometric Networks with Penalized Splines}
 \usage{
 intensity_pspline(
-  formula,
   X,
+  formula = ~1,
   delta = NULL,
   h = NULL,
   r = 1,
@@ -15,6 +15,10 @@ intensity_pspline(
 )
 }
 \arguments{
+\item{X}{A point pattern on a geometric network (object of class
+\code{gnpp}). The data (\code{X$data}) must contain information on
+all covariates included in \code{formula}.}
+
 \item{formula}{A one-sided formula (if a two-sided formula is supplied, the
 left hand side of the formula is ignored). The formula can consist of either
 linear terms as in linear models (\code{\link{lm}}) or smooth terms as
@@ -25,10 +29,6 @@ smooth terms constructed with \code{\link[mgcv]{s}} and the argument
 penalized spline
 based smooth terms. Internal linear covariates must be supplied via
 \code{internal()}, see examples for details.}
-
-\item{X}{A point pattern on a geometric network (object of class
-\code{gnpp}). The data (\code{X$data}) must contain information on
-all covariates included in \code{formula}.}
 
 \item{delta}{The global knot distance \eqn{\delta}, a numerical vector of length one. If
 not supplied, delta will be chosen properly according to the geometric
@@ -65,16 +65,14 @@ can also be incorporated as a smooth term using penalized splines
 with the same syntax as in \code{\link[mgcv]{gam}}.
 }
 \examples{
-library(spatstat)
 library(geonet)
-X <- as_gnpp(chicago)
-delta <- 10
-h <- 2
+X <- runifgn(50, small_gn)
+delta <- 0.2
+h <- 0.1
 r <- 2
-formula <- X ~ marks + internal(x) + internal(y)
-model <- intensity_pspline(formula, X, delta = delta, h = h, r = r,
-                           scale = list(x = 1/1000, y = 1/1000))
+model <- intensity_pspline(X, delta = delta, h = h, r = r)
 summary(model)
+plot(model)
 }
 \references{
 Schneble, M. and G. Kauermann (2020). Intensity estimation on

@@ -12,6 +12,9 @@
 #' can also be incorporated as a smooth term using penalized splines
 #' with the same syntax as in \code{\link[mgcv]{gam}}.
 #'
+#' @param X A point pattern on a geometric network (object of class
+#' \code{gnpp}). The data (\code{X$data}) must contain information on
+#' all covariates included in \code{formula}.
 #' @param formula A one-sided formula (if a two-sided formula is supplied, the
 #' left hand side of the formula is ignored). The formula can consist of either
 #' linear terms as in linear models (\code{\link{lm}}) or smooth terms as
@@ -22,9 +25,6 @@
 #' penalized spline
 #' based smooth terms. Internal linear covariates must be supplied via
 #' \code{internal()}, see examples for details.
-#' @param X A point pattern on a geometric network (object of class
-#' \code{gnpp}). The data (\code{X$data}) must contain information on
-#' all covariates included in \code{formula}.
 #' @param delta The global knot distance \eqn{\delta}, a numerical vector of length one. If
 #' not supplied, delta will be chosen properly according to the geometric
 #' network \code{X} which is supplied.
@@ -48,20 +48,16 @@
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 #' @examples
-#' library(spatstat)
 #' library(geonet)
-
-#' X <- as_gnpp(chicago)
-#' delta <- 10
-#' h <- 2
+#' X <- runifgn(50, small_gn)
+#' delta <- 0.2
+#' h <- 0.1
 #' r <- 2
-#' formula <- X ~ marks + internal(x) + internal(y)
-
-#' model <- intensity_pspline(formula, X, delta = delta, h = h, r = r,
-#'                            scale = list(x = 1/1000, y = 1/1000))
+#' model <- intensity_pspline(X, delta = delta, h = h, r = r)
 #' summary(model)
+#' plot(model)
 
-intensity_pspline <- function(formula, X, delta = NULL, h = NULL, r = 1,
+intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
                              scale = NULL, density = FALSE){
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
