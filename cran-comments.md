@@ -1,4 +1,4 @@
-## Initial submission of package `geonet` (Version 0.1.0)
+## Resubmission of package `geonet` (Version 0.1.1)
 
 ## Test environment
 * using R version 4.1.0 (2021-05-18)
@@ -8,4 +8,6 @@
 ## R CMD check results
 There were no errors or warnings.
 
-Two notes: 2 examples with elapsed time > 5s
+## 1 Note 
+checking CRAN incoming feasibility ... NOTE
+Maintainer: 'Marc Schneble <marc.schneble@stat.uni-muenchen.de>'

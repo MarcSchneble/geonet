@@ -11,6 +11,9 @@
 
 \item{...}{Other arguments.}
 }
+\value{
+A linear network, an object of class \code{linnet}.
+}
 \description{
 \code{as.linnet.gn} is a method for the generic function
 \code{\link[spatstat.linnet]{as.linnet}} which transmutes a geometric network

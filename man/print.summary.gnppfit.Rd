@@ -11,6 +11,9 @@
 
 \item{...}{Other arguments.}
 }
+\value{
+Invisibly returns the NULL object.
+}
 \description{
 Prints basic information on the model fit and the underlying geometric
 network.

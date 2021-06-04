@@ -14,6 +14,9 @@ as_lpp(x, ...)
 
 \item{...}{Other arguments.}
 }
+\value{
+A point pattern on a linear network, an object of class \code{lpp}.
+}
 \description{
 \code{as_lpp} transmutes an existing object into a point pattern on a
 geometric network, an object of class \code{lpp}.

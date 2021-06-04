@@ -39,6 +39,7 @@ as_gnpp <- function(x, ...){
 #' \code{lpp}.
 #' @param ... Other arguments.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @return A point pattern on a linear network, an object of class \code{lpp}.
 #' @export
 
 as_lpp <- function(x, ...){
@@ -242,6 +243,7 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 #' @import spatstat.linnet spatstat.geom
 #' @import dplyr
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @return A linear network, an object of class \code{linnet}.
 #' @export
 #' @examples
 #' library(spatstat.data)

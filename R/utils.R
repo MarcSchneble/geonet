@@ -18,7 +18,6 @@
 #' @export
 
 confidence_band <- function(theta, V, X, q = 0.05, R = 1000){
-  set.seed(1)
   mu_sim <- matrix(0, R, nrow(X))
   for (i in 1:R) {
     theta_sim <- rmvn(1, theta, V)

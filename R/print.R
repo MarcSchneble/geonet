@@ -6,6 +6,7 @@
 #' point pattern on a geometric network (object of class \code{gnpp}) or a
 #' fitted point process on a geometric network (object of class \code{gnppfit}).
 #' @param ... Other arguments.
+#' @return Invisibly returns the NULL object.
 #' @export
 
 print.gn <- function(x, ...){
@@ -76,6 +77,7 @@ print.gnppfit <- function(x, ...){
 #' @param x A model fit on a geometric network (object of class \code{gnpp}).
 #' @param ... Other arguments.
 #' @importFrom stats printCoefmat
+#' @return Invisibly returns the NULL object.
 #' @export
 
 print.summary.gnppfit <- function(x, ...){
@@ -90,4 +92,5 @@ print.summary.gnppfit <- function(x, ...){
     cat("\nNo parametric coefficients.\n")
   }
   cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho))
+  invisible(NULL)
 }

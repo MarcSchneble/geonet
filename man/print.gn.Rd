@@ -19,6 +19,9 @@ fitted point process on a geometric network (object of class \code{gnppfit}).}
 
 \item{...}{Other arguments.}
 }
+\value{
+Invisibly returns the NULL object.
+}
 \description{
 Prints basic information of a geometric network related object.
 }
