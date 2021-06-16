@@ -1,0 +1,3 @@
+internal covariates do not need to be assigned any more
+chi^2 statistics for edf smooth terms
+make algorithm faster

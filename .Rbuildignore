@@ -8,3 +8,4 @@
 ^\.tar\.gz
 ^CRAN-RELEASE$
 ^data-raw$
+^ideas\.txt$

@@ -93,7 +93,7 @@ network_bins <- function(G, h = NULL){
 bin_data <- function(X, bins = NULL, vars = NULL, intern = NULL, scale){
   # get covariates from every point on the network (if applicable)
   if (is.null(bins)) bins <- network_bins(X$network)
-  vars_external <- setdiff(vars, c("G", "x", "y"))
+  vars_external <- setdiff(vars, c("G", "x", "y", colnames(X$network$lins)[-(1:11)]))
   if (all(vars_external %in% colnames(X$data)[-(1:5)])) {
     covariates <- as_tibble(X$data) %>% select(all_of(vars_external))
   } else {
@@ -199,6 +199,27 @@ internal <- function(vars, X, bins, scale){
       }
     }
     if (!is.null(scale$y)) out$y <- y*scale$y
+  }
+  X_internal <- colnames(X$network$lins[-(1:11)])
+  for (k in 1:length(X_internal)) {
+    if (is.element(X_internal[k], vars)) {
+      if (class(X$network$lins[[X_internal[k]]]) == "factor") {
+        val <- factor(rep(NA, sum(bins$N)),
+                      levels = levels(X$network$lins[[X_internal[k]]]))
+      } else {
+        val <- rep(NA, sum(bins$N))
+      }
+      ind <- 1
+      for (m in 1:X$network$M) {
+        lins_m <- filter(X$network$lins, e == m)
+        if (length(unique(lins_m[[paste(X_internal[k])]])) > 1) {
+          #stop("Internal covariates must be unique on each curve.")
+        }
+        val[ind:(ind + bins$N[m] - 1)] <- lins_m[[paste(X_internal[k])]][1]
+        ind <- ind + bins$N[m]
+      }
+      out[[paste(X_internal[k])]] <- val
+    }
   }
   out
 }

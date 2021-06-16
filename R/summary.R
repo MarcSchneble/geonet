@@ -33,6 +33,14 @@ summary.gnppfit <- function(object, ...) {
                            "rr.upper", "z value", "Pr(>|z|)")
     rownames(ans$tab) <- names(x$ind[["lins"]])
   }
+  edf <- rep(NA, length(x$ind))
+  for (k in 1:length(x$ind)) {
+    edf[k] <- sum(x$edf[x$ind[[k]]])
+  }
+  if (is.element("lins", names(x$ind))) {
+    edf <- edf[1:(length(edf) - 1)]
+  }
+  ans$edf <- edf
   ans$formula <- x$formula
   ans$it_rho <- x$it_rho
   class(ans) <- "summary.gnppfit"

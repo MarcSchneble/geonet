@@ -94,8 +94,7 @@ print.summary.gnppfit <- function(x, ...){
     cat("\nModel has no parametric coefficients.\n")
   }
   cat("\nApproximate significance of smooth terms:\n")
-  #printCoefmat(x$tab[, c(1:2, 6:7)], #digits = digits, signif.stars = signif.stars,
-  #             na.print = "NA", ...)
+  print(x$edf)
   cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho))
   invisible(NULL)
 }
