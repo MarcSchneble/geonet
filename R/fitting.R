@@ -135,6 +135,7 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   out$network <- X$network
   out$formula <- formula
   out$it_rho <- fit$it_rho
+  out$edf <- fit$edf
   class(out) <- "gnppfit"
   out
 }
@@ -179,9 +180,15 @@ fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
   Delta_rho <- Inf
   it_rho <- 0
   theta <- rep(0, ncol(Z))
+  theta <- scoring(theta, rho, data, Z, K, ind)
   while(Delta_rho > eps_rho){
+    print(rho)
     it_rho <- it_rho + 1
-    theta <- scoring(theta, rho, data, Z, K, ind)
+    start <- Sys.time()
+    #theta <- scoring(theta, rho, data, Z, K, ind)
+    theta <- as.vector(theta + Matrix::solve(fisher(theta, rho, data, Z, K, ind))%*%score(theta, rho, data, Z, K, ind))
+    print(Sys.time() - start)
+
 
     V <- Matrix::solve(fisher(theta, rho, data, Z, K, ind))
 
@@ -204,5 +211,12 @@ fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
     Delta_rho <- sqrt(sum((rho_new - rho)^2))/sqrt(sum((rho)^2))
     rho <- rho_new
   }
-  list(theta = theta, V = V, rho = rho, it_rho = it_rho)
+  # degrees of freedom
+  mu <- exp(as.vector(Z%*%theta) + log(data$h) + log(data$offset))
+  Mu <- Matrix::Matrix(0, nrow(Z), nrow(Z))
+  diag(Mu) <- mu
+  H <- Matrix::solve(fisher(theta, rho, data, Z, K, ind))%*%(Matrix::t(Z)%*%Mu%*%Z)
+  edf <- Matrix::diag(H)
+
+  list(theta = theta, V = V, rho = rho, it_rho = it_rho, edf = edf)
 }

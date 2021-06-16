@@ -1,11 +1,10 @@
 ^geonet\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-^data-raw$
 ^Scripts$
 ^\.travis\.yml$
 ^\.github$
-^cran-comments.md$
 ^README\.Rmd$
-^\.tar.gz
+^\.tar\.gz
 ^CRAN-RELEASE$
+^data-raw$

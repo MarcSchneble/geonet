@@ -81,16 +81,21 @@ print.gnppfit <- function(x, ...){
 #' @export
 
 print.summary.gnppfit <- function(x, ...){
-  cat("Poisson model on a geometric network fitted with maximum likelihood.")
-  cat("\n\nFormula:\n")
-  print(x$formula)
+  cat("Intensity estimation on a geometric network.\n")
+  cat("Family: Poisson\n")
+  cat("Link Function: log\n")
+  cat("\nFormula: ")
+  print(x$formula, showEnv = FALSE)
   if (!is.null(x$tab)) {
-    cat("\nParametric coefficients:\n")
+    cat("\nPparametric coefficients:\n")
     printCoefmat(x$tab[, c(1:2, 6:7)], #digits = digits, signif.stars = signif.stars,
                  na.print = "NA", ...)
   } else {
-    cat("\nNo parametric coefficients.\n")
+    cat("\nModel has no parametric coefficients.\n")
   }
+  cat("\nApproximate significance of smooth terms:\n")
+  #printCoefmat(x$tab[, c(1:2, 6:7)], #digits = digits, signif.stars = signif.stars,
+  #             na.print = "NA", ...)
   cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho))
   invisible(NULL)
 }

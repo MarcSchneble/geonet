@@ -185,13 +185,13 @@ network_penalty <- function(G, knots, r){
     adj <- which(A_tau*lower.tri(A_tau) == 1, arr.ind = T)
 
     # initializing first order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(knots$J) + G$W)
+    D <- matrix(0, nrow(adj), sum(knots$J) + G$W)
 
     for(i in 1:nrow(adj)){
       D[i, adj[i, 1]] <- 1
       D[i, adj[i, 2]] <- -1
     }
-    Matrix::t(D)%*%D
+    return(Matrix::t(D)%*%D)
   }
   if (r == 2){
     # find for every spline function the adjacent spline functions
@@ -208,6 +208,6 @@ network_penalty <- function(G, knots, r){
     }
     D <- Matrix::Matrix(D, sparse = TRUE)
 
-    Matrix::t(D)%*%D
+    return(Matrix::t(D)%*%D)
   }
 }
