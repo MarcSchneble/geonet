@@ -9,3 +9,4 @@
 ^CRAN-RELEASE$
 ^data-raw$
 ^ideas\.txt$
+^cran-comments\.md$

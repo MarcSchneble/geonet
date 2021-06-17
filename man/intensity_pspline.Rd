@@ -11,7 +11,8 @@ intensity_pspline(
   h = NULL,
   r = 1,
   scale = NULL,
-  density = FALSE
+  density = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,9 @@ covariates. Currently, only x- and y-coordinates can be scaled.}
 \item{density}{\code{TRUE} if the intensity should be normalized such that it
 can be interpreted as a density, i.e. the integral over the estimated density
 is equal to one.}
+
+\item{verbose}{If \code{TRUE}, prints information on the process of the fitting
+algorithm.}
 }
 \value{
 A fitted geometric network (object of class \code{gnppfit}).

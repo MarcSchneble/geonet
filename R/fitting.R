@@ -38,6 +38,8 @@
 #' @param density \code{TRUE} if the intensity should be normalized such that it
 #' can be interpreted as a density, i.e. the integral over the estimated density
 #' is equal to one.
+#' @param verbose If \code{TRUE}, prints information on the process of the fitting
+#' algorithm.
 #' @return A fitted geometric network (object of class \code{gnppfit}).
 #' @references Schneble, M. and G. Kauermann (2020). Intensity estimation on
 #' geometric networks with penalized splines. arXiv preprint arXiv:2002.10270 .
@@ -58,7 +60,7 @@
 #' plot(model)
 
 intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
-                             scale = NULL, density = FALSE){
+                             scale = NULL, density = FALSE, verbose = FALSE){
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
 
@@ -79,7 +81,7 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   knots <- network_knots(X$network, delta)
   bins <- network_bins(X$network, h)
   #P <- list(splines = knots, bins = bins)
-  data <- bin_data(X, bins, vars, intern, scale = scale)
+  data <- bin_data(X, bins, vars, intern, scale)
   ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
 
   # design matrix of for network splines
@@ -119,7 +121,8 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   }
 
   # fit the model
-  fit <- fit_poisson_model(data, Z, K, ind)
+  if (verbose) cat("Finished preprocessing. Start fitting the model.\n")
+  fit <- fit_poisson_model(data, Z, K, ind, verbose = verbose)
 
   # output
   out <- list()
@@ -161,8 +164,10 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
 #' (including the baseline intensity) in the model.
 #' @param rho_max If \code{rho} exceeds \code{rho_max}, the algorithm stops
 #' and returns the current values.
-#' @param eps_rho The termination condition for \code{rho}.
+#' @param eps_theta The termination condition.
 #' @param maxit_rho Maximum number of iterations for \code{rho}.
+#' @param verbose If \code{TRUE}, prints information on the process of the fitting
+#' algorithm.
 #' @return Model fit.
 #' @references Wood, S. N. and Fasiolo, M. (2017). A generalized Fellner-Schall
 #'  method for smoothing parameter optimization with application to
@@ -173,31 +178,34 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
 #' @export
 
 fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
-                     eps_rho = 0.01, maxit_rho = 100){
+                     eps_theta = 0.001, maxit_rho = 100, verbose = FALSE){
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
   rho <- rep(rho, length(ind) - 1)
-  Delta_rho <- Inf
+  Delta_theta <- Inf
   it_rho <- 0
   theta <- rep(0, ncol(Z))
-  theta <- scoring(theta, rho, data, Z, K, ind)
-  while(Delta_rho > eps_rho){
+  duration <- NULL
+  while(tail(Delta_theta, 1) > eps_theta){
     print(rho)
+    if (verbose) start <- Sys.time()
     it_rho <- it_rho + 1
-    start <- Sys.time()
-    #theta <- scoring(theta, rho, data, Z, K, ind)
-    theta <- as.vector(theta + Matrix::solve(fisher(theta, rho, data, Z, K, ind))%*%score(theta, rho, data, Z, K, ind))
-    print(Sys.time() - start)
+    if (it_rho == 1) {
+      theta_new <- scoring(theta, rho, data, Z, K, ind)
+    } else {
+      theta_new <-
+        as.vector(theta + Matrix::solve(fisher(theta, rho, data, Z, K, ind))%*%
+                    score(theta, rho, data, Z, K, ind))
 
+    }
+    V <- Matrix::solve(fisher(theta_new, rho, data, Z, K, ind))
 
-    V <- Matrix::solve(fisher(theta, rho, data, Z, K, ind))
-
-    # updatae rho
+    # update rho
     rho_new <- rep(NA, length(ind) - 1)
     for (i in 1:(length(ind) - 1)) {
       rho_new[i] <- as.vector(rho[i]*(Matrix::rankMatrix(K[ind[[i]], ind[[i]]], method = "qr.R")[1]/rho[i] -
                                         sum(Matrix::diag(V[ind[[i]], ind[[i]]]%*%K[ind[[i]], ind[[i]]])))/
-                                (Matrix::t(theta[ind[[i]]])%*%K[ind[[i]], ind[[i]]]%*%theta[ind[[i]]]))
+                                (Matrix::t(theta_new[ind[[i]]])%*%K[ind[[i]], ind[[i]]]%*%theta_new[ind[[i]]]))
     }
 
     if (any(rho_new > rho_max)) break
@@ -208,8 +216,19 @@ fit_poisson_model <- function(data, Z, K, ind, rho = 10, rho_max = 1e5,
       warning("Stopped estimation of rho because maximum number of iterations has been reached!")
       break
     }
-    Delta_rho <- sqrt(sum((rho_new - rho)^2))/sqrt(sum((rho)^2))
+    Delta_theta <- c(Delta_theta, sqrt(sum((theta_new - theta)^2))/sqrt(sum((theta)^2)))
+    if (verbose & it_rho >= 5) {
+      duration <- c(duration, as.vector(difftime(Sys.time(), start, units = "mins")))
+      Delta_theta_recent <- tail(Delta_theta, 4)
+      mean_reduction <- mean((abs(Delta_theta_recent[-1] -
+                                    Delta_theta_recent[-4])/
+                                Delta_theta_recent[-4]))
+      k <- ceiling(log(eps_theta/tail(Delta_theta, 1))/log(1 - mean_reduction))
+      cat(paste("Expected number of further iterations:", k,
+                "(expected duration:", round(mean(tail(duration, 4))*k, 1), "minutes)", "\n"))
+    }
     rho <- rho_new
+    theta <- theta_new
   }
   # degrees of freedom
   mu <- exp(as.vector(Z%*%theta) + log(data$h) + log(data$offset))

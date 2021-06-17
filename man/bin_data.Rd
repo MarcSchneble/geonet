@@ -4,7 +4,7 @@
 \alias{bin_data}
 \title{Bin Point Pattern on a Geometric Network}
 \usage{
-bin_data(X, bins = NULL, vars = NULL, intern = NULL, scale)
+bin_data(X, bins = NULL, vars = NULL, intern = NULL, scale = NULL)
 }
 \arguments{
 \item{X}{Point pattern on a geometric network (object of class \code{gnpp})}

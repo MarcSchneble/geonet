@@ -11,8 +11,9 @@ fit_poisson_model(
   ind,
   rho = 10,
   rho_max = 1e+05,
-  eps_rho = 0.01,
-  maxit_rho = 100
+  eps_theta = 0.001,
+  maxit_rho = 100,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -34,9 +35,12 @@ of length one or a vector which corresponds to the count of smooth terms
 \item{rho_max}{If \code{rho} exceeds \code{rho_max}, the algorithm stops
 and returns the current values.}
 
-\item{eps_rho}{The termination condition for \code{rho}.}
+\item{eps_theta}{The termination condition.}
 
 \item{maxit_rho}{Maximum number of iterations for \code{rho}.}
+
+\item{verbose}{If \code{TRUE}, prints information on the process of the fitting
+algorithm.}
 }
 \value{
 Model fit.

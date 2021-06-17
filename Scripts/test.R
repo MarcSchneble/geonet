@@ -6,7 +6,7 @@ X <- runifgn(50, small_gn)
 delta <- 0.2
 h <- 0.1
 r <- 1
-model <- intensity_pspline(X, delta = delta, h = h, r = 2)
+model <- intensity_pspline(X, delta = delta, h = h, r = 2, verbose = TRUE)
 summary(model)
 plot(model)
 
@@ -34,8 +34,8 @@ X <- montgomery
 delta <- 0.05
 h <- 0.025
 r <- 2
-formula <- ~ s(hour, k = 15) + internal(type) + internal(direction)
-model <- intensity_pspline(X, formula, delta = delta, h = h, r = r)
+formula <- ~ s(hour) + internal(type) + internal(direction) + internal(y)
+model <- intensity_pspline(X, formula, delta = delta, h = h, r = r, verbose = TRUE)
 sum(model$edf[model$ind[["hour"]]])
 summary(model)
 plot(model)

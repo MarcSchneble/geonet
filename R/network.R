@@ -90,10 +90,10 @@ network_bins <- function(G, h = NULL){
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
-bin_data <- function(X, bins = NULL, vars = NULL, intern = NULL, scale){
+bin_data <- function(X, bins = NULL, vars = NULL, intern = NULL, scale = NULL){
   # get covariates from every point on the network (if applicable)
   if (is.null(bins)) bins <- network_bins(X$network)
-  vars_external <- setdiff(vars, c("G", "x", "y", colnames(X$network$lins)[-(1:11)]))
+  vars_external <- setdiff(vars, c("G", "x", "y", "dist2V", colnames(X$network$lins)[-(1:11)]))
   if (all(vars_external %in% colnames(X$data)[-(1:5)])) {
     covariates <- as_tibble(X$data) %>% select(all_of(vars_external))
   } else {
@@ -113,7 +113,7 @@ bin_data <- function(X, bins = NULL, vars = NULL, intern = NULL, scale){
   # initializing
   data <- tibble(id = 1:sum(bins$N), count = NA, h = NA)
   if (length(intern) > 0) {
-    data <- bind_cols(data, as_tibble(internal(vars[intern], X, bins, scale = scale)))
+    data <- bind_cols(data, as_tibble(internal(vars[intern], X, bins, scale)))
   }
   data <- data %>% slice(rep(1:n(), nrow(vars_comb))) %>%
     bind_cols(vars_comb %>% slice(rep(1:n(), each = sum(bins$N))))
@@ -199,6 +199,16 @@ internal <- function(vars, X, bins, scale){
       }
     }
     if (!is.null(scale$y)) out$y <- y*scale$y
+    else out$y <- y
+  }
+  if (is.element("dist2V", vars)) {
+    d <- rep(NA, sum(bins$N))
+    ind <- 1
+    for (m in 1:X$network$M) {
+      d[ind:(ind + bins$N[m] - 1)] <- pmin(bins$z[[m]], X$network$d[m] - bins$z[[m]])
+      ind <- ind + bins$N[m]
+    }
+    out$dist2V <- d
   }
   X_internal <- colnames(X$network$lins[-(1:11)])
   for (k in 1:length(X_internal)) {
