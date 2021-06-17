@@ -1,3 +1,8 @@
+geonet version 0.3.0 (Github release)
+
+- algorithm options can now be supplied to intensity_pspline via the
+  "control" argument
+
 geonet version 0.2.0 (GitHub release)
 
 - added internal covariate information to the montgomery network

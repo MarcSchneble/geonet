@@ -12,7 +12,8 @@ intensity_pspline(
   r = 1,
   scale = NULL,
   density = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  control = list()
 )
 }
 \arguments{
@@ -51,6 +52,9 @@ is equal to one.}
 
 \item{verbose}{If \code{TRUE}, prints information on the process of the fitting
 algorithm.}
+
+\item{control}{A list of optional arguments which control the convergence
+of the fitting algorithm. See "Details".}
 }
 \value{
 A fitted geometric network (object of class \code{gnppfit}).

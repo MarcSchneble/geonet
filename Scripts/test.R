@@ -6,7 +6,10 @@ X <- runifgn(50, small_gn)
 delta <- 0.2
 h <- 0.1
 r <- 1
-model <- intensity_pspline(X, delta = delta, h = h, r = 2, verbose = TRUE)
+model <- intensity_pspline(X, delta = delta, h = h, r = 2, verbose = TRUE,
+                           control = list(rho_start = 20,
+                                          eps_theta = 1e-4,
+                                          rho_max = 100))
 summary(model)
 plot(model)
 

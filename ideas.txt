@@ -2,7 +2,8 @@ internal covariates do not need to be assigned any more
 chi^2 statistics for edf smooth terms
 make algorithm faster
 dist2V variable --> nochmal checken
-algorithm options in one ``options'' vector
+algorithm options in one ``options'' vector -->
 stopping criterion in dependence of theta --> done
 verbose option --> done
 include ggmaps in plotting
+update prints and summaries
