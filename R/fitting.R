@@ -23,8 +23,7 @@
 #' \code{bs} is set to
 #' \code{bs = "ps"} by default, i.e. \code{intensity_pspline} can handle
 #' penalized spline
-#' based smooth terms. Internal linear covariates must be supplied via
-#' \code{internal()}, see examples for details.
+#' based smooth terms.
 #' @param delta The global knot distance \eqn{\delta}, a numerical vector of length one. If
 #' not supplied, delta will be chosen properly according to the geometric
 #' network \code{X} which is supplied.
@@ -45,7 +44,7 @@
 #' @return A fitted geometric network (object of class \code{gnppfit}).
 #' @references Schneble, M. and G. Kauermann (2020). Intensity estimation on
 #' geometric networks with penalized splines. arXiv preprint arXiv:2002.10270 .
-#' @importFrom  Matrix Matrix bdiag
+#' @importFrom Matrix Matrix bdiag
 #' @importFrom stats update as.formula model.matrix setNames
 #' @importFrom utils tail
 #' @importFrom mgcv smooth.construct.ps.smooth.spec s
@@ -62,8 +61,8 @@
 #' plot(model)
 
 intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
-                             scale = NULL, density = FALSE, verbose = FALSE,
-                             control = list()){
+                              scale = NULL, density = FALSE, verbose = FALSE,
+                              control = list()){
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
 
@@ -71,21 +70,34 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   vars <- all.vars(formula)
   if (length(vars) == 0){
     lins <- NULL
-    smooths <- "G"
+    vars_smooths <- "G"
     intern <- NULL
   } else {
     vars2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
-    lins <- vars[which(substring(vars2, 1, 2) != "s(")]
-    smooths <- c("G", vars[which(substring(vars2, 1, 2) == "s(")])
-    intern <- which(substring(vars2, 1, 9) == "internal(")
+    if (length(setdiff(vars, c("x", "y", "dist2V",
+                               names(summary(X)$covariates$internal),
+                               names(summary(X)$covariates$external)))) > 0) {
+      stop("At least one covariate was not found in the data!")
+    }
+    formula_string <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
+    vars_internal <- intersect(vars, c("x", "y", "dist2V",
+                                       names(summary(X)$covariates$internal)))
+    vars_lins <- vars[which(substring(formula_string, 1, 2) != "s(")]
+    ind_smooths <- which(substring(formula_string, 1, 2) == "s(")
+    vars_smooths <- c("G", vars[ind_smooths])
+    if (length(intersect(vars_internal, vars_smooths)) > 0) {
+      stop("Internal covariates can only be included as linear terms!")
+    }
   }
 
   # get representation of P-splines on the network
   knots <- network_knots(X$network, delta)
   bins <- network_bins(X$network, h)
-  #P <- list(splines = knots, bins = bins)
-  data <- bin_data(X, bins, vars, intern, scale)
-  ind <- setNames(vector("list", length(smooths) + 1), c(smooths, "lins"))
+
+  data <- bin_data(X, bins = bins, vars = vars, vars_internal = vars_internal,
+                   scale = scale)
+  ind <- setNames(vector("list", length(vars_smooths) + 1),
+                  c(vars_smooths, "lins"))
 
   # design matrix of for network splines
   B <- bspline_design(X$network, knots, bins)
@@ -93,30 +105,33 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   ind$G <- setNames(1:ncol(Z), paste0("G.", 1:ncol(Z)))
   K <- network_penalty(X$network, knots, r)
 
-  smooth_terms <- setNames(vector("list", length(smooths) - 1), smooths[-1])
+  smooth_terms <- setNames(vector("list", length(vars_smooths) - 1),
+                           vars_smooths[-1])
   # design for smooth terms
-  if (length(smooths) > 1) {
-    for (i in 2:length(smooths)) {
-      sm <- smooth.construct.ps.smooth.spec(eval(parse(text = vars2[i - 1])),
+  if (length(ind_smooths) > 0) {
+    for (i in ind_smooths) {
+      sm <- smooth.construct.ps.smooth.spec(
+        eval(parse(text = formula_string[ind_smooths][i])),
                                             data = data, knots = NULL)
       D <- sm$D[, -1]
       K <- bdiag(K, t(D)%*%D)
       Z_smooth <- sm$X
-      smooth_terms[[smooths[i]]]$range <- range(data[[smooths[i]]])
-      smooth_terms[[smooths[i]]]$knots <- sm$knots
-      smooth_terms[[smooths[i]]]$l <- sm$m[1] + 1
-      smooth_terms[[smooths[i]]]$r <- sm$m[2]
-      smooth_terms[[smooths[i]]]$ident <- colMeans(Z_smooth)
-      Z <- cbind(Z, sweep(Z_smooth, 2, smooth_terms[[smooths[i]]]$ident)[, -1])
-      ind[[smooths[i]]] <- setNames((ncol(Z) - ncol(Z_smooth) + 2):ncol(Z),
-                                    paste0(smooths[i], ".", 1:(ncol(Z_smooth) - 1)))
+      var_name <- vars[ind_smooths][i]
+      smooth_terms[[var_name]]$range <- range(data[[var_name]])
+      smooth_terms[[var_name]]$knots <- sm$knots
+      smooth_terms[[var_name]]$l <- sm$m[1] + 1
+      smooth_terms[[var_name]]$r <- sm$m[2]
+      smooth_terms[[var_name]]$ident <- colMeans(Z_smooth)
+      Z <- cbind(Z, sweep(Z_smooth, 2, smooth_terms[[var_name]]$ident)[, -1])
+      ind[[var_name]] <- setNames((ncol(Z) - ncol(Z_smooth) + 2):ncol(Z),
+                                    paste0(var_name, ".", 1:(ncol(Z_smooth) - 1)))
     }
   }
 
   # design for linear terms
-  if (length(lins) > 0){
-    formula_lins <- as.formula(paste("~", paste(lins, collapse = " + ")))
-    model_matrix_lins <- model.matrix(formula_lins, data = data)[, -1]
+  if (length(vars_lins) > 0){
+    formula_lins <- as.formula(paste("~", paste(vars_lins, collapse = " + ")))
+    model_matrix_lins <- as.matrix(model.matrix(formula_lins, data = data)[, -1])
     ind[["lins"]] <- setNames((ncol(Z) + 1):(ncol(Z) + ncol(model_matrix_lins)),
                               colnames(model_matrix_lins))
     Z <- cbind(Z, model_matrix_lins)
@@ -177,7 +192,7 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
 #' @export
 
 fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
-                     control = list()){
+                              control = list()){
 
   # determine optimal smoothing parameter rho with Fellner-Schall method
   rho <- rep(ifelse(!is.null(control$rho_start), control$rho_start, 10),
@@ -191,7 +206,6 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
   theta <- rep(0, ncol(Z))
   duration <- NULL
   while(tail(Delta_theta, 1) > eps_theta){
-    print(rho)
     if (verbose) start <- Sys.time()
     it <- it + 1
     if (it == 1) {

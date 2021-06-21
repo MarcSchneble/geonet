@@ -66,7 +66,8 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
                              y = L$vertices$y),
     lins = NULL,
     adjacency = NULL, incidence = NULL,
-    d = NULL, q = 2, W = NULL, M = NULL
+    d = NULL, q = 2, W = NULL, M = NULL,
+    unit = L$window$units
   )
   # adjacency matrix of vertices in linear network representation
   A <- L$m*1

@@ -35,7 +35,7 @@ P <- ppp(x = V$lon, y = V$lat,
          window = owin(xrange = c(min(V$lon), max(V$lon)), yrange = c(min(V$lat), max(V$lat))))
 L <- linnet(vertices = P, edges = as.matrix(E[, 2:3]))
 s <- L$dpath[191, 193]/2.2
-L <- spatstat.geom::rescale(L, s = s, unitname = "Kilometers")
+L <- spatstat.geom::rescale(L, s = s, unitname = c("kilometer", "kilometers"))
 
 data <- data %>%
   mutate(lon.net = (lon - min.lon)/s, lat.net = (lat - min.lat)/s)
@@ -50,7 +50,7 @@ tp <- projection$tp[retain]
 marks <- projection$Xproj$marks[retain]
 L.lpp <- as.lpp(seg = seg, tp = tp, L = L, marks = marks)
 
-W <- owin(xrange = c(15, 33), yrange = c(0, 12), unitname = "Kilometers")
+W <- owin(xrange = c(15, 33), yrange = c(0, 12), unitname = c("kilometer", "kilometers"))
 L.old <- L
 L <- L[W, snip = FALSE]
 L$ind.edges <-  which((E$from.lat - min.lat)/s <= 12 & (E$from.lat - min.lat)/s >= 0 &

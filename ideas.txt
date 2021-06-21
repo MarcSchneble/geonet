@@ -1,9 +1,12 @@
-internal covariates do not need to be assigned any more
-chi^2 statistics for edf smooth terms
-make algorithm faster
-dist2V variable --> nochmal checken
-algorithm options in one ``options'' vector -->
+algorithm options in one ``options'' vector --> done
 stopping criterion in dependence of theta --> done
 verbose option --> done
+update prints and summaries --> done
+internal covariates do not need to be assigned any more --> done
+
+dist2V variable --> nochmal checken
+
+chi^2 statistics for edf smooth terms
+make algorithm faster
 include ggmaps in plotting
-update prints and summaries
+montgomery network ohne s(hour) fitten

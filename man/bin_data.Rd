@@ -4,7 +4,7 @@
 \alias{bin_data}
 \title{Bin Point Pattern on a Geometric Network}
 \usage{
-bin_data(X, bins = NULL, vars = NULL, intern = NULL, scale = NULL)
+bin_data(X, bins = NULL, vars = NULL, vars_internal = NULL, scale = NULL)
 }
 \arguments{
 \item{X}{Point pattern on a geometric network (object of class \code{gnpp})}
@@ -14,11 +14,11 @@ bin_data(X, bins = NULL, vars = NULL, intern = NULL, scale = NULL)
 \item{vars}{A character vector containing the name of all covariates in the
 model.}
 
-\item{intern}{A character vector containing the name of all interval
-covariates in the model.}
-
 \item{scale}{A named list which specifies the rescaling of network related
 covariates. Currently, only x- and y-coordinates can be scaled.}
+
+\item{intern}{A character vector containing the name of all interval
+covariates in the model.}
 }
 \value{
 The binned data.

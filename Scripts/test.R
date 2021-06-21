@@ -1,6 +1,6 @@
-library(spatstat)
 document()
 load_all()
+library(spatstat)
 
 X <- runifgn(50, small_gn)
 delta <- 0.2
@@ -14,19 +14,22 @@ summary(model)
 plot(model)
 
 X <- as_gnpp(chicago)
-model <- intensity_pspline(X, delta = 10, h = 2, r = 2)
+model <- intensity_pspline(X, formula = ~internal(y), scale = list(y = 1/1000),
+                           delta = 10, h = 2, r = 2)
 plot(model)
+summary(model)
 
 
 X <- as_gnpp(chicago)
 delta <- 10
 h <- 2
 r <- 2
-formula <- X ~ marks + internal(x) + internal(y)
+formula <- X ~ marks + x + y
 
 start <- Sys.time()
 model <- intensity_pspline(X, formula, delta = delta, h = h, r = r,
-                           scale = list(x = 1/1000, y = 1/1000))
+                           scale = list(x = 1/1000, y = 1/1000),
+                           verbose = TRUE)
 print(Sys.time() - start)
 
 summary(model)
@@ -34,12 +37,11 @@ plot(model)
 
 
 X <- montgomery
-delta <- 0.05
-h <- 0.025
+delta <- 0.1
+h <- 0.05
 r <- 2
-formula <- ~ s(hour) + internal(type) + internal(direction) + internal(y)
-model <- intensity_pspline(X, formula, delta = delta, h = h, r = r, verbose = TRUE)
-sum(model$edf[model$ind[["hour"]]])
+formula <- ~ type + direction
+model <- intensity_pspline(X, formula = formula, delta = delta, h = h, r = r, verbose = TRUE)
 summary(model)
 plot(model)
 

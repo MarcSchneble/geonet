@@ -1,6 +1,6 @@
 Package: geonet
 Title: Intensity Estimation on Geometric Networks with Penalized Splines
-Version: 0.2.0.9999
+Version: 0.3.0
 Date: 24.06.2021
 Authors@R: 
     person(given = "Marc",

@@ -7,18 +7,17 @@
 \method{summary}{gnppfit}(object, ...)
 }
 \arguments{
-\item{object}{Fitted point process on a geometric network (object of class
-\code{gnppfit}).}
+\item{object}{A fitted point process on a geometric network.}
 
 \item{...}{Other arguments.}
 }
 \value{
-A summary of a fitted point process on a geometric network (object of
-class \code{summary.gnppfit}).
+A summary of a fitted point process on a geometric network. This is
+an object of class \code{summary.gnppfit}.
 }
 \description{
-Takes a fitted \code{gnppfit} object produced by \code{intensity_spline} and
-computes a summary from it.
+Takes a fitted \code{gnppfit} object produced by \code{intensity_spline}
+and computes a summary from it.
 }
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
