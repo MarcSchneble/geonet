@@ -48,6 +48,7 @@ delta <- 0.1
 h <- 0.05
 r <- 2
 formula <- ~ type + direction
+formula <- ~1
 model <- intensity_pspline(X, formula = formula, delta = delta, h = h, r = r, verbose = TRUE)
 summary(model)
 plot(model)

@@ -1,3 +1,8 @@
+geonet version 0.4.0 (Github release)
+
+- summaries and related print methods now also print information on the
+  linear network representation
+
 geonet version 0.3.0 (Github release)
 
 - algorithm options can now be supplied to intensity_pspline via the

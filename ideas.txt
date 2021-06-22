@@ -10,3 +10,9 @@ chi^2 statistics for edf smooth terms
 make algorithm faster
 include ggmaps in plotting
 montgomery network ohne s(hour) fitten
+choice of delta and h (95% rule)
+interaction of linear covariates
+compute integral of intensity fit
+add two intensity functions
+simulate from intensity (use linearity)
+scale the dist2V variable

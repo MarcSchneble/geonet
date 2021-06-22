@@ -73,7 +73,9 @@ print.gnppfit <- function(x, ...){
 print.summary.gn <- function(x, ...) {
   stopifnot(inherits(x, "summary.gn"))
   cat(paste("Geometric network in", x$q, "dimensions with",
-            x$W, "vertices and", x$M, "curve segments.\n"))
+            x$W, "vertices\nand", x$M, "curve segments.\n"))
+  cat(paste("The linear representation of the network has", x$W_lins, "vertices\nand",
+            x$M_lins, "straigt line segments.\n"))
   cat(paste("Total length of the network:", round(x$total_length, 3),
             x$unit$plural, "\n"))
   cat(paste("Minimum segment length:", round(x$range_length[1], 3),
@@ -90,7 +92,9 @@ print.summary.gn <- function(x, ...) {
 print.summary.gnpp <- function(x, ...) {
   stopifnot(inherits(x, "summary.gnpp"))
   cat(paste("Point pattern on a geometric network in", x$q, "dimensions with",
-            x$W, "vertices and", x$M, "curve segments.\n"))
+            x$W, "vertices\nand", x$M, "curve segments.\n"))
+  cat(paste("The linear representation of the network has", x$W_lins, "vertices\nand",
+            x$M_lins, "straigt line segments.\n"))
   cat(paste("Total length of the network:", round(x$total_length, 3),
             x$unit$plural, "\n"))
   if (length(x$covariates$internal) > 0) {
@@ -102,12 +106,13 @@ print.summary.gnpp <- function(x, ...) {
       print(x$covariates$internal[[i]]$summary)
     }
   } else {
+    i <- 0
     cat("Network has no internal covariates\n")
   }
   cat(paste("Number of points:", x$n_points, "\n"))
-  cat(paste("Average intensity:", round(x$average_intensity, 5), "per",
+  cat(paste("Average intensity:", round(x$average_intensity, 5), "points per",
             x$unit$singular, "\n"))
-  if (length(x$covariates$internal) > 0) {
+  if (length(x$covariates$external) > 0) {
     cat(paste("Number of external covariates:",
               length(x$covariates$external), "\n"))
     for (j in (i+1):(length(x$covariates$external)+i)) {
@@ -125,7 +130,8 @@ print.summary.gnpp <- function(x, ...) {
 #' @export
 
 print.summary.gnppfit <- function(x, ...){
-  cat("Intensity estimation on a geometric network.\n")
+  cat(paste("Intensity estimation on a geometric network in", x$q, "dimensions\nwith",
+            x$W, "vertices and", x$M, "curve segments.\n"))
   cat("Family: Poisson\n")
   cat("Link Function: log\n")
   cat("\nFormula: ")
@@ -139,6 +145,6 @@ print.summary.gnppfit <- function(x, ...){
   }
   cat("\nApproximate significance of smooth terms:\n")
   print(x$edf)
-  cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho))
+  cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho, "\n"))
   invisible(NULL)
 }

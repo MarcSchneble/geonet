@@ -17,6 +17,8 @@ summary.gn <- function(object, ...) {
   out <- list(
     M = object$M,
     W = object$W,
+    M_lins = nrow(object$lins),
+    W_lins = nrow(object$vertices),
     q = object$q,
     unit = object$unit,
     total_length = sum(object$d),
@@ -78,7 +80,7 @@ summary.gnpp <- function(object, ...) {
 summary.gnppfit <- function(object, ...) {
 
   x <- object
-  ans <- list()
+  ans <- summary(X$network)
   if (length(x$ind[["lins"]]) > 0) {
     ans$tab <- data.frame(estimate = numeric(length(x$ind[["lins"]])),
                           se = NA, rr = NA, rr.lower = NA, rr.upper = NA,
