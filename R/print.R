@@ -84,7 +84,7 @@ print.summary.gn <- function(x, ...) {
   print(x$degrees)
 }
 
-#' @rdname summary.gn
+#' @rdname print.summary.gn
 #' @export
 
 print.summary.gnpp <- function(x, ...) {
@@ -120,7 +120,7 @@ print.summary.gnpp <- function(x, ...) {
   }
 }
 
-#' @rdname summary.gn
+#' @rdname print.summary.gn
 #' @importFrom stats printCoefmat
 #' @export
 

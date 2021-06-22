@@ -29,8 +29,7 @@ smooth terms constructed with \code{\link[mgcv]{s}} and the argument
 \code{bs} is set to
 \code{bs = "ps"} by default, i.e. \code{intensity_pspline} can handle
 penalized spline
-based smooth terms. Internal linear covariates must be supplied via
-\code{internal()}, see examples for details.}
+based smooth terms.}
 
 \item{delta}{The global knot distance \eqn{\delta}, a numerical vector of length one. If
 not supplied, delta will be chosen properly according to the geometric

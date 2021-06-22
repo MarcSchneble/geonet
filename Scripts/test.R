@@ -5,6 +5,13 @@ library(spatstat)
 X <- runifgn(50, small_gn)
 delta <- 0.2
 h <- 0.1
+r <- 2
+formula <- ~1
+model <- intensity_pspline(X, delta = delta, h = h, r = r)
+
+X <- runifgn(50, small_gn)
+delta <- 0.2
+h <- 0.1
 r <- 1
 model <- intensity_pspline(X, delta = delta, h = h, r = 2, verbose = TRUE,
                            control = list(rho_start = 20,

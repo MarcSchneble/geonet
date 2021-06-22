@@ -80,7 +80,7 @@ network_bins <- function(G, h = NULL){
 #' @param bins A list containing the bins of the geometric network.
 #' @param vars A character vector containing the name of all covariates in the
 #' model.
-#' @param intern A character vector containing the name of all interval
+#' @param vars_internal A character vector containing the name of all interval
 #' covariates in the model.
 #' @param scale A named list which specifies the rescaling of network related
 #' covariates. Currently, only x- and y-coordinates can be scaled.

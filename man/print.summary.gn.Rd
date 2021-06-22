@@ -2,9 +2,15 @@
 % Please edit documentation in R/print.R
 \name{print.summary.gn}
 \alias{print.summary.gn}
+\alias{print.summary.gnpp}
+\alias{print.summary.gnppfit}
 \title{Print Method for Summaries}
 \usage{
 \method{print}{summary.gn}(x, ...)
+
+\method{print}{summary.gnpp}(x, ...)
+
+\method{print}{summary.gnppfit}(x, ...)
 }
 \arguments{
 \item{x}{A geonet summary object of class \code{summary.gn},

@@ -69,9 +69,10 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   # get linear and smooth terms
   vars <- all.vars(formula)
   if (length(vars) == 0){
-    lins <- NULL
+    vars_lins <- NULL
     vars_smooths <- "G"
-    intern <- NULL
+    vars_internal <- NULL
+    ind_smooths <- NULL
   } else {
     vars2 <- tail(strsplit(as.character(formula), " \\+ "),1)[[1]]
     if (length(setdiff(vars, c("x", "y", "dist2V",
