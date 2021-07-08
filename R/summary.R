@@ -80,7 +80,7 @@ summary.gnpp <- function(object, ...) {
 summary.gnppfit <- function(object, ...) {
 
   x <- object
-  ans <- summary(X$network)
+  ans <- summary(x$network)
   if (length(x$ind[["lins"]]) > 0) {
     ans$tab <- data.frame(estimate = numeric(length(x$ind[["lins"]])),
                           se = NA, rr = NA, rr.lower = NA, rr.upper = NA,

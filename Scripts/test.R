@@ -2,9 +2,9 @@ document()
 load_all()
 library(spatstat)
 
-X <- runifgn(50, small_gn)
-delta <- 0.2
-h <- 0.1
+X <- runifgn(5, as_gn(simplenet))
+delta <- "0"
+h <- 0.2
 r <- 2
 formula <- ~1
 model <- intensity_pspline(X, delta = delta, h = h, r = r)

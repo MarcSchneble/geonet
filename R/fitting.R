@@ -31,7 +31,7 @@
 #' not supplied, \code{h} will be chosen properly according to the geometric
 #' network \code{X} which is supplied.
 #' @param r The order of the penalty of the baseline intensity on the geometric
-#' network, default to a penalty of order \code{r = 1}.
+#' network, default to a penalty of order \code{r = 2}.
 #' @param scale A named list which specifies the rescaling of network related
 #' covariates. Currently, only x- and y-coordinates can be scaled.
 #' @param density \code{TRUE} if the intensity should be normalized such that it
@@ -60,7 +60,7 @@
 #' summary(model)
 #' plot(model)
 
-intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
+intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 2,
                               scale = NULL, density = FALSE, verbose = FALSE,
                               control = list()){
   # remove response from formula if supplied
@@ -92,8 +92,9 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 1,
   }
 
   # get representation of P-splines on the network
-  knots <- network_knots(X$network, delta)
-  bins <- network_bins(X$network, h)
+  setup <- delta_h_global(X$network, delta, h)
+  knots <- network_knots(X$network, setup$delta)
+  bins <- network_bins(X$network, setup$h)
 
   data <- bin_data(X, bins = bins, vars = vars, vars_internal = vars_internal,
                    scale = scale)

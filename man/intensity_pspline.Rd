@@ -9,7 +9,7 @@ intensity_pspline(
   formula = ~1,
   delta = NULL,
   h = NULL,
-  r = 1,
+  r = 2,
   scale = NULL,
   density = FALSE,
   verbose = FALSE,
@@ -40,7 +40,7 @@ not supplied, \code{h} will be chosen properly according to the geometric
 network \code{X} which is supplied.}
 
 \item{r}{The order of the penalty of the baseline intensity on the geometric
-network, default to a penalty of order \code{r = 1}.}
+network, default to a penalty of order \code{r = 2}.}
 
 \item{scale}{A named list which specifies the rescaling of network related
 covariates. Currently, only x- and y-coordinates can be scaled.}

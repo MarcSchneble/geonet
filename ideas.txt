@@ -1,8 +1,5 @@
-algorithm options in one ``options'' vector --> done
-stopping criterion in dependence of theta --> done
-verbose option --> done
-update prints and summaries --> done
-internal covariates do not need to be assigned any more --> done
+choice of delta and h (95% rule) --> done
+fix bug in runifgn -->
 
 dist2V variable --> nochmal checken
 
@@ -10,9 +7,11 @@ chi^2 statistics for edf smooth terms
 make algorithm faster
 include ggmaps in plotting
 montgomery network ohne s(hour) fitten
-choice of delta and h (95% rule)
 interaction of linear covariates
 compute integral of intensity fit
 add two intensity functions
 simulate from intensity (use linearity)
 scale the dist2V variable
+also fit kernel models with geonet (i.e. wrapper around spatstat functions but with geonet plotting)
+implement density = TRUE in intensity_lpp
+

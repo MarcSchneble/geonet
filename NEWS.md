@@ -2,6 +2,12 @@ geonet version 0.4.0 (Github release)
 
 - summaries and related print methods now also print information on the
   linear network representation
+- default penalty is now of order r = 2
+- the global knot distance delta can now be supplied as a quantile of the curve
+  lenghts of the network and the global bin width h as a fraction of the global
+  knot distance
+- fixed bug in as_gnpp.lpp when linear point pattern is not marked
+- fixed bug in runif_gn
 
 geonet version 0.3.0 (Github release)
 

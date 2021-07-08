@@ -221,11 +221,16 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
     covariates <- as_tibble(as.data.frame(x$data)[, -(1:4)])
     colnames(covariates) <- colnames(x$data)[-(1:4)]
     data <- bind_cols(data, covariates)
+    data <- left_join(data, G$lins, by = "id") %>%
+      mutate(tp_id = tp,
+             tp = frac1 + tp*frac2, x = xx) %>%
+      select(id, tp_id, e, tp, x, y, colnames(covariates))
+  } else {
+    data <- left_join(data, G$lins, by = "id") %>%
+      mutate(tp_id = tp,
+             tp = frac1 + tp*frac2, x = xx) %>%
+      select(id, tp_id, e, tp, x, y)
   }
-  data <- left_join(data, G$lins, by = "id") %>%
-    mutate(tp_id = tp,
-           tp = frac1 + tp*frac2, x = xx) %>%
-    select(id, tp_id, e, tp, x, y, colnames(covariates))
   if (!spatstat) data <- data %>% arrange(e, tp)
   X <- list(data = data, network = G)
   class(X) <- "gnpp"

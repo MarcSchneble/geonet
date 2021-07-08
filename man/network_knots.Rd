@@ -4,7 +4,7 @@
 \alias{network_knots}
 \title{Defining knots on a Geometric Network}
 \usage{
-network_knots(G, delta = NULL)
+network_knots(G, delta)
 }
 \arguments{
 \item{G}{An object of class \code{gn}) or a point pattern on a geometric

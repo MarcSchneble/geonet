@@ -1,3 +1,77 @@
+#' Computes a Global Knot Distance from the Input
+#'
+#' @param G An object of class \code{gn}) or a point pattern on a geometric
+#' network (object of class \code{gnpp}).
+#' @param delta A numeric vector of length one which already defines
+#' the global knot distance. Alternatively, delta can be supplied in terms of a
+#' quantile of the curve lengths of the network, i.e. a number in the unit
+#' interval. In the latter case, delta must be supplied as a character vector of
+#' length one, see the examples. By default, delta is chosen to be half of the
+#' minimal curve length.
+#' @param h A numeric vector of length one which already defines the
+#' global knot distance h. Alternatively, h can be supplied in terms of a
+#' fraction of delta, i.e. a number in the interval (0,1]. In the latter case,
+#' h must be supplied as character vector of length one, see the examples.
+#' By default, h is chosen to be half of the global knot distance.
+#' @return The global knot distance delta.
+#' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @export
+#' @examples
+#' G <- as_gn(montgomery)
+#' # use default arguments
+#' setup <- delta_h_global(G)
+#' setup
+#' # set numeric value for delta and fraction for h
+#' setup <- delta_h_global(G, delta = 0.1, h = "0.25")
+#' setup
+#' # set quantile for delta
+#' setup <- delta_h_global(G, delta = "0.05")
+#' setup
+
+delta_h_global <- function(G, delta = NULL, h = NULL) {
+  #global knot distance
+  if (is.null(delta)) {
+    delta <- min(G$d)/2
+  } else if (is.character(delta) & !is.na(as.numeric(delta))) {
+    if (is.character(delta) & !is.na(as.numeric(delta))) {
+      quant <- as.numeric(delta)
+      if (quant >= 0 & quant <= 1) {
+        delta <- as.numeric(quantile(G$d, quant)/2)
+        if (delta > quantile(G$d, 0.5)/2) {
+          warning(paste0("Many network segments have no curve specific ",
+                         "B-splines.\nChoose a lower value for the quantile."))
+        }
+      } else {
+        stop("The quantile supplied for delta must be in the interval [0,1]")
+      }
+    } else {
+      stop("The character must be convertible to class numeric.")
+    }
+  } else if (is.numeric(delta)) {
+    if (delta <= 0) {
+      stop("delta must be positive!")
+    }
+    if (delta > quantile(G$d, 0.5)/2) {
+      warning(paste0("Many network segments have no curve specific ",
+                     "B-splines.\nChoose a lower value for delta."))
+    }
+  } else {
+    stop("Supply delta in correct format, see the documentation.")
+  }
+  if (is.null(h)) {
+    h <- delta/2
+  } else if (is.numeric(h)) {
+    if (h <= 0) stop("h must be positive!")
+    if (h > delta) stop("h must be at most as large as delta!")
+  } else if (is.character(h) & !is.na(as.numeric(h))) {
+    mult <- as.numeric(h)
+    h <- delta*mult
+  } else {
+    stop("Supply h in correct format, see the documentation.")
+  }
+  list(delta = delta, h = h)
+}
+
 #' Defining knots on a Geometric Network
 #'
 #' \code{network_knots} defines knots on a geometric network (object of class
@@ -11,10 +85,9 @@
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
 
-network_knots <- function(G, delta = NULL){
+network_knots <- function(G, delta){
   if (inherits(G, "gnpp")) G <- as_gn(G)
   if (!inherits(G, "gn")) stop("G muss be of class 'gn'")
-  if (is.null(delta)) delta <- min(G$d)/2
   # line specific knot distances
   delta <- G$d*(delta > G$d) + delta*(delta <= G$d)
   delta <- pmin(G$d/floor(G$d/delta)*(G$d/delta - floor(G$d/delta) < 0.5) +
@@ -50,10 +123,9 @@ network_knots <- function(G, delta = NULL){
 network_bins <- function(G, h = NULL){
   if (inherits(G, "gnpp")) G <- as_gn(G)
   if (!inherits(G, "gn")) stop("G muss be of class 'gn'")
-  if (is.null(h)) h <- min(G$d)/4
   # line specific bin widths
-  h <- G$d/floor(G$d/h)*(G$d/h - floor(G$d/h) < 0.5) +
-    G$d/ceiling(G$d/h)*(G$d/h - floor(G$d/h) >= 0.5)
+  h <- pmin(G$d/floor(G$d/h)*(G$d/h - floor(G$d/h) < 0.5) +
+    G$d/ceiling(G$d/h)*(G$d/h - floor(G$d/h) >= 0.5), G$d/2)
   # initializing...
   b <- z <- vector("list", G$M)
   N <- rep(0, G$M)
