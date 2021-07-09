@@ -2,7 +2,7 @@ document()
 load_all()
 library(spatstat)
 
-X <- runifgn(5, as_gn(simplenet))
+X <- runifgn(50, small_gn)
 delta <- "0"
 h <- 0.2
 r <- 2
@@ -54,3 +54,7 @@ summary(model)
 plot(model)
 
 
+X <- runifgn(20, small_gn)
+fit1 <- intensity_pspline(X, delta = 0.2, h = 0.1)
+fit2 <- intensity_pspline(X, delta = 0.5, h = 0.1)
+network_intensity(fit1, fit2)

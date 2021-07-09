@@ -309,3 +309,73 @@ internal <- function(vars, X, bins, scale){
   out
 }
 
+#' Title
+#'
+#' @param z a
+#' @param m a
+#' @param fit1 a
+#' @param fit2 a
+#'
+#' @return
+#' @export
+
+network_intensity_edge <- function(z, m, fit1, fit2 = NULL){
+
+  ind_v1 <- which(fit1$network$incidence[, m] == -1)
+  ind_v2 <- which(fit1$network$incidence[, m] == 1)
+
+  B1 <- matrix(0, length(z), fit1$knots$J[m] + 2)
+  B1[, 1] <- (1-z/fit1$knots$delta[m])*(1-z/fit1$knots$delta[m] > 0)
+  B1[, 2:(ncol(B1)-1)] <- splineDesign(knots = fit1$knots$tau[[m]], x = z, ord = 2, outer.ok = TRUE)
+  B1[, ncol(B1)] <- (1-(fit1$network$d[m]-z)/fit1$knots$delta[m])*(1-(fit1$network$d[m]-z)/fit1$knots$delta[m] > 0)
+
+  gamma1 <- fit1$coefficients[fit1$ind[[1]]]
+
+
+  gamma1_m <- c(gamma1[sum(fit1$knots$J) + ind_v1],
+                gamma1[((cumsum(fit1$knots$J)-fit1$knots$J)[m]+1):cumsum(fit1$knots$J)[m]],
+                gamma1[sum(fit1$knots$J) + ind_v2])
+
+  if (!is.null(fit2)) {
+    B2 <- matrix(0, length(z), fit2$knots$J[m] + 2)
+    B2[, 1] <- (1-z/fit2$knots$delta[m])*(1-z/fit2$knots$delta[m] > 0)
+    B2[, 2:(ncol(B2)-1)] <- splineDesign(knots = fit2$knots$tau[[m]], x = z, ord = 2, outer.ok = TRUE)
+    B2[, ncol(B2)] <- (1-(fit2$network$d[m]-z)/fit2$knots$delta[m])*(1-(fit2$network$d[m]-z)/fit2$knots$delta[m] > 0)
+
+    gamma2 <- fit2$coefficients[fit2$ind[[1]]]
+
+    gamma2_m <- c(gamma2[sum(fit2$knots$J) + ind_v1],
+                  gamma2[((cumsum(fit2$knots$J)-fit2$knots$J)[m]+1):cumsum(fit2$knots$J)[m]],
+                  gamma2[sum(fit2$knots$J) + ind_v2])
+  }
+
+  if (min(z) >= 0 & max(z) <= fit1$network$d[m]) {
+    if (!is.null(fit2)) {
+      return(as.vector((exp(B1%*%gamma1_m) - exp(B2%*%gamma2_m))^2))
+    } else {
+      return(as.vector(exp(B1%*%gamma1_m)))
+    }
+  } else {
+    stop("Wrong domain of z on this edge!")
+  }
+}
+
+#' Title
+#'
+#' @param fit1 a
+#' @param fit2 a
+#'
+#' @return
+#' @export
+
+network_intensity <- function(fit1, fit2 = NULL){
+  intensity_edge <- rep(NA, fit1$network$M)
+  for (m in 1:fit1$network$M) {
+    intensity_edge[m] <- integrate(network_intensity_edge, 0, fit1$network$d[m],
+                                   m = m, fit1 = fit1, fit2 = fit2)$value
+  }
+  sum(intensity_edge)
+}
+
+
+

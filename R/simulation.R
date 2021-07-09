@@ -32,3 +32,39 @@ runifgn <- function(n, G){
   class(out) <- "gnpp"
   out
 }
+
+rgnpp <- function(n, fit){
+  int <- vector("list", fit$network$M)
+  for (m in 1:fit$network$M) {
+    for (k in 1:(fit$knots$J[m]+1)) {
+      int[[m]][k] <- integrate(network_intensity_edge,
+                              lower = fit$knots$tau[[m]][k],
+                              upper = fit$knots$tau[[m]][k+1],
+                              m = m, fit1 = fit)$value
+    }
+  }
+  intens_total <- sum(unlist(int))
+  prob_edges <- unlist(lapply(int, function(x) sum(x)))/intens_total
+  mm <- table(sample(1:fit$network$M, size = n, replace = TRUE, prob = prob_edges))
+  i <- 0
+  for (m in as.numeric(names(mm))) {
+    i <- i + 1
+
+    ind_v1 <- which(fit$network$incidence[, m] == -1)
+    ind_v2 <- which(fit$network$incidence[, m] == 1)
+    gamma <- as.numeric(fit$coefficients[fit$ind[[1]]])
+    gamma_m <- c(gamma[sum(fit$knots$J) + ind_v1],
+                  gamma[((cumsum(fit$knots$J)-fit$knots$J)[m]+1):cumsum(fit$knots$J)[m]],
+                  gamma[sum(fit$knots$J) + ind_v2])
+
+    probs <- int[[m]]/sum(int[[m]])
+    kk <- sample(1:(fit$knots$J[m]+1), size = mm[i], replace = TRUE, prob = probs)
+
+    uu <- runif(mm[i], min = 0, max = 1)
+
+    z <- log(uu*int[[m]][kk]*(gamma_m[kk+1] - gamma_m[kk])/
+               (exp(gamma_m[kk])*fit$knots$delta[m]) + 1)*
+      fit$knots$delta[m]/(gamma_m[kk+1] - gamma_m[kk])
+
+  }
+}
