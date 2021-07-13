@@ -309,17 +309,21 @@ internal <- function(vars, X, bins, scale){
   out
 }
 
-#' Title
+#' Fitted Intensity on a Geometric Network
 #'
-#' @param z a
-#' @param m a
-#' @param fit1 a
-#' @param fit2 a
+#' @param z The shortest path distance from the beginning of the network
+#' segment.
+#' @param m The network segment index.
+#' @param fit1 A fitted geometric network.
+#' @param fit2 A second fitted geometric network. If specified, the function
+#' returns the squared difference of the intensity fits at the specified point
+#' of the network.
 #'
-#' @return
+#' @return A numeric vector of length one, indicating the intensity (or the
+#' squared difference of two intensities) at the specified point.
 #' @export
 
-network_intensity_edge <- function(z, m, fit1, fit2 = NULL){
+network_intensity <- function(z, m, fit1, fit2 = NULL){
 
   ind_v1 <- which(fit1$network$incidence[, m] == -1)
   ind_v2 <- which(fit1$network$incidence[, m] == 1)
@@ -360,21 +364,29 @@ network_intensity_edge <- function(z, m, fit1, fit2 = NULL){
   }
 }
 
-#' Title
+#' Find Location of a Point on a Geometric Network
 #'
-#' @param fit1 a
-#' @param fit2 a
+#' @param G A geometric network.
+#' @param m The segment index.
+#' @param z The shortest path distance from the beginning of the network
+#' segment.
 #'
-#' @return
+#' @return A list with names x and y which contains the coordinated of the
+#' points.
 #' @export
 
-network_intensity <- function(fit1, fit2 = NULL){
-  intensity_edge <- rep(NA, fit1$network$M)
-  for (m in 1:fit1$network$M) {
-    intensity_edge[m] <- integrate(network_intensity_edge, 0, fit1$network$d[m],
-                                   m = m, fit1 = fit1, fit2 = fit2)$value
-  }
-  sum(intensity_edge)
+network_location <- function(G, m, z){
+  e <- NULL
+  lins_m <- filter(G$lins, e == m)
+  frac <- c(lins_m$frac1, 1)
+  tp <- z/G$d[m]
+  lin <- findInterval(tp, frac, rightmost.closed = TRUE, all.inside = TRUE)
+  dx <- lins_m$v2_x[lin] - lins_m$v1_x[lin]
+  dy <- lins_m$v2_y[lin] - lins_m$v1_y[lin]
+  tp_id <- (z - lins_m$frac1[lin]*G$d[m])/(lins_m$length[lin])
+  x <- lins_m$v1_x[lin] + tp_id*dx
+  y <- lins_m$v1_y[lin] + tp_id*dy
+  list(x = x, y = y)
 }
 
 

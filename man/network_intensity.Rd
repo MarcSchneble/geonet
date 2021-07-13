@@ -2,18 +2,26 @@
 % Please edit documentation in R/network.R
 \name{network_intensity}
 \alias{network_intensity}
-\title{Title}
+\title{Fitted Intensity on a Geometric Network}
 \usage{
-network_intensity(fit1, fit2 = NULL)
+network_intensity(z, m, fit1, fit2 = NULL)
 }
 \arguments{
-\item{fit1}{a}
+\item{z}{The shortest path distance from the beginning of the network
+segment.}
 
-\item{fit2}{a}
+\item{m}{The network segment index.}
+
+\item{fit1}{A fitted geometric network.}
+
+\item{fit2}{A second fitted geometric network. If specified, the function
+returns the squared difference of the intensity fits at the specified point
+of the network.}
 }
 \value{
-
+A numeric vector of length one, indicating the intensity (or the
+squared difference of two intensities) at the specified point.
 }
 \description{
-Title
+Fitted Intensity on a Geometric Network
 }

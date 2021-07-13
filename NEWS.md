@@ -8,6 +8,7 @@ geonet version 0.4.0 (Github release)
   knot distance
 - fixed bug in as_gnpp.lpp when linear point pattern is not marked
 - fixed bug in runif_gn
+- added function rgnpp which allows to simulate from a fitted intensity
 
 geonet version 0.3.0 (Github release)
 

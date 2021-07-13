@@ -12,7 +12,8 @@ runifgn(n, G)
 \item{G}{A geometric network (object of class \code{gn}).}
 }
 \value{
-An object of class \code{gnpp}.
+A point pattern on a geometric network, an object of class
+\code{gnpp}.
 }
 \description{
 \code{runifgn} simulates points on a geometric network according

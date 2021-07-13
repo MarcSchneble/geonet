@@ -1,5 +1,6 @@
 choice of delta and h (95% rule) --> done
-fix bug in runifgn -->
+fix bug in runifgn --> done
+simulate from intensity (use linearity) --> done
 
 dist2V variable --> nochmal checken
 
@@ -10,10 +11,10 @@ montgomery network ohne s(hour) fitten
 interaction of linear covariates
 compute integral of intensity fit
 add two intensity functions
-simulate from intensity (use linearity)
 scale the dist2V variable
 also fit kernel models with geonet (i.e. wrapper around spatstat functions but with geonet plotting)
 implement density = TRUE in intensity_lpp
 rename network coefficients by edge and vertice
 plot functions (i.e. intensity by line width)
+check all input arguments in each function
 

@@ -5,7 +5,8 @@
 #'
 #' @param n Number of random points to generate. A nonnegative integer.
 #' @param G A geometric network (object of class \code{gn}).
-#' @return An object of class \code{gnpp}.
+#' @return A point pattern on a geometric network, an object of class
+#' \code{gnpp}.
 #' @import dplyr
 #' @importFrom stats runif
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
@@ -33,11 +34,22 @@ runifgn <- function(n, G){
   out
 }
 
+#' Random Points on a Geometric Network
+#'
+#' @param n Number of random points. A nonnegative integer.
+#' @param fit A fitted point process on a geometric network (object of class
+#' \code{gnpp}).
+#'
+#' @return A point pattern on a geometric network, an object of class
+#' \code{gnpp}.
+#' @importFrom stats integrate
+#' @export
+
 rgnpp <- function(n, fit){
   int <- vector("list", fit$network$M)
   for (m in 1:fit$network$M) {
     for (k in 1:(fit$knots$J[m]+1)) {
-      int[[m]][k] <- integrate(network_intensity_edge,
+      int[[m]][k] <- integrate(network_intensity,
                               lower = fit$knots$tau[[m]][k],
                               upper = fit$knots$tau[[m]][k+1],
                               m = m, fit1 = fit)$value
@@ -46,10 +58,12 @@ rgnpp <- function(n, fit){
   intens_total <- sum(unlist(int))
   prob_edges <- unlist(lapply(int, function(x) sum(x)))/intens_total
   mm <- table(sample(1:fit$network$M, size = n, replace = TRUE, prob = prob_edges))
+  data <- tibble(id = 1:n, e = integer(1), tp = integer(1), x = numeric(1), y = numeric(1))
+  ind <- 1
   i <- 0
   for (m in as.numeric(names(mm))) {
     i <- i + 1
-
+    # get the coefficients related to the m-th curve
     ind_v1 <- which(fit$network$incidence[, m] == -1)
     ind_v2 <- which(fit$network$incidence[, m] == 1)
     gamma <- as.numeric(fit$coefficients[fit$ind[[1]]])
@@ -62,9 +76,23 @@ rgnpp <- function(n, fit){
 
     uu <- runif(mm[i], min = 0, max = 1)
 
+    # check whether results is between 0 and 1
     z <- log(uu*int[[m]][kk]*(gamma_m[kk+1] - gamma_m[kk])/
-               (exp(gamma_m[kk])*fit$knots$delta[m]) + 1)*
+               (exp(kk*gamma_m[kk] + gamma_m[kk+1]*(1-kk))*fit$knots$delta[m]) +
+               exp((gamma_m[kk+1]-gamma_m[kk])/fit$knots$delta[m]*fit$knots$tau[[m]][kk]))*
       fit$knots$delta[m]/(gamma_m[kk+1] - gamma_m[kk])
 
+    coordinates <- network_location(fit$network, m = m, z = z)
+    data$e[ind:(ind+mm[i]-1)] <- m
+    data$tp[ind:(ind+mm[i]-1)] <- z/fit$network$d[m]
+    data$x[ind:(ind+mm[i]-1)] <- coordinates$x
+    data$y[ind:(ind+mm[i]-1)] <- coordinates$y
+    ind <- ind + as.numeric(mm[i])
+    if (min(data$tp) < 0 | max(data$tp) > 1) {
+      warning("Data were simulated outside of the range of the network.")
+    }
   }
+  out <- list(data = data, network = fit$network)
+  class(out) <- "gnpp"
+  out
 }
