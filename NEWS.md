@@ -1,3 +1,8 @@
+geonet version 0.5.0 (Github release)
+
+- new function network_ISE for the computation of integrated squared errors
+- new function network_integral for the computation of an integral of the intensity
+
 geonet version 0.4.0 (Github release)
 
 - summaries and related print methods now also print information on the

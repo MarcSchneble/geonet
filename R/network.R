@@ -318,12 +318,14 @@ internal <- function(vars, X, bins, scale){
 #' @param fit2 A second fitted geometric network. If specified, the function
 #' returns the squared difference of the intensity fits at the specified point
 #' of the network.
+#' @param scale A numeric vector of length two which determines the scaling
+#' of the two intensity functions.
 #'
 #' @return A numeric vector of length one, indicating the intensity (or the
 #' squared difference of two intensities) at the specified point.
 #' @export
 
-network_intensity <- function(z, m, fit1, fit2 = NULL){
+network_intensity <- function(z, m, fit1, fit2 = NULL, scale = NULL){
 
   ind_v1 <- which(fit1$network$incidence[, m] == -1)
   ind_v2 <- which(fit1$network$incidence[, m] == 1)
@@ -355,13 +357,52 @@ network_intensity <- function(z, m, fit1, fit2 = NULL){
 
   if (min(z) >= 0 & max(z) <= fit1$network$d[m]) {
     if (!is.null(fit2)) {
-      return(as.vector((exp(B1%*%gamma1_m) - exp(B2%*%gamma2_m))^2))
+      if (is.null(scale)) scale = c(1, 1)
+      return(as.vector((exp(B1%*%gamma1_m)/scale[1] - exp(B2%*%gamma2_m)/scale[2])^2))
     } else {
       return(as.vector(exp(B1%*%gamma1_m)))
     }
   } else {
     stop("Wrong domain of z on this edge!")
   }
+}
+
+#' Integral of a fitted intensity
+#'
+#' @param fit A fitted point process on a geometric network.
+#'
+#' @return The integral.
+#' @export
+
+network_integral <- function(fit) {
+  int <- rep(NA, fit$network$M)
+  for (m in 1:fit$network$M) {
+    int[m] <- integrate(network_intensity, lower = 0, upper = fit$network$d[m],
+                        m = m, fit1 = fit)$value
+  }
+  sum(int)
+}
+
+#' Computation of the Integrated Squared Error
+#'
+#' Computes the integrated squared error between a true between a true
+#' intensity \code{fit1} and an estimate \code{fit2}.
+#'
+#' @param fit1 The true intensity.
+#' @param fit2 The estimated intensity.
+#'
+#' @return The (normalized) integrated squared error.
+#' @export
+
+network_ISE <- function(fit1, fit2) {
+
+  scale <- c(nrow(fit1$data), network_integral(fit2))
+  int <- rep(NA, fit1$network$M)
+  for (m in 1:fit1$network$M) {
+    int[m] <- integrate(network_intensity, lower = 0, upper = fit1$network$d[m],
+                        m = m, fit1 = fit1, fit2 = fit2, scale = scale)$value
+  }
+  sum(int)
 }
 
 #' Find Location of a Point on a Geometric Network

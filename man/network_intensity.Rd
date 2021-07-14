@@ -4,7 +4,7 @@
 \alias{network_intensity}
 \title{Fitted Intensity on a Geometric Network}
 \usage{
-network_intensity(z, m, fit1, fit2 = NULL)
+network_intensity(z, m, fit1, fit2 = NULL, scale = NULL)
 }
 \arguments{
 \item{z}{The shortest path distance from the beginning of the network
@@ -17,6 +17,9 @@ segment.}
 \item{fit2}{A second fitted geometric network. If specified, the function
 returns the squared difference of the intensity fits at the specified point
 of the network.}
+
+\item{scale}{A numeric vector of length two which determines the scaling
+of the two intensity functions.}
 }
 \value{
 A numeric vector of length one, indicating the intensity (or the
