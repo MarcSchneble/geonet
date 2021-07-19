@@ -2,6 +2,8 @@ geonet version 0.5.0 (Github release)
 
 - new function network_ISE for the computation of integrated squared errors
 - new function network_integral for the computation of an integral of the intensity
+- geonet supplies wrappers for density.lpp, i.e. the intensity on a geometric network can be
+  estimated by employing kernel based methods
 
 geonet version 0.4.0 (Github release)
 

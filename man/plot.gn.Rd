@@ -4,6 +4,7 @@
 \alias{plot.gn}
 \alias{plot.gnpp}
 \alias{plot.gnppfit}
+\alias{plot.lppfit}
 \title{Plot Methods for Geometric Network related Objects}
 \usage{
 \method{plot}{gn}(
@@ -40,6 +41,8 @@
   sol = 100,
   scale = "log"
 )
+
+\method{plot}{lppfit}(x)
 }
 \arguments{
 \item{x}{An object which is related to a geometric network

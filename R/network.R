@@ -281,7 +281,8 @@ internal <- function(vars, X, bins, scale){
       d[ind:(ind + bins$N[m] - 1)] <- pmin(bins$z[[m]], X$network$d[m] - bins$z[[m]])
       ind <- ind + bins$N[m]
     }
-    out$dist2V <- d
+    if (!is.null(scale$dist2V)) out$dist2V <- d*scale$dist2V
+    else out$dist2V <- d
   }
   X_internal <- colnames(X$network$lins[-(1:11)])
   if (length(X_internal) > 0) {

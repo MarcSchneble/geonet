@@ -262,3 +262,18 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 
   list(theta = theta, V = V, rho = rho, it_rho = it, edf = edf)
 }
+
+intensity_kernel <- function(X, kernel = "heat") {
+  Y <- as_lpp(X)
+  if (kernel == "heat") {
+    sigma <- bw.lppl(Y, distance = "path")
+    fit <- density.lpp(Y, sigma = as.numeric(sigma))
+  }
+  if (kernel == "Euclidean") {
+    sigma <- bw.scott.iso(Y)
+    fit <- density.lpp(Y, sigma = sigma, distance = "euclidean")
+  }
+  fit$network <- G
+  class(fit) <- c("lppfit", class(fit))
+  fit
+}

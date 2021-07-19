@@ -16,7 +16,7 @@ incidence <- function(vertices, lins){
   e <- NULL
   W <- max(vertices$v, na.rm = TRUE)
   M <- max(lins$e, na.rm = TRUE)
-  A <- matrix(0, W, M)
+  A <- Matrix::Matrix(0, W, M, sparse = TRUE)
   for (m in 1:M) {
     lins_m <- filter(lins, e == m)
     A[vertices$v[match(lins_m$v1[1], vertices$id)], m] <- -1
@@ -43,7 +43,7 @@ bspline_design <- function(G, knots, bins){
   # returns design matrix B with dimension N x J
 
   # design matrix for line segments
-  B <- Matrix::Matrix(matrix(0, sum(bins$N), sum(knots$J) + G$W), sparse = TRUE)
+  B <- Matrix::Matrix(0, sum(bins$N), sum(knots$J) + G$W, sparse = TRUE)
 
   # line specific B-splines
   for (m in 1:G$M) {
@@ -153,7 +153,7 @@ network_penalty <- function(G, knots, r){
   # returns the first or second penalty matrix K
   if (!r %in% c(1, 2)) stop("r must be either 1 or 2")
   # adjacency matrix of knots
-  A_tau <- matrix(0, sum(knots$J) + G$W, sum(knots$J) + G$W)
+  A_tau <- Matrix::Matrix(0, sum(knots$J) + G$W, sum(knots$J) + G$W, sparse = TRUE)
 
   # on each line
   for (m in 1:G$M) {
@@ -178,14 +178,14 @@ network_penalty <- function(G, knots, r){
   }
 
   # filling the upper diagonal
-  A_tau <- A_tau + t(A_tau)
+  A_tau <- A_tau + Matrix::t(A_tau)
 
   if (r == 1){
     # find for every spline function the adjacent spline functions
-    adj <- which(A_tau*lower.tri(A_tau) == 1, arr.ind = T)
+    adj <- Matrix::which(A_tau*lower.tri(A_tau) == 1, arr.ind = T)
 
     # initializing first order difference matrix
-    D <- matrix(0, nrow(adj), sum(knots$J) + G$W)
+    D <- Matrix::Matrix(0, nrow(adj), sum(knots$J) + G$W, sparse = TRUE)
 
     for(i in 1:nrow(adj)){
       D[i, adj[i, 1]] <- 1
@@ -200,7 +200,7 @@ network_penalty <- function(G, knots, r){
     adj_2 <- which(S_A*lower.tri(S_A) == 2, arr.ind = T)
 
     # initializing second order difference matrix
-    D <- matrix(0, nrow(adj_2), sum(knots$J) + G$W)
+    D <- Matrix::Matrix(0, nrow(adj_2), sum(knots$J) + G$W, sparse = TRUE)
 
     for (i in 1:nrow(adj_2)) {
       D[i, adj_2[i, 1]] <- D[i, adj_2[i, 2]] <- 1

@@ -103,7 +103,7 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
       xx <- lins_m$v1_x[i] + tt*dx[i]
       yy <- lins_m$v1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df[[1]] <- bind_rows(df, tibble(id = lins_m$id[i], e = m,
+      df[[1]] <- bind_rows(df[[1]], tibble(id = lins_m$id[i], e = m,
                                                x = utils::head(xx, -1), xend = xx[-1],
                                                y = utils::head(yy, -1), yend = yy[-1],
                                                z = zz))
@@ -160,5 +160,41 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
       ask <- FALSE
     }
   }
+  invisible(g)
+}
+
+#' @rdname plot.gn
+#' @import ggplot2
+#' @export
+
+plot.lppfit <- function(x) {
+  G <- as_gn(x)
+  f <- as.linfun(x)
+  df <- NULL
+
+  for (m in 1:G$M) {
+    lins_m <- filter(G$lins, e == m)
+    cs <- c(0, cumsum(lins_m$length))
+    dx <- lins_m$v2_x - lins_m$v1_x
+    dy <- lins_m$v2_y - lins_m$v1_y
+    for (i in 1:length(lins_m$id)) {
+      tt <- seq(0, 1, 1/sol)
+      xx <- lins_m$v1_x[i] + tt*dx[i]
+      yy <- lins_m$v1_y[i] + tt*dy[i]
+      zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
+      df <- bind_rows(df, tibble(id = lins_m$id[i], e = m,
+                                      x = utils::head(xx, -1), xend = xx[-1],
+                                      y = utils::head(yy, -1), yend = yy[-1],
+                                      z = zz))
+    }
+  }
+  df$intensity <- f(df$x, df$y)
+  g <- ggplot(df) + geom_segment(aes(x = x, xend = xend, y = y, yend = yend, color = intensity),
+                                  size = size_lines, lineend = "round", linejoin = "mitre") +
+    labs(color = "Intensity", x = title_x, y = title_y, title = title) +
+    theme_void() +
+    theme(panel.grid = element_blank(),
+          plot.title = element_text(hjust = 0.5)) +
+    scale_color_gradient(low = "blue", high = "red")
   invisible(g)
 }

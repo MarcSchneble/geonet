@@ -306,3 +306,10 @@ as_lpp.gnpp <- function(x, ...) {
                 seg = data$id, tp = data$tp_id, L = L, marks = marks)
   out
 }
+
+#' @rdname as_gn
+#' @export
+
+as_gn.lppfit <- function(x, ...) {
+  x$network
+}

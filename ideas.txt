@@ -1,6 +1,10 @@
 choice of delta and h (95% rule) --> done
 fix bug in runifgn --> done
 simulate from intensity (use linearity) --> done
+check Bspline creation for larger matrix --> done
+also fit kernel models with geonet (i.e. wrapper around spatstat functions but with geonet plotting) --> done
+compute integral of intensity fit --> done
+scale the dist2V variable --> done
 
 dist2V variable --> nochmal checken
 
@@ -9,12 +13,10 @@ make algorithm faster
 include ggmaps in plotting
 montgomery network ohne s(hour) fitten
 interaction of linear covariates
-compute integral of intensity fit
 add two intensity functions
-scale the dist2V variable
-also fit kernel models with geonet (i.e. wrapper around spatstat functions but with geonet plotting)
 implement density = TRUE in intensity_lpp
 rename network coefficients by edge and vertice
 plot functions (i.e. intensity by line width)
 check all input arguments in each function
 simulate poisson process (constant and from fitted intensity)
+

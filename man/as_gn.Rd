@@ -6,6 +6,7 @@
 \alias{as_gn.gnpp}
 \alias{as_gn.gnppfit}
 \alias{as_gn.lpp}
+\alias{as_gn.lppfit}
 \title{Transmute to Geometric Network}
 \usage{
 as_gn(x, ...)
@@ -17,6 +18,8 @@ as_gn(x, ...)
 \method{as_gn}{gnppfit}(x, ...)
 
 \method{as_gn}{lpp}(x, ..., spatstat = FALSE)
+
+\method{as_gn}{lppfit}(x, ...)
 }
 \arguments{
 \item{x}{An object that could reasonably be transmuted to an

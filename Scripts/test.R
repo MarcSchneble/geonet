@@ -31,11 +31,11 @@ X <- as_gnpp(chicago)
 delta <- 10
 h <- 2
 r <- 2
-formula <- X ~ marks + x + y
+formula <- X ~ marks + x + y + dist2V
 
 start <- Sys.time()
 model <- intensity_pspline(X, formula, delta = delta, h = h, r = r,
-                           scale = list(x = 1/1000, y = 1/1000),
+                           scale = list(x = 1/1000, y = 1/1000, dist2V = 1/1000),
                            verbose = TRUE)
 print(Sys.time() - start)
 
@@ -60,7 +60,12 @@ fit2 <- intensity_pspline(X, delta = 0.5, h = 0.1)
 network_intensity(fit1, fit2)
 
 X <- as_gnpp(chicago)
-fit1 <- intensity_pspline(X)
+fit1 <- intensity_pspline(X, verbose = TRUE)
 X2 <- rgnpp(1000, fit)
 fit2 <- intensity_pspline(X2, delta = 10, h = 2)
 network_ISE(fit1, fit2)
+
+
+X <- as_gnpp(chicago)
+fit <- intensity_kernel(X)
+g <- plot(fit)
