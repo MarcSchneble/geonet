@@ -4,6 +4,7 @@ geonet version 0.5.0 (Github release)
 - new function network_integral for the computation of an integral of the intensity
 - geonet supplies wrappers for density.lpp, i.e. the intensity on a geometric network can be
   estimated by employing kernel based methods
+- fixed bug which occurs if a smooth covariate is specified in formula after a linear covariate
 
 geonet version 0.4.0 (Github release)
 

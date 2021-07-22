@@ -40,18 +40,28 @@ model <- intensity_pspline(X, formula, delta = delta, h = h, r = r,
 print(Sys.time() - start)
 
 summary(model)
-plot(model)
+g <- plot(model)[[1]]
+
+pdf(file = "intens_chicago_covariates.pdf", width = 6, height = 5)
+print(g)
+dev.off()
 
 
 X <- montgomery
 delta <- 0.1
 h <- 0.05
 r <- 2
-formula <- ~ type + direction
+formula <- ~ type + direction + s(hour)
 formula <- ~1
 model <- intensity_pspline(X, formula = formula, delta = delta, h = h, r = r, verbose = TRUE)
 summary(model)
 plot(model)
+g2 <- plot(model)[[2]] +
+  labs(x = "Hour of the day", y = "Effect on the log-scale")
+
+pdf(file = "montgomery_hour.pdf", width = 6, height = 4)
+print(g2)
+dev.off()
 
 
 X <- runifgn(20, small_gn)

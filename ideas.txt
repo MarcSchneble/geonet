@@ -19,4 +19,5 @@ rename network coefficients by edge and vertice
 plot functions (i.e. intensity by line width)
 check all input arguments in each function
 simulate poisson process (constant and from fitted intensity)
-
+simulate from arbitrary function (spatstat)
+construct geometric network as in spatstat

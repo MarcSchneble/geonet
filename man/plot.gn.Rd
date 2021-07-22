@@ -42,7 +42,17 @@
   scale = "log"
 )
 
-\method{plot}{lppfit}(x)
+\method{plot}{lppfit}(
+  x,
+  ...,
+  title = "",
+  title_x = "x",
+  title_y = "y",
+  size_lines = 1,
+  frame = TRUE,
+  sol = 100,
+  scale = "log"
+)
 }
 \arguments{
 \item{x}{An object which is related to a geometric network

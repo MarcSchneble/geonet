@@ -111,7 +111,7 @@ intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 2,
                            vars_smooths[-1])
   # design for smooth terms
   if (length(ind_smooths) > 0) {
-    for (i in ind_smooths) {
+    for (i in 1:length(ind_smooths)) {
       sm <- smooth.construct.ps.smooth.spec(
         eval(parse(text = formula_string[ind_smooths][i])),
                                             data = data, knots = NULL)
@@ -263,6 +263,21 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
   list(theta = theta, V = V, rho = rho, it_rho = it, edf = edf)
 }
 
+
+
+#' Intensity Estimation on Geometric Networks based on Kernel Smoothing
+#'
+#' @param X A point pattern on a geometric network (object of class
+#' \code{gnpp}).
+#' @param kernel If \code{kernel = "heat"}, a heat kernel is used. If
+#' \code{kernel = "Euclidean"}, a two-dimensional kernel smoother is used.
+#'
+#' @return A fitted point process on a linear network, an object of class
+#' \code{lppfit}.
+#' @import spatstat.linnet
+#' @import spatstat.core
+#' @export
+
 intensity_kernel <- function(X, kernel = "heat") {
   Y <- as_lpp(X)
   if (kernel == "heat") {
@@ -273,7 +288,7 @@ intensity_kernel <- function(X, kernel = "heat") {
     sigma <- bw.scott.iso(Y)
     fit <- density.lpp(Y, sigma = sigma, distance = "euclidean")
   }
-  fit$network <- G
+  fit$network <- X$network
   class(fit) <- c("lppfit", class(fit))
   fit
 }

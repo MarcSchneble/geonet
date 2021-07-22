@@ -167,7 +167,9 @@ plot.gnppfit <- function(x, ..., select = NULL, title = "", title_x = "x", title
 #' @import ggplot2
 #' @export
 
-plot.lppfit <- function(x) {
+plot.lppfit <- function(x, ..., title = "", title_x = "x", title_y = "y",
+                        size_lines = 1, frame = TRUE, sol = 100, scale = "log") {
+  e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
   G <- as_gn(x)
   f <- as.linfun(x)
   df <- NULL
