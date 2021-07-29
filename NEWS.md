@@ -1,3 +1,7 @@
+geonet version 0.6.0 (Github release)
+
+- revised plotting functions (caution: new arguments defining line widths, etc.)
+
 geonet version 0.5.0 (Github release)
 
 - new function network_ISE for the computation of integrated squared errors

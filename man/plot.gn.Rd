@@ -7,51 +7,44 @@
 \alias{plot.lppfit}
 \title{Plot Methods for Geometric Network related Objects}
 \usage{
-\method{plot}{gn}(
-  x,
-  ...,
-  title = "",
-  title_x = "",
-  title_y = "",
-  size_lines = 1,
-  frame = TRUE
-)
+\method{plot}{gn}(x, ..., title = list(), size = list(), color = list(), frame = FALSE)
 
 \method{plot}{gnpp}(
   x,
   ...,
-  covariate = NULL,
-  title = "",
-  title_x = "",
-  title_y = "",
-  size_lines = 1,
-  size_points = 1,
-  frame = TRUE
+  title = list(),
+  size = list(),
+  color = list(),
+  shape = 1,
+  frame = FALSE,
+  covariate = NULL
 )
 
 \method{plot}{gnppfit}(
   x,
   ...,
+  title = list(),
+  size = list(),
+  color = list(),
+  shape = 1,
+  frame = FALSE,
+  data = FALSE,
+  trans = "identity",
   select = NULL,
-  title = "",
-  title_x = "x",
-  title_y = "y",
-  size_lines = 1,
-  frame = TRUE,
-  sol = 100,
-  scale = "log"
+  sol = 100
 )
 
 \method{plot}{lppfit}(
   x,
   ...,
-  title = "",
-  title_x = "x",
-  title_y = "y",
-  size_lines = 1,
-  frame = TRUE,
-  sol = 100,
-  scale = "log"
+  title = list(),
+  size = list(),
+  color = list(),
+  shape = 1,
+  frame = FALSE,
+  data = FALSE,
+  trans = "identity",
+  sol = 100
 )
 }
 \arguments{
@@ -60,32 +53,43 @@
 
 \item{...}{Other arguments.}
 
-\item{title}{Main title of the plot.}
+\item{title}{A named list with names "x", "y" and "plot" which specify the
+arguments \code{x}, \code{y} and \code{title} of the
+\code{\link[ggplot2]{labs}} function. Each list entry must
+be a character vector which has length equal to the number of plots.
+The list entries can remain unspecified in which case the respective titles
+are left blank.}
 
-\item{title_x}{x-axis title (ignored if \code{frame = FALSE}).}
+\item{size}{A named list with names "lines" and "points" which specify the
+\code{size} argument of \code{\link[ggplot2]{geom_segment}} and
+\code{\link[ggplot2]{geom_point}}, respectively. Each list entry must be
+a numeric vector of length one with positive values. If the whole list or one
+entry remains unspecified, default values are used.}
 
-\item{title_y}{y-axis title (ignored if \code{frame = FALSE}).}
+\item{color}{A named list with names "lines" and "points" which specify the
+\code{color} argument of \code{\link[ggplot2]{geom_segment}} and
+\code{\link[ggplot2]{geom_point}}. Each list entry must specify a valid color.
+By default, lines and points are plotted in black.}
 
-\item{size_lines}{Plotting size of the line segments. This specifies the
-\code{size} argument of \code{\link[ggplot2]{geom_segment}}.}
+\item{frame}{If set to \code{TRUE}, draws a frame around the network and adds
+tick marks and axis labeling.}
 
-\item{frame}{Should a frame be drawn around the network?}
+\item{shape}{The shape used for plotting the points. An integer between 0 and
+25. Default to \code{shape = 1} which shows the points as a circle.}
 
-\item{covariate}{Character vector of length 1, name of the covariate
-that should be plotted.}
+\item{covariate}{Character vector of length one which is name of the
+covariate to be plotted. Must be an external categorical covariate with at
+most ten different values.}
 
-\item{size_points}{Plotting size of the point pattern. This specifies the
-\code{size} argument of \code{\link[ggplot2]{geom_point}}.}
+\item{trans}{The transformation applied to the color bar of the intensity
+fit. Specifies the \code{trans} argument of
+\code{\link[ggplot2]{scale_color_gradient}}.}
 
 \item{select}{Allows the plot for a single model term to be selected for
-printing. e.g. if you just want the plot for the second smooth term set
-\code{select = 2}.}
+printing. e.g. if just the plot for the second smooth should be printed to
+the console, set \code{select = 2}.}
 
 \item{sol}{Solution of the color network plot.}
-
-\item{scale}{The scale on which smooth terms should be plotted, either on
-the log scale (\code{scale = log}, default) or on the exp-scale
-(\code{scale = exp}).}
 }
 \value{
 Invisibly returns an object of class \code{ggplot} or a list

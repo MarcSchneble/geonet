@@ -8,6 +8,7 @@ h <- 0.2
 r <- 2
 formula <- ~1
 model <- intensity_pspline(X, delta = delta, h = h, r = r)
+model2 <- intensity_kernel(X)
 
 X <- runifgn(50, small_gn)
 delta <- 0.2
@@ -21,8 +22,8 @@ summary(model)
 plot(model)
 
 X <- as_gnpp(chicago)
-model <- intensity_pspline(X, formula = ~internal(y), scale = list(y = 1/1000),
-                           delta = 10, h = 2, r = 2)
+model <- intensity_pspline(X, delta = 10, h = 2)
+model <- intensity_kernel(X)
 plot(model)
 summary(model)
 
