@@ -8,6 +8,7 @@ h <- 0.2
 r <- 2
 formula <- ~1
 model <- intensity_pspline(X, delta = delta, h = h, r = r)
+Y <- rgnpp(50, model)
 model2 <- intensity_kernel(X)
 
 X <- runifgn(50, small_gn)

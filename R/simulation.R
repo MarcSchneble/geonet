@@ -14,21 +14,21 @@
 
 
 runifgn <- function(n, G){
-  e <- seg <- tp <- frac1 <- frac2 <- x <- y <- NULL
-  lins <- G$lins %>% arrange(id)
+  e <- seg <- tp_l <- frac1 <- frac2 <- x <- y <- NULL
+  lins <- G$lins %>% arrange(l)
   cumlen <- c(0, cumsum(lins$length))
-  dx <- lins$v2_x - lins$v1_x
-  dy <- lins$v2_y - lins$v1_y
+  dx <- lins$a2_x - lins$a1_x
+  dy <- lins$a2_y - lins$a1_y
   uu <- runif(n, min = 0, max = sum(G$d))
   ii <- findInterval(uu, cumlen, rightmost.closed = TRUE, all.inside = TRUE)
   tt <- (uu - cumlen[ii])/lins$length[ii]
-  xx <- lins$v1_x[ii] + tt*dx[ii]
-  yy <- lins$v1_y[ii] + tt*dy[ii]
-  data <- tibble(id = ii, tp = tt)
-  data <- left_join(data, lins, by = "id") %>%
-    mutate(x = xx, y = yy, tp = frac1 + tp*frac2) %>%
-    select(id, e, tp, x, y) %>%
-    arrange(e, tp)
+  xx <- lins$a1_x[ii] + tt*dx[ii]
+  yy <- lins$a1_y[ii] + tt*dy[ii]
+  data <- tibble(l = ii, tp_l = tt)
+  data <- left_join(data, lins, by = "l") %>%
+    mutate(x = xx, y = yy, tp_e = frac1 + tp_l*frac2) %>%
+    select(l, tp_l, e, tp_e, x, y) %>%
+    arrange(e, tp_l)
   out <- list(data = data, network = G)
   class(out) <- "gnpp"
   out
@@ -58,7 +58,7 @@ rgnpp <- function(n, fit){
   intens_total <- sum(unlist(int))
   prob_edges <- unlist(lapply(int, function(x) sum(x)))/intens_total
   mm <- table(sample(1:fit$network$M, size = n, replace = TRUE, prob = prob_edges))
-  data <- tibble(id = 1:n, e = integer(1), tp = integer(1), x = numeric(1), y = numeric(1))
+  data <- tibble(l = 1:n, tp_l = numeric(1), e = integer(1), tp_e = numeric(1), x = numeric(1), y = numeric(1))
   ind <- 1
   i <- 0
   for (m in as.numeric(names(mm))) {
@@ -83,15 +83,18 @@ rgnpp <- function(n, fit){
       fit$knots$delta[m]/(gamma_m[kk+1] - gamma_m[kk])
 
     coordinates <- network_location(fit$network, m = m, z = z)
+    data$l[ind:(ind+mm[i]-1)] <- coordinates$l
+    data$tp_l[ind:(ind+mm[i]-1)] <- coordinates$tp_l
     data$e[ind:(ind+mm[i]-1)] <- m
-    data$tp[ind:(ind+mm[i]-1)] <- z/fit$network$d[m]
+    data$tp_e[ind:(ind+mm[i]-1)] <- z/fit$network$d[m]
     data$x[ind:(ind+mm[i]-1)] <- coordinates$x
     data$y[ind:(ind+mm[i]-1)] <- coordinates$y
     ind <- ind + as.numeric(mm[i])
-    if (min(data$tp) < 0 | max(data$tp) > 1) {
+    if (min(data$tp_e) < 0 | max(data$tp_e) > 1) {
       warning("Data were simulated outside of the range of the network.")
     }
   }
+  data <- data %>% arrange(e, tp_l)
   out <- list(data = data, network = fit$network)
   class(out) <- "gnpp"
   out

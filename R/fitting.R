@@ -15,6 +15,7 @@
 #' @param X A point pattern on a geometric network (object of class
 #' \code{gnpp}). The data (\code{X$data}) must contain information on
 #' all covariates included in \code{formula}.
+#' @param ... Other arguments. The following arguments must match exactly.
 #' @param formula A one-sided formula (if a two-sided formula is supplied, the
 #' left hand side of the formula is ignored). The formula can consist of either
 #' linear terms as in linear models (\code{\link{lm}}) or smooth terms as
@@ -60,9 +61,12 @@
 #' summary(model)
 #' plot(model)
 
-intensity_pspline <- function(X, formula = ~1, delta = NULL, h = NULL, r = 2,
+intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 2,
                               scale = NULL, density = FALSE, verbose = FALSE,
                               control = list()){
+
+  if (density) stop("Computing the density is currently not supported.")
+
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
 

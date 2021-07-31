@@ -197,7 +197,7 @@ bin_data <- function(X, bins = NULL, vars = NULL, vars_internal = NULL,
     for (m in 1:X$network$M) {
       # positions of data on curve e
       ind_e <- which(data_sub$e == m)
-      y_e <- sort(as.numeric(data_sub[ind_e, ]$tp))*X$network$d[m]
+      y_e <- sort(as.numeric(data_sub[ind_e, ]$tp_e))*X$network$d[m]
 
       # bin data
       y_b <- rep(0, length(bins$z[[m]]))
@@ -247,10 +247,10 @@ internal <- function(vars, X, bins, scale){
     for (m in 1:X$network$M) {
       lins_m <- filter(X$network$lins, e == m)
       tp <- bins$z[[m]]/X$network$d[m]
-      dx <- lins_m$v2_x - lins_m$v1_x
+      dx <- lins_m$a2_x - lins_m$a1_x
       for (i in 1:nrow(lins_m)) {
         ind_id <- which(tp >= lins_m$frac1[i] & tp < sum(lins_m$frac2[1:i]))
-        x[ind:(ind + length(ind_id) - 1)] <- lins_m$v1_x[i] + tp[ind_id]*dx[i]
+        x[ind:(ind + length(ind_id) - 1)] <- lins_m$a1_x[i] + tp[ind_id]*dx[i]
         ind <- ind + length(ind_id)
       }
       test[m] <- ind - 1
@@ -264,10 +264,10 @@ internal <- function(vars, X, bins, scale){
     for (m in 1:X$network$M) {
       lins_m <- filter(X$network$lins, e == m)
       tp <- bins$z[[m]]/X$network$d[m]
-      dy <- lins_m$v2_y - lins_m$v1_y
+      dy <- lins_m$a2_y - lins_m$a1_y
       for (i in 1:nrow(lins_m)) {
         ind_id <- which(tp >= lins_m$frac1[i] & tp < sum(lins_m$frac2[1:i]))
-        y[ind:(ind + length(ind_id) - 1)] <- lins_m$v1_y[i] + tp[ind_id]*dy[i]
+        y[ind:(ind + length(ind_id) - 1)] <- lins_m$a1_y[i] + tp[ind_id]*dy[i]
         ind <- ind + length(ind_id)
       }
     }
@@ -421,14 +421,15 @@ network_location <- function(G, m, z){
   e <- NULL
   lins_m <- filter(G$lins, e == m)
   frac <- c(lins_m$frac1, 1)
-  tp <- z/G$d[m]
-  lin <- findInterval(tp, frac, rightmost.closed = TRUE, all.inside = TRUE)
-  dx <- lins_m$v2_x[lin] - lins_m$v1_x[lin]
-  dy <- lins_m$v2_y[lin] - lins_m$v1_y[lin]
-  tp_id <- (z - lins_m$frac1[lin]*G$d[m])/(lins_m$length[lin])
-  x <- lins_m$v1_x[lin] + tp_id*dx
-  y <- lins_m$v1_y[lin] + tp_id*dy
-  list(x = x, y = y)
+  tp_e <- z/G$d[m]
+  lin <- findInterval(tp_e, frac, rightmost.closed = TRUE, all.inside = TRUE)
+  l <- lins_m$l[lin]
+  dx <- lins_m$a2_x[lin] - lins_m$a1_x[lin]
+  dy <- lins_m$a2_y[lin] - lins_m$a1_y[lin]
+  tp_l <- (z - lins_m$frac1[lin]*G$d[m])/(lins_m$length[lin])
+  x <- lins_m$a1_x[lin] + tp_l*dx
+  y <- lins_m$a1_y[lin] + tp_l*dy
+  list(l = l, tp_l = tp_l, x = x, y = y)
 }
 
 

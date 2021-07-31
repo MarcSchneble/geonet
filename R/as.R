@@ -56,11 +56,11 @@ as_lpp <- function(x, ...){
 
 as_gn.linnet <- function(x, ..., spatstat = FALSE){
   if (!inherits(x, "linnet")) stop("x muss be of class 'linnet'")
-  v1 <- v2 <- e <- NULL
+  a1 <- a2 <- e <- NULL
   L <- x
   d <- diag(L$dpath[L$from, L$to])
   G <- list(
-    vertices = tibble(id = 1:L$vertices$n,
+    vertices = tibble(a = 1:L$vertices$n,
                              v = NA,
                              x = L$vertices$x,
                              y = L$vertices$y),
@@ -83,39 +83,39 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
     i <- i+1
     # find the two adjacent vertices to vertex with degree 2
     adj <- which(A[v_deg2[1], ] == 1)
-    curves[[i]] <- tibble(v1 = c(adj[1], v_deg2[1]),
-                     v2 = c(v_deg2[1], adj[2]),
-                     id = NA,
+    curves[[i]] <- tibble(a1 = c(adj[1], v_deg2[1]),
+                     a2 = c(v_deg2[1], adj[2]),
+                     l = NA,
                      length = NA)
     # go into the direction of the first adjecent vertex and search for more
     # vertices with degree 2
     while(sum(A[adj[1], ]) == 2){
       adj.new <- which(A[adj[1], ] == 1)
-      l <- adj.new[which(!is.element(adj.new, curves[[i]]$v1))]
-      curves[[i]] <- rbind(c(l, adj[1], NA, NA), curves[[i]])
-      adj[1] <- l
+      left <- adj.new[which(!is.element(adj.new, curves[[i]]$a1))]
+      curves[[i]] <- rbind(c(left, adj[1], NA, NA), curves[[i]])
+      adj[1] <- left
     }
     # go into the direction of the second adjecent vertex and search for more
     # vertices with degree 2
     while(sum(A[adj[2], ]) == 2){
       adj.new <- which(A[adj[2], ] == 1)
-      r <- adj.new[which(!is.element(adj.new, curves[[i]]$v2))]
-      curves[[i]] <- rbind(curves[[i]], c(adj[2], r, NA, NA))
-      adj[2] <- r
+      right <- adj.new[which(!is.element(adj.new, curves[[i]]$a2))]
+      curves[[i]] <- rbind(curves[[i]], c(adj[2], right, NA, NA))
+      adj[2] <- right
     }
     # save the line indices and their corresponding lengths which are removed from the network
     for (k in 1:nrow(curves[[i]])) {
-      curves[[i]]$id[k] <- which(L$from == curves[[i]]$v1[k] & L$to == curves[[i]]$v2[k] |
-                                    L$from == curves[[i]]$v2[k] & L$to == curves[[i]]$v1[k])
-      curves[[i]]$length[k] <- d[curves[[i]]$id[k]]
+      curves[[i]]$l[k] <- which(L$from == curves[[i]]$a1[k] & L$to == curves[[i]]$a2[k] |
+                                    L$from == curves[[i]]$a2[k] & L$to == curves[[i]]$a1[k])
+      curves[[i]]$length[k] <- d[curves[[i]]$l[k]]
     }
     # add new connection to adjacancy matrix
-    A[curves[[i]]$v1[1], curves[[i]]$v2[nrow(curves[[i]])]] <-
-      A[curves[[i]]$v2[nrow(curves[[i]])], curves[[i]]$v1[1]] <- 1
+    A[curves[[i]]$a1[1], curves[[i]]$a2[nrow(curves[[i]])]] <-
+      A[curves[[i]]$a2[nrow(curves[[i]])], curves[[i]]$a1[1]] <- 1
     # add line segments to the delete vector
-    lins_remove <- unique(c(lins_remove, curves[[i]]$id))
+    lins_remove <- unique(c(lins_remove, curves[[i]]$l))
     # remove vertices from the current vector of vertices with degree 2
-    v_deg2 <- setdiff(v_deg2, curves[[i]]$v2[1:(nrow(curves[[i]])-1)])
+    v_deg2 <- setdiff(v_deg2, curves[[i]]$a2[1:(nrow(curves[[i]])-1)])
     # add information for geometric network representation
     cs <- cumsum(curves[[i]]$length)
     curves[[i]]$e <- i
@@ -125,15 +125,15 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
   v_deg2 <- which(degrees == 2)
   G$W <- L$vertices$n - length(v_deg2)
   G$M <-  L$lines$n - length(lins_remove) + length(curves)
-  curves <- bind_rows(curves) %>% mutate(v1_x = L$vertices$x[v1],
-                                   v1_y = L$vertices$y[v1],
-                                   v2_x = L$vertices$x[v2],
-                                   v2_y = L$vertices$y[v2])
+  curves <- bind_rows(curves) %>% mutate(a1_x = L$vertices$x[a1],
+                                   a1_y = L$vertices$y[a1],
+                                   a2_x = L$vertices$x[a2],
+                                   a2_y = L$vertices$y[a2])
   ind_lins <- setdiff(1:L$lines$n, lins_remove)
-  lins <- tibble(id = ind_lins, e = (i+1):G$M,
-                  v1 = L$from[ind_lins], v2 = L$to[ind_lins],
-                  v1_x = L$vertices$x[v1], v1_y = L$vertices$y[v1],
-                  v2_x = L$vertices$x[v2], v2_y = L$vertices$y[v2],
+  lins <- tibble(l = ind_lins, e = (i+1):G$M,
+                  a1 = L$from[ind_lins], a2 = L$to[ind_lins],
+                  a1_x = L$vertices$x[a1], a1_y = L$vertices$y[a1],
+                  a2_x = L$vertices$x[a2], a2_y = L$vertices$y[a2],
                   length = diag(L$dpath[L$from, L$to])[ind_lins],
                   frac1 = 0, frac2 = 1)
   G$lins <- bind_rows(lins, curves)
@@ -147,8 +147,8 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
   G$incidence <- incidence(G$vertices, G$lins)
   if (spatstat) {
     G$window <- x$window
-    lins <- G$lins %>% arrange(id)
-    G$seg_permut <- which(lins$v1_x == L$lines$end$x1)
+    lins <- G$lins %>% arrange(a)
+    G$seg_permut <- which(lins$a1_x == L$lines$end$x1)
   }
   class(G) <- "gn"
   G
@@ -210,28 +210,26 @@ as_gnpp.gnppfit <- function(x, ...){
 #' @export
 
 as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
-  frac1 <- tp <- tp_id <- frac2 <- e <- y <- id <- xx <-  NULL
+  frac1 <- tp_e <- tp_l <- frac2 <- e <- y <- l <- xx <-  NULL
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }
   G <- as_gn(as.linnet(x), spatstat = spatstat)
-  data <- tibble(id = x$data$seg, tp = x$data$tp,
+  data <- tibble(l = x$data$seg, tp_l = x$data$tp,
                 xx = x$data$x, y = x$data$y)
   if (ncol(x$data) > 4){
     covariates <- as_tibble(as.data.frame(x$data)[, -(1:4)])
     colnames(covariates) <- colnames(x$data)[-(1:4)]
     data <- bind_cols(data, covariates)
-    data <- left_join(data, G$lins, by = "id") %>%
-      mutate(tp_id = tp,
-             tp = frac1 + tp*frac2, x = xx) %>%
-      select(id, tp_id, e, tp, x, y, colnames(covariates))
+    data <- left_join(data, G$lins, by = "l") %>%
+      mutate(tp_e = frac1 + tp_l*frac2, x = xx) %>%
+      select(l, tp_l, e, tp_e, x, y, colnames(covariates))
   } else {
-    data <- left_join(data, G$lins, by = "id") %>%
-      mutate(tp_id = tp,
-             tp = frac1 + tp*frac2, x = xx) %>%
-      select(id, tp_id, e, tp, x, y)
+    data <- left_join(data, G$lins, by = "l") %>%
+      mutate(tp_e = frac1 + tp_l*frac2, x = xx) %>%
+      select(l, tp_l, e, tp_e, x, y)
   }
-  if (!spatstat) data <- data %>% arrange(e, tp)
+  if (!spatstat) data <- data %>% arrange(e, l)
   X <- list(data = data, network = G)
   class(X) <- "gnpp"
   X
@@ -269,12 +267,12 @@ as.linnet.gn <- function(X, ...) {
   window <- owin(xrange = range(X$vertices$x),
                  yrange = range(X$vertices$y))
   vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)
-  edges <- X$lins %>% arrange(id) %>% select(v1, v2) %>% as.matrix()
+  edges <- X$lins %>% arrange(a) %>% select(a1, a2) %>% as.matrix()
   if (!is.null(X$window)) {
     vertices$window <- X$window
-    v1 <- edges[, 1]
+    a1 <- edges[, 1]
     edges[X$seg_permut, 1] <- edges[X$seg_permut, 2]
-    edges[X$seg_permut, 2] <- v1[X$seg_permut]
+    edges[X$seg_permut, 2] <- a1[X$seg_permut]
   }
   out <- linnet(vertices = vertices, edges = edges)
 }
@@ -303,7 +301,7 @@ as_lpp.gnpp <- function(x, ...) {
   marks <- NULL
   if (!is.null(data$marks)) marks <- data$marks
   out <- as.lpp(x = data$x, y = data$y,
-                seg = data$id, tp = data$tp_id, L = L, marks = marks)
+                seg = data$l, tp = data$tp_l, L = L, marks = marks)
   out
 }
 

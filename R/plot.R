@@ -42,7 +42,7 @@
 
 plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
                     frame = FALSE) {
-  v1_x <- v1_y <- v2_x <- v2_y <- NULL
+  a1_x <- a1_y <- a2_x <- a2_y <- NULL
   g <- ggplot(x$lins)
   if (!frame) {
     g <- g + theme_void()
@@ -53,7 +53,7 @@ plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
   }
   if (is.null(size$lines)) size$lines <- 1
   if (is.null(color$lines)) color$lines <- "black"
-  g <- g + geom_segment(aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y),
+  g <- g + geom_segment(aes(x = a1_x, y = a1_y, xend = a2_x, yend = a2_y),
                         size = size$lines, color = color$lines,
                         lineend = "round", linejoin = "bevel") +
     labs(x = title$x, y = title$y, title = title$plot) +
@@ -72,7 +72,7 @@ plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
   if (length(covariate) > 1){
     stop("Currently, only one covariate can be plotted.")
   }
-  y <- v1_x <- v1_y <- v2_x <- v2_y <- NULL
+  y <- a1_x <- a1_y <- a2_x <- a2_y <- NULL
   g <- ggplot(x$network$lins)
   if (!frame) {
     g <- g + theme_void()
@@ -85,7 +85,7 @@ plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
   if (is.null(size$points)) size$points <- 2.5
   if (is.null(color$lines)) color$lines <- "black"
   if (is.null(color$points)) color$points <- "black"
-  g <- g + geom_segment(aes(x = v1_x, y = v1_y, xend = v2_x, yend = v2_y),
+  g <- g + geom_segment(aes(x = a1_x, y = a1_y, xend = a2_x, yend = a2_y),
                         size = size$lines, lineend = "round", linejoin = "mitre") +
     labs(x = title$x, y = title$y, title = title$plot) +
     theme(panel.grid = element_blank(),
@@ -128,14 +128,14 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
   for (m in 1:G$M) {
     lins_m <- filter(G$lins, e == m)
     cs <- c(0, cumsum(lins_m$length))
-    dx <- lins_m$v2_x - lins_m$v1_x
-    dy <- lins_m$v2_y - lins_m$v1_y
+    dx <- lins_m$a2_x - lins_m$a1_x
+    dy <- lins_m$a2_y - lins_m$a1_y
     for (i in 1:length(lins_m$id)) {
       tt <- seq(0, 1, 1/sol)
-      xx <- lins_m$v1_x[i] + tt*dx[i]
-      yy <- lins_m$v1_y[i] + tt*dy[i]
+      xx <- lins_m$a1_x[i] + tt*dx[i]
+      yy <- lins_m$a1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df[[1]] <- bind_rows(df[[1]], tibble(id = lins_m$id[i], e = m,
+      df[[1]] <- bind_rows(df[[1]], tibble(id = lins_m$l[i], e = m,
                                            x = utils::head(xx, -1), xend = xx[-1],
                                            y = utils::head(yy, -1), yend = yy[-1],
                                            z = zz))
@@ -219,14 +219,14 @@ plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
   for (m in 1:G$M) {
     lins_m <- filter(G$lins, e == m)
     cs <- c(0, cumsum(lins_m$length))
-    dx <- lins_m$v2_x - lins_m$v1_x
-    dy <- lins_m$v2_y - lins_m$v1_y
-    for (i in 1:length(lins_m$id)) {
+    dx <- lins_m$a2_x - lins_m$a1_x
+    dy <- lins_m$a2_y - lins_m$a1_y
+    for (i in 1:length(lins_m$a)) {
       tt <- seq(0, 1, 1/sol)
-      xx <- lins_m$v1_x[i] + tt*dx[i]
-      yy <- lins_m$v1_y[i] + tt*dy[i]
+      xx <- lins_m$a1_x[i] + tt*dx[i]
+      yy <- lins_m$a1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df <- bind_rows(df, tibble(id = lins_m$id[i], e = m,
+      df <- bind_rows(df, tibble(a = lins_m$a[i], e = m,
                                  x = utils::head(xx, -1), xend = xx[-1],
                                  y = utils::head(yy, -1), yend = yy[-1],
                                  z = zz))

@@ -1,12 +1,5 @@
-choice of delta and h (95% rule) --> done
-fix bug in runifgn --> done
-simulate from intensity (use linearity) --> done
-check Bspline creation for larger matrix --> done
-also fit kernel models with geonet (i.e. wrapper around spatstat functions but with geonet plotting) --> done
-compute integral of intensity fit --> done
-scale the dist2V variable --> done
 
-dist2V variable --> nochmal checken
+
 
 chi^2 statistics for edf smooth terms
 make algorithm faster
@@ -21,3 +14,5 @@ check all input arguments in each function
 simulate poisson process (constant and from fitted intensity)
 simulate from arbitrary function (spatstat)
 construct geometric network as in spatstat
+show global knot distance in summary
+rephrase linear network information

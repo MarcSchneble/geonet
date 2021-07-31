@@ -6,9 +6,10 @@
 \usage{
 intensity_pspline(
   X,
+  ...,
   formula = ~1,
-  delta = NULL,
-  h = NULL,
+  delta = "0",
+  h = "0.5",
   r = 2,
   scale = NULL,
   density = FALSE,
@@ -20,6 +21,8 @@ intensity_pspline(
 \item{X}{A point pattern on a geometric network (object of class
 \code{gnpp}). The data (\code{X$data}) must contain information on
 all covariates included in \code{formula}.}
+
+\item{...}{Other arguments. The following arguments must match exactly.}
 
 \item{formula}{A one-sided formula (if a two-sided formula is supplied, the
 left hand side of the formula is ignored). The formula can consist of either

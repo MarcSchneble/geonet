@@ -19,8 +19,8 @@ incidence <- function(vertices, lins){
   A <- Matrix::Matrix(0, W, M, sparse = TRUE)
   for (m in 1:M) {
     lins_m <- filter(lins, e == m)
-    A[vertices$v[match(lins_m$v1[1], vertices$id)], m] <- -1
-    A[vertices$v[match(utils::tail(lins_m$v2, 1), vertices$id)], m] <- 1
+    A[vertices$v[match(lins_m$a1[1], vertices$a)], m] <- -1
+    A[vertices$v[match(utils::tail(lins_m$a2, 1), vertices$a)], m] <- 1
   }
   A
 }
