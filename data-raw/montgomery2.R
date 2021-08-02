@@ -71,12 +71,12 @@ plot(unmark(L.lpp))
 L.lpp <- unmark(L.lpp)
 L.lpp$data$hour <- hour(data %>% filter(on == 1) %>% pull(date)) + floor(minute(data %>% filter(on == 1) %>% pull(date))/15)/4
 
-internal.covariates <- tibble(id = 1:length(L$ind.edges),
+internal.covariates <- tibble(l = 1:length(L$ind.edges),
                               type = factor(E$type[L$ind.edges], levels = c("state", "interstate", "US")),
                               direction = factor(E$direction[L$ind.edges], levels = c("SN", "EW", "SENW", "SWNE")))
 
 montgomery <- geonet::as_gnpp(L.lpp)
-montgomery$network$lins <- left_join(montgomery$network$lins, internal.covariates, by = "id")
+montgomery$network$lins <- left_join(montgomery$network$lins, internal.covariates, by = "l")
 
 plot(montgomery)
 

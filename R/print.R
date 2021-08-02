@@ -132,8 +132,9 @@ print.summary.gnpp <- function(x, ...) {
 print.summary.gnppfit <- function(x, ...){
   cat(paste("Intensity estimation on a geometric network in", x$q, "dimensions\nwith",
             x$W, "vertices and", x$M, "curve segments.\n"))
-  cat("Family: Poisson\n")
-  cat("Link Function: log\n")
+  cat("Log-linear Poisson model fitted with maximum likelihood.\n")
+  cat(paste("\nGlobal knot distance:", round(x$setup$delta, 3), "\n"))
+  cat(paste("Global bin width:", round(x$setup$h, 3), "\n"))
   cat("\nFormula: ")
   print(x$formula, showEnv = FALSE)
   if (!is.null(x$tab)) {
@@ -143,8 +144,8 @@ print.summary.gnppfit <- function(x, ...){
   } else {
     cat("\nModel has no parametric coefficients.\n")
   }
-  cat("\nApproximate significance of smooth terms:\n")
-  print(x$edf)
+  cat(paste("\nEffective degrees of freedom of the baseline intensity:",
+            round(x$edf[1], 3), "\n"))
   cat(paste0("\nNumber of Fellner-Schall-iterations: ", x$it_rho, "\n"))
   invisible(NULL)
 }

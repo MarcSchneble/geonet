@@ -107,6 +107,7 @@ summary.gnppfit <- function(object, ...) {
   }
   ans$edf <- edf
   ans$formula <- x$formula
+  ans$setup <- x$setup
   ans$it_rho <- x$it_rho
   class(ans) <- "summary.gnppfit"
   ans

@@ -3,6 +3,7 @@ geonet version 0.6.0 (Github release)
 - revised plotting functions (caution: new arguments defining line widths, etc.)
 - scale of the dist2V variable is now supported 
 - added argument "other arguments" to intensity_pspline for compatibility with older versions
+- revised summary for gnppfit objects
 
 geonet version 0.5.0 (Github release)
 

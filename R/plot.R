@@ -48,8 +48,8 @@ plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
     g <- g + theme_void()
   } else {
     g <- g + theme_bw()
-    if (is.null(title$x)) title$x <- "x"
-    if (is.null(title$y)) title$y <- "y"
+    if (is.null(title$x)) title$x <- paste("x (in", x$unit$plural, ")")
+    if (is.null(title$y)) title$y <- paste("y (in", x$unit$plural, ")")
   }
   if (is.null(size$lines)) size$lines <- 1
   if (is.null(color$lines)) color$lines <- "black"
@@ -78,8 +78,8 @@ plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
     g <- g + theme_void()
   } else {
     g <- g + theme_bw()
-    if (is.null(title$x)) title$x <- "x"
-    if (is.null(title$y)) title$y <- "y"
+    if (is.null(title$x)) title$x <- paste("x (in", x$unit$plural, ")")
+    if (is.null(title$y)) title$y <- paste("y (in", x$unit$plural, ")")
   }
   if (is.null(size$lines)) size$lines <- 1
   if (is.null(size$points)) size$points <- 2.5
@@ -130,12 +130,12 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
     cs <- c(0, cumsum(lins_m$length))
     dx <- lins_m$a2_x - lins_m$a1_x
     dy <- lins_m$a2_y - lins_m$a1_y
-    for (i in 1:length(lins_m$id)) {
+    for (i in 1:length(lins_m$l)) {
       tt <- seq(0, 1, 1/sol)
       xx <- lins_m$a1_x[i] + tt*dx[i]
       yy <- lins_m$a1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df[[1]] <- bind_rows(df[[1]], tibble(id = lins_m$l[i], e = m,
+      df[[1]] <- bind_rows(df[[1]], tibble(l = lins_m$l[i], e = m,
                                            x = utils::head(xx, -1), xend = xx[-1],
                                            y = utils::head(yy, -1), yend = yy[-1],
                                            z = zz))
@@ -153,8 +153,8 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
     g[[1]] <- g[[1]] + theme_void()
   } else {
     g[[1]] <- g[[1]] + theme_bw()
-    if (is.null(title$x)) title$x <- "x"
-    if (is.null(title$y)) title$y <- "y"
+    if (is.null(title$x)) title$x <- paste("x (in", x$unit$plural, ")")
+    if (is.null(title$y)) title$y <- paste("y (in", x$unit$plural, ")")
   }
   if (is.null(size$lines)) size$lines <- 1
   g[[1]] <- g[[1]] + geom_segment(aes(x = x, xend = xend, y = y, yend = yend, color = intensity),
@@ -221,12 +221,12 @@ plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
     cs <- c(0, cumsum(lins_m$length))
     dx <- lins_m$a2_x - lins_m$a1_x
     dy <- lins_m$a2_y - lins_m$a1_y
-    for (i in 1:length(lins_m$a)) {
+    for (i in 1:length(lins_m$l)) {
       tt <- seq(0, 1, 1/sol)
       xx <- lins_m$a1_x[i] + tt*dx[i]
       yy <- lins_m$a1_y[i] + tt*dy[i]
       zz <- cs[i] + (tt - 1/(2*sol))[-1]*lins_m$length[i]
-      df <- bind_rows(df, tibble(a = lins_m$a[i], e = m,
+      df <- bind_rows(df, tibble(l = lins_m$l[i], e = m,
                                  x = utils::head(xx, -1), xend = xx[-1],
                                  y = utils::head(yy, -1), yend = yy[-1],
                                  z = zz))
@@ -237,8 +237,8 @@ plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
     g <- ggplot(df) + theme_void()
   } else {
     g <- ggplot(df) + theme_bw()
-    if (is.null(title$x)) title$x <- "x"
-    if (is.null(title$y)) title$y <- "y"
+    if (is.null(title$x)) title$x <- paste("x (in", x$unit$plural, ")")
+    if (is.null(title$y)) title$y <- paste("y (in", x$unit$plural, ")")
   }
   if (is.null(size$lines)) size$lines <- 1
   g <- g + geom_segment(aes(x = x, xend = xend, y = y, yend = yend, color = intensity),

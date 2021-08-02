@@ -155,6 +155,7 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
   out$V <- fit$V
   #out$effects <- effects
   #out$P <- P
+  out$setup <- setup
   out$knots <- knots
   out$bins <- bins
   out$smooth <- smooth_terms

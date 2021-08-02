@@ -147,7 +147,7 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
   G$incidence <- incidence(G$vertices, G$lins)
   if (spatstat) {
     G$window <- x$window
-    lins <- G$lins %>% arrange(a)
+    lins <- G$lins %>% arrange(l)
     G$seg_permut <- which(lins$a1_x == L$lines$end$x1)
   }
   class(G) <- "gn"
@@ -263,11 +263,11 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 #' all.equal(x, L)
 
 as.linnet.gn <- function(X, ...) {
-  v2 <- NULL
+  a2 <- NULL
   window <- owin(xrange = range(X$vertices$x),
                  yrange = range(X$vertices$y))
   vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)
-  edges <- X$lins %>% arrange(a) %>% select(a1, a2) %>% as.matrix()
+  edges <- X$lins %>% arrange(l) %>% select(a1, a2) %>% as.matrix()
   if (!is.null(X$window)) {
     vertices$window <- X$window
     a1 <- edges[, 1]
