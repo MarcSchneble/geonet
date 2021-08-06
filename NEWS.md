@@ -1,4 +1,4 @@
-geonet version 0.6.0 (Github release)
+geonet version 0.6.0 (CRAN and GitHub release)
 
 - revised plotting functions (caution: new arguments defining line widths, etc.)
 - scale of the dist2V variable is now supported 
