@@ -18,7 +18,8 @@ model.}
 covariates in the model.}
 
 \item{scale}{A named list which specifies the rescaling of network related
-covariates. Currently, only x- and y-coordinates can be scaled.}
+covariates. Currently, internal covariates "x", "y", and "dist2V" can be
+scaled.}
 }
 \value{
 The binned data.

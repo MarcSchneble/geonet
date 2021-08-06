@@ -1,6 +1,3 @@
-
-
-
 chi^2 statistics for edf smooth terms
 make algorithm faster
 include ggmaps in plotting
@@ -14,5 +11,3 @@ check all input arguments in each function
 simulate poisson process (constant and from fitted intensity)
 simulate from arbitrary function (spatstat)
 construct geometric network as in spatstat
-show global knot distance in summary
-rephrase linear network information

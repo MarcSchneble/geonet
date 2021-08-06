@@ -20,3 +20,8 @@ A fitted point process on a linear network, an object of class
 \description{
 Intensity Estimation on Geometric Networks based on Kernel Smoothing
 }
+\examples{
+X <- runifgn(n = 50, G = small_gn)
+fit <- intensity_kernel(X)
+plot(fit)
+}

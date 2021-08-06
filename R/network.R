@@ -155,7 +155,8 @@ network_bins <- function(G, h = NULL){
 #' @param vars_internal A character vector containing the name of all interval
 #' covariates in the model.
 #' @param scale A named list which specifies the rescaling of network related
-#' covariates. Currently, only x- and y-coordinates can be scaled.
+#' covariates. Currently, internal covariates "x", "y", and "dist2V" can be
+#' scaled.
 #' @return The binned data.
 #' @import dplyr
 #' @importFrom stats setNames
@@ -164,6 +165,7 @@ network_bins <- function(G, h = NULL){
 
 bin_data <- function(X, bins = NULL, vars = NULL, vars_internal = NULL,
                      scale = NULL){
+
   # get covariates from every point on the network (if applicable)
   if (is.null(bins)) bins <- network_bins(X$network)
   vars_external <- setdiff(vars, vars_internal)
@@ -372,7 +374,7 @@ network_intensity <- function(z, m, fit1, fit2 = NULL, scale = NULL){
 #'
 #' @param fit A fitted point process on a geometric network.
 #'
-#' @return The integral.
+#' @return A numeric vector of the length one, the integral.
 #' @export
 
 network_integral <- function(fit) {
@@ -413,8 +415,7 @@ network_ISE <- function(fit1, fit2) {
 #' @param z The shortest path distance from the beginning of the network
 #' segment.
 #'
-#' @return A list with names x and y which contains the coordinated of the
-#' points.
+#' @return A list with names l, tp_l, x and y.
 #' @export
 
 network_location <- function(G, m, z){

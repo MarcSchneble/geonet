@@ -78,9 +78,7 @@ with the same syntax as in \code{\link[mgcv]{gam}}.
 library(geonet)
 X <- runifgn(50, small_gn)
 delta <- 0.2
-h <- 0.1
-r <- 2
-model <- intensity_pspline(X, delta = delta, h = h, r = r)
+model <- intensity_pspline(X, delta = delta)
 summary(model)
 plot(model)
 }

@@ -55,9 +55,7 @@
 #' library(geonet)
 #' X <- runifgn(50, small_gn)
 #' delta <- 0.2
-#' h <- 0.1
-#' r <- 2
-#' model <- intensity_pspline(X, delta = delta, h = h, r = r)
+#' model <- intensity_pspline(X, delta = delta)
 #' summary(model)
 #' plot(model)
 
@@ -282,6 +280,10 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 #' @import spatstat.linnet
 #' @import spatstat.core
 #' @export
+#' @examples
+#' X <- runifgn(n = 50, G = small_gn)
+#' fit <- intensity_kernel(X)
+#' plot(fit)
 
 intensity_kernel <- function(X, kernel = "heat") {
   Y <- as_lpp(X)

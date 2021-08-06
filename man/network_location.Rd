@@ -15,8 +15,7 @@ network_location(G, m, z)
 segment.}
 }
 \value{
-A list with names x and y which contains the coordinated of the
-points.
+A list with names l, tp_l, x and y.
 }
 \description{
 Find Location of a Point on a Geometric Network

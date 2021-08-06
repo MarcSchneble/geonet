@@ -14,7 +14,7 @@
 
 
 runifgn <- function(n, G){
-  e <- seg <- tp_l <- frac1 <- frac2 <- x <- y <- NULL
+  l <- tp_e <- e <- seg <- tp_l <- frac1 <- frac2 <- x <- y <- NULL
   lins <- G$lins %>% arrange(l)
   cumlen <- c(0, cumsum(lins$length))
   dx <- lins$a2_x - lins$a1_x
@@ -43,9 +43,16 @@ runifgn <- function(n, G){
 #' @return A point pattern on a geometric network, an object of class
 #' \code{gnpp}.
 #' @importFrom stats integrate
+#' @import dplyr
 #' @export
+#' @examples
+#' X <- runifgn(n = 50, G = small_gn)
+#' fit <- intensity_pspline(X)
+#' X2 <- rgnpp(n = 50, fit = fit)
+#' plot(X2)
 
 rgnpp <- function(n, fit){
+  e <- tp_l <- NULL
   int <- vector("list", fit$network$M)
   for (m in 1:fit$network$M) {
     for (k in 1:(fit$knots$J[m]+1)) {

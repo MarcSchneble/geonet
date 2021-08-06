@@ -81,6 +81,9 @@ tick marks and axis labeling.}
 covariate to be plotted. Must be an external categorical covariate with at
 most ten different values.}
 
+\item{data}{Set to \code{TRUE} if the data shall be plotted on top of the
+fitted intensity.}
+
 \item{trans}{The transformation applied to the color bar of the intensity
 fit. Specifies the \code{trans} argument of
 \code{\link[ggplot2]{scale_color_gradient}}.}

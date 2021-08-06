@@ -19,3 +19,9 @@ A point pattern on a geometric network, an object of class
 \description{
 Random Points on a Geometric Network
 }
+\examples{
+X <- runifgn(n = 50, G = small_gn)
+fit <- intensity_pspline(X)
+X2 <- rgnpp(n = 50, fit = fit)
+plot(X2)
+}

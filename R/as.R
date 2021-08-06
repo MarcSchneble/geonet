@@ -9,6 +9,10 @@
 #' @return An object of class \code{gn}.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
+#' @examples
+#' library(spatstat.data)
+#' G <- as_gn(simplenet)
+#' summary(G)
 
 as_gn <- function(x, ...){
   UseMethod("as_gn")
@@ -25,6 +29,10 @@ as_gn <- function(x, ...){
 #' @return An object of class \code{gnpp}.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @export
+#' @examples
+#' library(spatstat.data)
+#' X <- as_gnpp(chicago)
+#' summary(X)
 
 as_gnpp <- function(x, ...){
   UseMethod("as_gnpp")
@@ -56,7 +64,7 @@ as_lpp <- function(x, ...){
 
 as_gn.linnet <- function(x, ..., spatstat = FALSE){
   if (!inherits(x, "linnet")) stop("x muss be of class 'linnet'")
-  a1 <- a2 <- e <- NULL
+  l <- a1 <- a2 <- e <- NULL
   L <- x
   d <- diag(L$dpath[L$from, L$to])
   G <- list(
@@ -263,7 +271,7 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 #' all.equal(x, L)
 
 as.linnet.gn <- function(X, ...) {
-  a2 <- NULL
+  l <- a2 <- NULL
   window <- owin(xrange = range(X$vertices$x),
                  yrange = range(X$vertices$y))
   vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)

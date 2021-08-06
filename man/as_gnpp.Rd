@@ -30,6 +30,11 @@ An object of class \code{gnpp}.
 \code{as_gnpp} transmutes an existing object into a point pattern on a geometric
 network, an object of class \code{gnpp}.
 }
+\examples{
+library(spatstat.data)
+X <- as_gnpp(chicago)
+summary(X)
+}
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }

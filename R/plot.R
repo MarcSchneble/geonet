@@ -25,6 +25,8 @@
 #' 25. Default to \code{shape = 1} which shows the points as a circle.
 #' @param frame If set to \code{TRUE}, draws a frame around the network and adds
 #' tick marks and axis labeling.
+#' @param data Set to \code{TRUE} if the data shall be plotted on top of the
+#' fitted intensity.
 #' @param covariate Character vector of length one which is name of the
 #' covariate to be plotted. Must be an external categorical covariate with at
 #' most ten different values.
@@ -94,8 +96,8 @@ plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
     g <- g + geom_point(data = x$data, aes(x = x, y = y), shape = shape,
                         color = color$points, size = size$points)
   } else {
-    if (is.factor(X$data[[covariate]]) | is.character(X$data[[covariate]])) {
-      k <- length(unique(X$data[[covariate]]))
+    if (is.factor(x$data[[covariate]]) | is.character(x$data[[covariate]])) {
+      k <- length(unique(x$data[[covariate]]))
       if (k > 10) stop("Number of different values must be at most ten.")
       g <- g + geom_point(data = x$data, aes(x = x, y = y,
                                              color = !!sym(covariate),
@@ -250,7 +252,7 @@ plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
   if (data) {
     if (is.null(size$points)) size$points <- 2.5
     if (is.null(color$points)) color$points <- "black"
-    g <- g + geom_point(data = X$data, aes(x = x, y = y),
+    g <- g + geom_point(data = x$data, aes(x = x, y = y),
                                   size = size$points, color = color$points,
                                   shape = shape)
   }
