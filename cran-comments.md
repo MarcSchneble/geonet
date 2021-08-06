@@ -6,8 +6,4 @@
 * using session charset: ISO8859-1
 
 ## R CMD check results
-There were no errors or warnings.
-
-## 1 Note 
-checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Marc Schneble <marc.schneble@stat.uni-muenchen.de>'
+There were no errors, warnings or notes.
