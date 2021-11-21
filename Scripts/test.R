@@ -29,6 +29,8 @@ plot(model)
 summary(model)
 
 
+
+
 X <- as_gnpp(chicago)
 delta <- 10
 h <- 2
@@ -36,15 +38,22 @@ r <- 2
 formula <- X ~ marks + x + y + dist2V
 
 start <- Sys.time()
-model <- intensity_pspline(X, formula, delta = delta, h = h, r = r,
-                           scale = list(x = 1/1000, y = 1/1000, dist2V = 1/1000),
+model <- intensity_pspline(X, formula = formula, delta = delta, h = h, r = r,
                            verbose = TRUE)
 print(Sys.time() - start)
 
 summary(model)
-g <- plot(model)[[1]]
+g <- plot(model, data = TRUE)
 
 pdf(file = "intens_chicago_covariates.pdf", width = 6, height = 5)
+print(g)
+dev.off()
+
+model <- intensity_pspline(X, delta = delta, h = h, r = r,
+                           verbose = TRUE)
+g <- plot(model, data = TRUE)
+
+pdf(file = "intens_chicago.pdf", width = 6, height = 5)
 print(g)
 dev.off()
 
