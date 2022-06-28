@@ -15,7 +15,6 @@
 #' of the confidence band.
 #' @importFrom stats quantile
 #' @importFrom mgcv rmvn
-#' @export
 
 confidence_band <- function(theta, V, X, q = 0.05, R = 1000){
   mu_sim <- matrix(0, R, nrow(X))

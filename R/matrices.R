@@ -10,7 +10,6 @@
 #' @return The incidence matrix of dimension \eqn{W} by \eqn{M}.
 #' @import dplyr
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
 
 incidence <- function(vertices, lins){
   e <- NULL
@@ -37,7 +36,6 @@ incidence <- function(vertices, lins){
 #' @return A sparse matrix design matrix of dimension N x J.
 #' @importFrom splines splineDesign
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
 
 bspline_design <- function(G, knots, bins){
   # returns design matrix B with dimension N x J
@@ -88,7 +86,6 @@ bspline_design <- function(G, knots, bins){
 #' @import dplyr
 #' @importFrom splines splineDesign
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
 
 bspline_design_plot <- function(X, df){
   # returns design matrix for new data
@@ -147,7 +144,6 @@ bspline_design_plot <- function(X, df){
 #' @param r The order of the penalty, default to first-order penalty (\code{r = 1}.
 #' @return A sparse and square penalty matrix.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
 
 network_penalty <- function(G, knots, r){
   # returns the first or second penalty matrix K

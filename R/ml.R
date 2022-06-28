@@ -30,7 +30,6 @@
 #' @return The maximum likelihood estimate for fixed smoothing parameters.
 #' @references Fahrmeir, L., Kneib, T., Lang, S. and Marx, B. (2013).
 #' Regression. Springer.
-#' @export
 
 scoring <- function(theta, rho, data, Z, K, ind, eps_theta = 1e-5){
   # perform iterative least squares estimation for a Poisson model with offset
@@ -48,7 +47,6 @@ scoring <- function(theta, rho, data, Z, K, ind, eps_theta = 1e-5){
 }
 
 #' @rdname scoring
-#' @export
 
 score <- function(theta, rho, data, Z, K, ind){
   mu <- exp(as.vector(Z%*%theta) + log(data$h) + log(data$offset))
@@ -62,7 +60,6 @@ score <- function(theta, rho, data, Z, K, ind){
 }
 
 #' @rdname scoring
-#' @export
 
 fisher <- function(theta, rho, data, Z, K, ind){
   mu <- exp(as.vector(Z%*%theta) + log(data$h) + log(data$offset))
