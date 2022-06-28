@@ -285,6 +285,7 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 #' fit <- intensity_kernel(X)
 #' plot(fit)
 
+
 intensity_kernel <- function(X, kernel = "heat") {
   Y <- as_lpp(X)
   if (kernel == "heat") {
