@@ -64,6 +64,8 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
                               control = list()){
 
   if (density) stop("Computing the density is currently not supported.")
+  stopifnot(class(X) == "gnpp" & is.character(delta) & is.character(h) &
+              is.logical(verbose) & r %in% c(1, 2))
 
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
@@ -194,7 +196,6 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
 #' @import dplyr
 #' @importFrom stats optim
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
 
 fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
                               control = list()){
@@ -287,6 +288,8 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 
 
 intensity_kernel <- function(X, kernel = "heat") {
+  stopifnot(class(X) == "gnpp")
+  match.arg(arg = kernel, choices = c("heat", "Euclidean"))
   Y <- as_lpp(X)
   if (kernel == "heat") {
     sigma <- bw.lppl(Y, distance = "path")
