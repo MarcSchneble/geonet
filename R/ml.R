@@ -52,10 +52,6 @@ score <- function(theta, rho, data, Z, K, ind){
   mu <- exp(as.vector(Z%*%theta) + log(data$h) + log(data$offset))
   score <- as.vector(Matrix::colSums((data$count - mu)*Z)) -
     rep(c(rho, 0), lengths(ind))*K%*%theta
-  # for (a in 1:length(K)) {
-  #   score[ind_smooths[[a]]] <-
-  #     score[ind_smooths[[a]]] - rho[a]*K[[a]]%*%theta[ind_smooths[[a]]]
-  # }
   score
 }
 
@@ -67,9 +63,5 @@ fisher <- function(theta, rho, data, Z, K, ind){
   diag(Mu) <- mu
   fisher <- Matrix::t(Z)%*%Mu%*%Z +
     rep(c(rho, 0), lengths(ind))*K
-  # for (a in 1:length(K)) {
-  #   fisher[ind_smooths[[a]], ind_smooths[[a]]] <-
-  #     fisher[ind_smooths[[a]], ind_smooths[[a]]] + rho[a]*K[[a]]
-  # }
   fisher
 }
