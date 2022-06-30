@@ -44,6 +44,7 @@
 
 plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
                     frame = FALSE) {
+  stopifnot(class(x) == "gn")
   a1_x <- a1_y <- a2_x <- a2_y <- NULL
   g <- ggplot(x$lins)
   if (!frame) {
@@ -71,6 +72,7 @@ plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
 
 plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
                       shape = 1, frame = FALSE, covariate = NULL) {
+  stopifnot(class(x) == "gnpp")
   if (length(covariate) > 1){
     stop("Currently, only one covariate can be plotted.")
   }
@@ -213,6 +215,7 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
 plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
                         shape = 1, frame = FALSE, data = FALSE,
                         trans = "identity", sol = 100) {
+  stopifnot(class(x) == "lppfit")
   e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
   G <- as_gn(x)
   f <- as.linfun(x)

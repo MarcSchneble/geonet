@@ -14,6 +14,8 @@
 
 
 runifgn <- function(n, G){
+  stopifnot(class(G) == "gn")
+  stopifnot(n > 0 & n == round(n, 0))
   l <- tp_e <- e <- seg <- tp_l <- frac1 <- frac2 <- x <- y <- NULL
   lins <- G$lins %>% arrange(l)
   cumlen <- c(0, cumsum(lins$length))
@@ -38,7 +40,7 @@ runifgn <- function(n, G){
 #'
 #' @param n Number of random points. A nonnegative integer.
 #' @param fit A fitted point process on a geometric network (object of class
-#' \code{gnpp}).
+#' \code{gnppfit}).
 #'
 #' @return A point pattern on a geometric network, an object of class
 #' \code{gnpp}.
@@ -52,6 +54,8 @@ runifgn <- function(n, G){
 #' plot(X2)
 
 rgnpp <- function(n, fit){
+  stopifnot(class(fit) == "gnppfit")
+  stopifnot(n > 0 & n == round(n, 0))
   e <- tp_l <- NULL
   int <- vector("list", fit$network$M)
   for (m in 1:fit$network$M) {

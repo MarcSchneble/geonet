@@ -130,6 +130,7 @@ print.summary.gnpp <- function(x, ...) {
 #' @export
 
 print.summary.gnppfit <- function(x, ...){
+  stopifnot(inherits(x, "summary.gnppfit"))
   cat(paste("Intensity estimation on a geometric network in", x$q, "dimensions\nwith",
             x$W, "vertices and", x$M, "curve segments.\n"))
   cat("Log-linear Poisson model fitted with maximum likelihood.\n")
