@@ -10,7 +10,7 @@ rgnpp(n, fit)
 \item{n}{Number of random points. A nonnegative integer.}
 
 \item{fit}{A fitted point process on a geometric network (object of class
-\code{gnpp}).}
+\code{gnppfit}).}
 }
 \value{
 A point pattern on a geometric network, an object of class

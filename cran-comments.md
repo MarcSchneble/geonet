@@ -1,4 +1,4 @@
-## Submission (update) of package `geonet` (Version 0.6.0)
+## Submission (update) of package `geonet` (Version 0.7.0)
 
 ## Test environment
 * using R Under development (unstable) (2021-08-05 r80717)

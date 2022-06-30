@@ -1,3 +1,8 @@
+geonet version 0.7.0 (CRAN and GitHub release)
+
+- selective exporting of functions
+- checking for inputs
+
 geonet version 0.6.0 (CRAN and GitHub release)
 
 - revised plotting functions (caution: new arguments defining line widths, etc.)
