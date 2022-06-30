@@ -64,8 +64,7 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
                               control = list()){
 
   if (density) stop("Computing the density is currently not supported.")
-  stopifnot(class(X) == "gnpp" & is.character(delta) & is.character(h) &
-              is.logical(verbose) & r %in% c(1, 2))
+  stopifnot(inherits(X, "gnpp") & r %in% c(1, 2))
 
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
@@ -288,7 +287,7 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 
 
 intensity_kernel <- function(X, kernel = "heat") {
-  stopifnot(class(X) == "gnpp")
+  stopifnot(inherits(X, "gnpp"))
   match.arg(arg = kernel, choices = c("heat", "Euclidean"))
   Y <- as_lpp(X)
   if (kernel == "heat") {

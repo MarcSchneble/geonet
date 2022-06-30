@@ -14,7 +14,7 @@
 
 
 runifgn <- function(n, G){
-  stopifnot(class(G) == "gn")
+  stopifnot(inherits(G, "gn"))
   stopifnot(n > 0 & n == round(n, 0))
   l <- tp_e <- e <- seg <- tp_l <- frac1 <- frac2 <- x <- y <- NULL
   lins <- G$lins %>% arrange(l)
@@ -54,7 +54,7 @@ runifgn <- function(n, G){
 #' plot(X2)
 
 rgnpp <- function(n, fit){
-  stopifnot(class(fit) == "gnppfit")
+  stopifnot(inherits(fit, "gnppfit"))
   stopifnot(n > 0 & n == round(n, 0))
   e <- tp_l <- NULL
   int <- vector("list", fit$network$M)

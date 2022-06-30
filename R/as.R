@@ -64,7 +64,7 @@ as_lpp <- function(x, ...){
 
 as_gn.linnet <- function(x, ..., spatstat = FALSE){
   if (!inherits(x, "linnet")) stop("x muss be of class 'linnet'")
-  if (!(class(spatstat) == "logical")) stop ("spatstat must be logical")
+  if (!is.logical(spatstat)) stop ("spatstat must be logical")
   l <- a1 <- a2 <- e <- NULL
   L <- x
   d <- diag(L$dpath[L$from, L$to])
@@ -195,7 +195,7 @@ as_gn.lpp <- function(x, ..., spatstat = FALSE) {
   if (!inherits(x, "lpp")){
     stop("Object must be of class 'lpp'")
   }
-  if (!(class(spatstat) == "logical")) stop ("spatstat must be logical")
+  if (!is.logical(spatstat)) stop ("spatstat must be logical")
   L <- as.linnet(x)
   as_gn(L, spatstat = spatstat)
 }
@@ -224,7 +224,7 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
   if (!inherits(x, "lpp")){
       stop("Object must be of class 'lpp'")
   }
-  if (!(class(spatstat) == "logical")) stop ("spatstat must be logical")
+  if (!is.logical(spatstat)) stop ("spatstat must be logical")
   G <- as_gn(as.linnet(x), spatstat = spatstat)
   data <- tibble(l = x$data$seg, tp_l = x$data$tp,
                 xx = x$data$x, y = x$data$y)
