@@ -15,6 +15,7 @@
 #' By default, h is chosen to be half of the global knot distance.
 #' @return The global knot distance delta.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @export
 #' @examples
 #' G <- as_gn(montgomery)
 #' # use default arguments
@@ -29,6 +30,7 @@
 
 delta_h_global <- function(G, delta = NULL, h = NULL) {
   #global knot distance
+  stopifnot(inherits(G, "gn"))
   if (is.null(delta)) {
     delta <- min(G$d)/2
   } else if (is.character(delta) & !is.na(as.numeric(delta))) {

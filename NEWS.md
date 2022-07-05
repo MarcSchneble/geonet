@@ -1,4 +1,8 @@
-geonet version 0.7.0 (CRAN and GitHub release)
+geonet version 0.7.1 (CRAN and GitHub release)
+
+- one bugfix
+
+geonet version 0.7.0 (GitHub release)
 
 - selective exporting of functions
 - checking for inputs
