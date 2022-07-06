@@ -1,4 +1,8 @@
-geonet version 0.7.1 (CRAN and GitHub release)
+geonet version 0.7.2 (CRAN GitHub release)
+
+- small changes in naming
+
+geonet version 0.7.1 (GitHub release)
 
 - one bugfix
 
