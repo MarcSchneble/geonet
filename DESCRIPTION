@@ -12,7 +12,7 @@ Description: Fitting the intensity function of point
     additive models (GAM). The method is described in Marc Schneble, Göran Kauermann. 
     "Intensity estimation on geometric networks with penalized splines." The
     Annals of Applied Statistics, 16(2) 843-865 June 2022.
-    https://doi.org/10.1214/21-AOAS1522. 
+    <doi:10.1214/21-AOAS1522>. 
     A new class for representing linear networks as 
     geometric networks is the core of the package.
 Language: en-US

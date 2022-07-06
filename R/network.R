@@ -287,7 +287,7 @@ internal <- function(vars, X, bins, scale){
   if (length(X_internal) > 0) {
     for (k in 1:length(X_internal)) {
       if (is.element(X_internal[k], vars)) {
-        if (class(X$network$lins[[X_internal[k]]]) == "factor") {
+        if (inherits(X$network$lins[[X_internal[k]]], "factor")) {
           val <- factor(rep(NA, sum(bins$N)),
                         levels = levels(X$network$lins[[X_internal[k]]]))
         } else {
