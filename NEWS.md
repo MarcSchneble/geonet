@@ -1,24 +1,16 @@
-geonet version 0.7.2 (CRAN GitHub release)
-
-- small changes in naming
-
-geonet version 0.7.1 (GitHub release)
-
-- one bugfix
-
-geonet version 0.7.0 (GitHub release)
+# geonet version 0.7.3 (CRAN and GitHub release)
 
 - selective exporting of functions
 - checking for inputs
 
-geonet version 0.6.0 (CRAN and GitHub release)
+# geonet version 0.6.0 (CRAN and GitHub release)
 
 - revised plotting functions (caution: new arguments defining line widths, etc.)
 - scale of the dist2V variable is now supported 
 - added argument "other arguments" to intensity_pspline for compatibility with older versions
 - revised summary for gnppfit objects
 
-geonet version 0.5.0 (Github release)
+# geonet version 0.5.0 (Github release)
 
 - new function network_ISE for the computation of integrated squared errors
 - new function network_integral for the computation of an integral of the intensity
@@ -26,7 +18,7 @@ geonet version 0.5.0 (Github release)
   estimated by employing kernel based methods
 - fixed bug which occurs if a smooth covariate is specified in formula after a linear covariate
 
-geonet version 0.4.0 (Github release)
+# geonet version 0.4.0 (Github release)
 
 - summaries and related print methods now also print information on the
   linear network representation
@@ -38,7 +30,7 @@ geonet version 0.4.0 (Github release)
 - fixed bug in runif_gn
 - added function rgnpp which allows to simulate from a fitted intensity
 
-geonet version 0.3.0 (Github release)
+# geonet version 0.3.0 (Github release)
 
 - algorithm options can now be supplied to intensity_pspline via the
   "control" argument
@@ -48,7 +40,7 @@ geonet version 0.3.0 (Github release)
 - internal covariates are recognized automatically and do not need to be 
   assigned in the formula
 
-geonet version 0.2.0 (GitHub release)
+# geonet version 0.2.0 (GitHub release)
 
 - added internal covariate information to the montgomery network
 - fixed bug in network_penalty occurring when r = 1
@@ -63,12 +55,12 @@ geonet version 0.2.0 (GitHub release)
 - verbose argument added to intensity_pspline which allows to track the 
   progress of the fitting algorithm
 
-geonet version 0.1.1 (CRAN and GitHub release)
+# geonet version 0.1.1 (CRAN and GitHub release)
 
 - Added reference in the description file.
 - Added missing return values in the documentation.
 - Removed set.seed() call.
 
-geonet version 0.1.0 (no release)
+# geonet version 0.1.0 (no release)
 
 - Initial submission
