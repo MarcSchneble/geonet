@@ -278,7 +278,7 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 #' @return A fitted point process on a linear network, an object of class
 #' \code{lppfit}.
 #' @import spatstat.linnet
-#' @import spatstat.core
+#' @importFrom spatstat.explore bw.scott.iso
 #' @export
 #' @examples
 #' X <- runifgn(n = 50, G = small_gn)

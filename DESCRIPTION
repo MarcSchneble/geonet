@@ -24,7 +24,7 @@ RoxygenNote: 7.1.2
 Imports: 
     spatstat.linnet,
     spatstat.geom,
-    spatstat.core,
+    spatstat.explore,
     mgcv,
     Matrix,
     splines,
