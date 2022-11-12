@@ -255,7 +255,8 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 #'
 #' @param X An object of class \code{gn}.
 #' @param ... Other arguments.
-#' @import spatstat.linnet spatstat.geom
+#' @import spatstat.linnet
+#' @importFrom spatstat.geom owin ppp
 #' @import dplyr
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
 #' @return A linear network, an object of class \code{linnet}.
@@ -293,7 +294,7 @@ as.linnet.gn <- function(X, ...) {
 
 #' @rdname as_lpp
 #' @param x An object of class \code{gnpp}.
-#' @import spatstat.linnet spatstat.geom
+#' @import spatstat.linnet
 #' @import dplyr
 #' @export
 #' @examples
