@@ -31,3 +31,4 @@ coordinates are supported for the latter.
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }
+\keyword{internal}

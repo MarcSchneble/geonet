@@ -401,7 +401,7 @@ network_integral <- function(fit) {
 network_ISE <- function(fit1, fit2) {
 
   scale <- c(nrow(fit1$data), network_integral(fit2))
-  int <- rep(NA, fit1$network$M)
+  int <- numeric(fit1$network$M)
   for (m in 1:fit1$network$M) {
     int[m] <- integrate(network_intensity, lower = 0, upper = fit1$network$d[m],
                         m = m, fit1 = fit1, fit2 = fit2, scale = scale)$value

@@ -20,3 +20,4 @@ A list with names l, tp_l, x and y.
 \description{
 Find Location of a Point on a Geometric Network
 }
+\keyword{internal}

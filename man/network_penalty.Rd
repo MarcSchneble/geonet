@@ -24,3 +24,4 @@ B-Splines created by \code{\link[geonet]{bspline_design}}.
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }
+\keyword{internal}

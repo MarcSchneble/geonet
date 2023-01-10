@@ -24,3 +24,4 @@ the (log-)baseline intensity on the geometric network.
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }
+\keyword{internal}

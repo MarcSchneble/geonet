@@ -45,6 +45,7 @@ print.gnpp <- function(x, ...){
   } else {
     cat(paste(ncol(x$data) - 6, "external covariates."))
   }
+  cat("\n")
   invisible(NULL)
 }
 

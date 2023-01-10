@@ -44,3 +44,4 @@ Tweedie location, scale and shape models. Biometrics 73 1071-1081.
 \author{
 Marc Schneble \email{marc.schneble@stat.uni-muenchen.de}
 }
+\keyword{internal}

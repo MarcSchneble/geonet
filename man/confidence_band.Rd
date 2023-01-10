@@ -28,3 +28,4 @@ of the confidence band.
 \code{confidence_band} computes the lower and upper limits of smooth
 terms fitted with \code{intensity_pspline}.
 }
+\keyword{internal}

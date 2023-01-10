@@ -28,3 +28,4 @@ squared difference of two intensities) at the specified point.
 \description{
 Fitted Intensity on a Geometric Network
 }
+\keyword{internal}

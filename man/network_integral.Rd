@@ -15,3 +15,4 @@ A numeric vector of the length one, the integral.
 \description{
 Integral of a fitted intensity
 }
+\keyword{internal}
