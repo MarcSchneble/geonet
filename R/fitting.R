@@ -195,6 +195,7 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
 #' @import dplyr
 #' @importFrom stats optim
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @keywords internal
 
 fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
                               control = list()){
@@ -278,7 +279,7 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 #' @return A fitted point process on a linear network, an object of class
 #' \code{lppfit}.
 #' @import spatstat.linnet
-#' @import spatstat.core
+#' @import spatstat.explore
 #' @export
 #' @examples
 #' X <- runifgn(n = 50, G = small_gn)

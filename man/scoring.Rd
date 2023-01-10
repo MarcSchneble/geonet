@@ -56,3 +56,4 @@ log-likelihood).
 Fahrmeir, L., Kneib, T., Lang, S. and Marx, B. (2013).
 Regression. Springer.
 }
+\keyword{internal}

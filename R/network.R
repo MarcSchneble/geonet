@@ -84,6 +84,7 @@ delta_h_global <- function(G, delta = NULL, h = NULL) {
 #' @return A list which contains the knot sequence of every curve of the
 #' geometric network.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @keywords internal
 
 network_knots <- function(G, delta){
   if (inherits(G, "gnpp")) G <- as_gn(G)
@@ -118,6 +119,7 @@ network_knots <- function(G, delta){
 #' @return A list which contains the bins of every curve of the geometric
 #' network.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @keywords internal
 
 network_bins <- function(G, h = NULL){
   if (inherits(G, "gnpp")) G <- as_gn(G)
@@ -160,6 +162,7 @@ network_bins <- function(G, h = NULL){
 #' @import dplyr
 #' @importFrom stats setNames
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @keywords internal
 
 bin_data <- function(X, bins = NULL, vars = NULL, vars_internal = NULL,
                      scale = NULL){
@@ -235,6 +238,7 @@ bin_data <- function(X, bins = NULL, vars = NULL, vars_internal = NULL,
 #' geometric network (\code{sum(bins$N)}) and the number of columns equal to
 #' the length of \code{vars}.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
+#' @keywords internal
 
 internal <- function(vars, X, bins, scale){
   e <- NULL
@@ -323,6 +327,7 @@ internal <- function(vars, X, bins, scale){
 #'
 #' @return A numeric vector of length one, indicating the intensity (or the
 #' squared difference of two intensities) at the specified point.
+#' @keywords internal
 
 network_intensity <- function(z, m, fit1, fit2 = NULL, scale = NULL){
 
@@ -371,6 +376,7 @@ network_intensity <- function(z, m, fit1, fit2 = NULL, scale = NULL){
 #' @param fit A fitted point process on a geometric network.
 #'
 #' @return A numeric vector of the length one, the integral.
+#' @keywords internal
 
 network_integral <- function(fit) {
   int <- rep(NA, fit$network$M)
@@ -411,6 +417,7 @@ network_ISE <- function(fit1, fit2) {
 #' segment.
 #'
 #' @return A list with names l, tp_l, x and y.
+#' @keywords internal
 
 network_location <- function(G, m, z){
   e <- NULL
