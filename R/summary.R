@@ -12,7 +12,6 @@
 #' @export
 
 summary.gn <- function(object, ...) {
-  stopifnot(inherits(object, "gn"))
   deg <- colSums(object$adjacency)
   out <- list(
     M = object$M,
@@ -33,7 +32,6 @@ summary.gn <- function(object, ...) {
 #' @export
 
 summary.gnpp <- function(object, ...) {
-  stopifnot(inherits(object, "gnpp"))
   G <- as_gn(object)
   out <- summary(G)
   out$n_points <- nrow(object$data)

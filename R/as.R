@@ -63,8 +63,7 @@ as_lpp <- function(x, ...){
 #' @export
 
 as_gn.linnet <- function(x, ..., spatstat = FALSE){
-  if (!inherits(x, "linnet")) stop("x muss be of class 'linnet'")
-  if (!is.logical(spatstat)) stop ("spatstat must be logical")
+  stopifnot(inherits(spatstat, "logical"))
   l <- a1 <- a2 <- e <- NULL
   L <- x
   d <- diag(L$dpath[L$from, L$to])
@@ -167,9 +166,6 @@ as_gn.linnet <- function(x, ..., spatstat = FALSE){
 #' @export
 
 as_gn.gnpp <- function(x, ...){
-  if (!inherits(x, "gnpp")){
-    stop("Object must be of class 'gpp'")
-  }
   G <- x$network
   class(G) <- "gn"
   G
@@ -179,9 +175,6 @@ as_gn.gnpp <- function(x, ...){
 #' @export
 
 as_gn.gnppfit <- function(x, ...){
-  if (!inherits(x, "gnppfit")){
-    stop("Object must be of class 'gnppfit'")
-  }
   G <- x$network
   class(G) <- "gn"
   G
@@ -192,9 +185,6 @@ as_gn.gnppfit <- function(x, ...){
 #' @export
 
 as_gn.lpp <- function(x, ..., spatstat = FALSE) {
-  if (!inherits(x, "lpp")){
-    stop("Object must be of class 'lpp'")
-  }
   if (!is.logical(spatstat)) stop ("spatstat must be logical")
   L <- as.linnet(x)
   as_gn(L, spatstat = spatstat)
@@ -220,11 +210,8 @@ as_gnpp.gnppfit <- function(x, ...){
 #' @export
 
 as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
+  stopifnot(inherits(spatstat, "logical"))
   frac1 <- tp_e <- tp_l <- frac2 <- e <- y <- l <- xx <-  NULL
-  if (!inherits(x, "lpp")){
-      stop("Object must be of class 'lpp'")
-  }
-  if (!is.logical(spatstat)) stop ("spatstat must be logical")
   G <- as_gn(as.linnet(x), spatstat = spatstat)
   data <- tibble(l = x$data$seg, tp_l = x$data$tp,
                 xx = x$data$x, y = x$data$y)
@@ -275,9 +262,6 @@ as_gnpp.lpp <- function(x, ..., spatstat = FALSE){
 
 as.linnet.gn <- function(X, ...) {
   l <- a2 <- NULL
-  if (!inherits(X, "gn")){
-    stop("Object must be of class 'gn'")
-  }
   window <- owin(xrange = range(X$vertices$x),
                  yrange = range(X$vertices$y))
   vertices <- ppp(x = X$vertices$x, y = X$vertices$y, window = window)
@@ -310,9 +294,6 @@ as.linnet.gn <- function(X, ...) {
 #' all.equal(x, L)
 
 as_lpp.gnpp <- function(x, ...) {
-  if (!inherits(x, "gnpp")){
-    stop("Object must be of class 'gnpp'")
-  }
   L <- as.linnet(as_gn(x))
   data <- x$data
   marks <- NULL

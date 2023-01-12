@@ -44,7 +44,10 @@
 
 plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
                     frame = FALSE) {
-  stopifnot(inherits(x, "gn"))
+  stopifnot(inherits(title, "list"),
+            inherits(size, "list"),
+            inherits(color, "list"),
+            inherits(frame, "logical"))
   a1_x <- a1_y <- a2_x <- a2_y <- NULL
   g <- ggplot(x$lins)
   if (!frame) {
@@ -72,7 +75,10 @@ plot.gn <- function(x, ..., title = list(), size = list(), color = list(),
 
 plot.gnpp <- function(x, ..., title = list(), size = list(), color = list(),
                       shape = 1, frame = FALSE, covariate = NULL) {
-  stopifnot(inherits(x, "gnpp"))
+  stopifnot(inherits(title, "list"),
+            inherits(size, "list"),
+            inherits(color, "list"),
+            inherits(frame, "logical"))
   if (length(covariate) > 1){
     stop("Currently, only one covariate can be plotted.")
   }
@@ -124,7 +130,10 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
                          shape = 1, frame = FALSE, data = FALSE,
                          trans = "identity", select = NULL,  sol = 100) {
 
-  stopifnot(inherits(x, "gnppfit"))
+  stopifnot(inherits(title, "list"),
+            inherits(size, "list"),
+            inherits(color, "list"),
+            inherits(frame, "logical"))
   e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
   G <- as_gn(x)
   g <- df <- vector("list", length(x$smooth) + 1)
@@ -215,7 +224,10 @@ plot.gnppfit <- function(x, ..., title = list(), size = list(), color = list(),
 plot.lppfit <- function(x, ..., title = list(), size = list(), color = list(),
                         shape = 1, frame = FALSE, data = FALSE,
                         trans = "identity", sol = 100) {
-  inherits(x, "lppfit")
+  stopifnot(inherits(title, "list"),
+            inherits(size, "list"),
+            inherits(color, "list"),
+            inherits(frame, "logical"))
   e <- xend <- y <- yend <- intensity <- lower <- upper <- NULL
   G <- as_gn(x)
   f <- as.linfun(x)

@@ -64,7 +64,10 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
                               control = list()){
 
   if (density) stop("Computing the density is currently not supported.")
-  stopifnot(inherits(X, "gnpp") & r %in% c(1, 2))
+  stopifnot(inherits(X, "gnpp"),
+            inherits(formula, "formula"),
+            is.character(delta), is.character(h),
+            r %in% c(1, 2))
 
   # remove response from formula if supplied
   formula <- update(formula, NULL ~ .)
@@ -152,8 +155,6 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
   out <- list()
   out$coefficients <- setNames(fit$theta, names(unlist(ind)))
   out$V <- fit$V
-  #out$effects <- effects
-  #out$P <- P
   out$setup <- setup
   out$knots <- knots
   out$bins <- bins

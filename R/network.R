@@ -15,7 +15,7 @@
 #' By default, h is chosen to be half of the global knot distance.
 #' @return The global knot distance delta.
 #' @author Marc Schneble \email{marc.schneble@@stat.uni-muenchen.de}
-#' @export
+#' @keywords internal
 #' @examples
 #' G <- as_gn(montgomery)
 #' # use default arguments
@@ -30,7 +30,6 @@
 
 delta_h_global <- function(G, delta = NULL, h = NULL) {
   #global knot distance
-  stopifnot(inherits(G, "gn"))
   if (is.null(delta)) {
     delta <- min(G$d)/2
   } else if (is.character(delta) & !is.na(as.numeric(delta))) {
@@ -87,8 +86,6 @@ delta_h_global <- function(G, delta = NULL, h = NULL) {
 #' @keywords internal
 
 network_knots <- function(G, delta){
-  if (inherits(G, "gnpp")) G <- as_gn(G)
-  if (!inherits(G, "gn")) stop("G muss be of class 'gn'")
   # line specific knot distances
   delta <- G$d*(delta > G$d) + delta*(delta <= G$d)
   delta <- pmin(G$d/floor(G$d/delta)*(G$d/delta - floor(G$d/delta) < 0.5) +
@@ -122,8 +119,6 @@ network_knots <- function(G, delta){
 #' @keywords internal
 
 network_bins <- function(G, h = NULL){
-  if (inherits(G, "gnpp")) G <- as_gn(G)
-  if (!inherits(G, "gn")) stop("G muss be of class 'gn'")
   # line specific bin widths
   h <- pmin(G$d/floor(G$d/h)*(G$d/h - floor(G$d/h) < 0.5) +
     G$d/ceiling(G$d/h)*(G$d/h - floor(G$d/h) >= 0.5), G$d/2)
@@ -399,7 +394,7 @@ network_integral <- function(fit) {
 #' @export
 
 network_ISE <- function(fit1, fit2) {
-
+  stopifnot(inherits(fit1, "gnppfit"), inherits(fit2, "gnppfit"))
   scale <- c(nrow(fit1$data), network_integral(fit2))
   int <- numeric(fit1$network$M)
   for (m in 1:fit1$network$M) {
