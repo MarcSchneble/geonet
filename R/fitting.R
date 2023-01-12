@@ -288,9 +288,9 @@ fit_poisson_model <- function(data, Z, K, ind, verbose = FALSE,
 #' plot(fit)
 
 
-intensity_kernel <- function(X, kernel = "heat") {
+intensity_kernel <- function(X, kernel = c("heat", "Euclidean")) {
   stopifnot(inherits(X, "gnpp"))
-  match.arg(arg = kernel, choices = c("heat", "Euclidean"))
+  kernel = match.arg(kernel)
   Y <- as_lpp(X)
   if (kernel == "heat") {
     sigma <- bw.lppl(Y, distance = "path")

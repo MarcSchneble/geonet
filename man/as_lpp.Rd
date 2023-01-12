@@ -7,7 +7,7 @@
 \usage{
 as_lpp(x, ...)
 
-\method{as_lpp}{gnpp}(x, ...)
+\method{as_lpp}{gnpp}(x, ..., marks = "")
 }
 \arguments{
 \item{x}{An object of class \code{gnpp}.}

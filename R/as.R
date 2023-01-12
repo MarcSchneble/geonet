@@ -293,11 +293,10 @@ as.linnet.gn <- function(X, ...) {
 #' # TRUE
 #' all.equal(x, L)
 
-as_lpp.gnpp <- function(x, ...) {
+as_lpp.gnpp <- function(x, ..., marks = "") {
   L <- as.linnet(as_gn(x))
   data <- x$data
-  marks <- NULL
-  if (!is.null(data$marks)) marks <- data$marks
+  if (length(data %>% pull(marks)) > 0) marks <- data %>% pull(marks)
   out <- as.lpp(x = data$x, y = data$y,
                 seg = data$l, tp = data$tp_l, L = L, marks = marks)
   out

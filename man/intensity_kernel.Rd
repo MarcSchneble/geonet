@@ -4,7 +4,7 @@
 \alias{intensity_kernel}
 \title{Intensity Estimation on Geometric Networks based on Kernel Smoothing}
 \usage{
-intensity_kernel(X, kernel = "heat")
+intensity_kernel(X, kernel = c("heat", "Euclidean"))
 }
 \arguments{
 \item{X}{A point pattern on a geometric network (object of class

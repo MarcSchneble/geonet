@@ -33,19 +33,15 @@ delta_h_global <- function(G, delta = NULL, h = NULL) {
   if (is.null(delta)) {
     delta <- min(G$d)/2
   } else if (is.character(delta) & !is.na(as.numeric(delta))) {
-    if (is.character(delta) & !is.na(as.numeric(delta))) {
-      quant <- as.numeric(delta)
-      if (quant >= 0 & quant <= 1) {
-        delta <- as.numeric(quantile(G$d, quant)/2)
-        if (delta > quantile(G$d, 0.5)/2) {
-          warning(paste0("Many network segments have no curve specific ",
-                         "B-splines.\nChoose a lower value for the quantile."))
-        }
-      } else {
-        stop("The quantile supplied for delta must be in the interval [0,1]")
+    quant <- as.numeric(delta)
+    if (quant >= 0 & quant <= 1) {
+      delta <- as.numeric(quantile(G$d, quant)/2)
+      if (delta > quantile(G$d, 0.5)/2) {
+        warning(paste0("Many network segments have no curve specific ",
+                       "B-splines.\nChoose a lower value for the quantile."))
       }
     } else {
-      stop("The character must be convertible to class numeric.")
+      stop("The quantile supplied for delta must be in the interval [0,1]")
     }
   } else if (is.numeric(delta)) {
     if (delta <= 0) {
