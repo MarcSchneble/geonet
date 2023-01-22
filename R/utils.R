@@ -18,13 +18,8 @@
 #' @keywords internal
 
 confidence_band <- function(theta, V, X, q = 0.05, R = 1000){
-  #mu_sim <- matrix(0, R, nrow(X))
-  #for (i in 1:R) {
-  #  theta_sim <- rmvn(1, theta, V)
-  #  mu_sim[i, ] <- as.vector(X%*%theta_sim)
-  #}
   theta_sim = rmvn(R, theta, V)
-  mu_sim = t(X%*%theta_sim)
+  mu_sim = t(X%*%t(theta_sim))
   lower <- upper <- rep(0, ncol(mu_sim))
   for (j in 1:ncol(mu_sim)) {
     lower[j] <- quantile(mu_sim[, j], probs = q/2)
