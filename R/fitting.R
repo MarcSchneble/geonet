@@ -66,7 +66,8 @@ intensity_pspline <- function(X, ..., formula = ~1, delta = "0", h = "0.5", r = 
   if (density) stop("Computing the density is currently not supported.")
   stopifnot(inherits(X, "gnpp"),
             inherits(formula, "formula"),
-            is.character(delta), is.character(h),
+            inherits(delta, c("character", "numeric")),
+            inherits(h, c("character", "numeric")),
             r %in% c(1, 2))
 
   # remove response from formula if supplied
